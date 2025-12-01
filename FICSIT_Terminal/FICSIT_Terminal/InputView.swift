@@ -19,7 +19,7 @@ struct InputView: View {
                     
                     ScrollView {
                         VStack(spacing: 20) {
-                            // NOUVEAU : Gros bouton d'action clair
+                            // NOUVEAU : Gros bouton d'action
                             addNodeButton
                             
                             // Liste des nœuds existants
@@ -41,7 +41,7 @@ struct InputView: View {
             .sheet(isPresented: $showAddSheet) {
                 ResourceEditorSheet(viewModel: viewModel, db: db, mode: .add)
             }
-            // Modale d'ÉDITION
+            // Modale d'ÉDITION (déclenchée quand editingInput n'est pas nil)
             .sheet(item: $editingInput) { input in
                 ResourceEditorSheet(viewModel: viewModel, db: db, mode: .edit(input))
             }
@@ -109,13 +109,13 @@ struct InputView: View {
                 ForEach(viewModel.userInputs) { input in
                     Button(action: { editingInput = input }) {
                         HStack {
-                            // On passe 0 en sinkValue car c'est du brut, pas grave pour l'affichage
                             ItemIcon(item: ProductionItem(name: input.resourceName, category: "Raw", sinkValue: 0), size: 40)
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(input.resourceName)
                                     .font(.system(.headline, design: .monospaced))
                                     .foregroundColor(.white)
+                                
                                 HStack {
                                     // Badges pour Pureté et Miner
                                     Text(input.purity.rawValue.capitalized)
@@ -135,8 +135,8 @@ struct InputView: View {
                             
                             Spacer()
                             
-                            // Débit
-                            Text("\(Int(input.productionRate))/m")
+                            // Débit (CORRECTION DU WARNING ICI AVEC 'verbatim')
+                            Text(verbatim: "\(Int(input.productionRate))/m")
                                 .font(.system(.title3, design: .monospaced))
                                 .fontWeight(.bold)
                                 .foregroundColor(.ficsitOrange)
@@ -200,19 +200,20 @@ struct ResourceEditorSheet: View {
     @ObservedObject var db: FICSITDatabase
     @Environment(\.presentationMode) var presentationMode
     
-    enum Mode {
+    // CORRECTION : Renommage de Mode -> EditorMode pour éviter le conflit de nom
+    enum EditorMode {
         case add
         case edit(ResourceInput)
     }
     
-    let mode: Mode
+    let mode: EditorMode
     
     // États locaux pour le formulaire
     @State private var resName: String
     @State private var purity: NodePurity
     @State private var miner: MinerLevel
     
-    init(viewModel: CalculatorViewModel, db: FICSITDatabase, mode: Mode) {
+    init(viewModel: CalculatorViewModel, db: FICSITDatabase, mode: EditorMode) {
         self.viewModel = viewModel
         self.db = db
         self.mode = mode

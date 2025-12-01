@@ -15,11 +15,9 @@ class GraphEngine {
         var itemDepth: [String: Int] = [:]
         
         // 1. CALCUL DE LA PROFONDEUR (RANG)
-        // Les ressources sont au rang 0
         for input in inputs { itemDepth[input.resourceName] = 0 }
         
-        // On propage les rangs : si un item A a besoin de B, rang(A) > rang(B)
-        for _ in 0..<10 { // 10 passes pour stabiliser
+        for _ in 0..<10 {
             for step in plan {
                 var maxIngDepth = -1
                 if let recipe = step.recipe {
@@ -37,7 +35,7 @@ class GraphEngine {
         
         // 2. CRÉATION DES NOEUDS
         
-        // A. Inputs (Raw)
+        // Inputs
         for input in inputs {
             if nodeMap[input.resourceName] == nil {
                 let node = GraphNode(
@@ -47,7 +45,6 @@ class GraphEngine {
                     recipeName: "\(input.purity.rawValue.capitalized) \(input.miner.rawValue.uppercased())",
                     color: Color.gray
                 )
-                // Position temporaire : X contient la colonne, Y sera calculé après
                 var tempNode = node
                 tempNode.position = CGPoint(x: 0, y: 0)
                 nodes.append(tempNode)
@@ -55,7 +52,7 @@ class GraphEngine {
             }
         }
         
-        // B. Machines (Steps)
+        // Machines
         for step in plan {
             let depth = itemDepth[step.item.name] ?? 1
             let color = getColorForBuilding(step.buildingName)
@@ -94,46 +91,40 @@ class GraphEngine {
             }
         }
         
-        // 4. POSITIONNEMENT FINAL (Y) - LA CORRECTION EST ICI
+        // 4. POSITIONNEMENT FINAL OPTIMISÉ
         let maxDepth = (nodes.map { Int($0.position.x) }.max() ?? 0)
         var finalNodes = nodes
         
         // Espacements augmentés pour réduire le chevauchement
-        let columnWidth: CGFloat = 350 // Largeur colonne
-        let rowHeight: CGFloat = 200   // Hauteur ligne (était 160)
+        let columnWidth: CGFloat = 350
+        let rowHeight: CGFloat = 200
         
         for d in 0...maxDepth {
-            // Récupérer les noeuds de cette colonne
             let colIndices = finalNodes.indices.filter { Int(finalNodes[$0].position.x) == d }
             
-            // TRI OPTIMISÉ : On trie par nom d'item.
-            // Cela groupe les "Iron Ingot" ensemble, "Copper Ingot" ensemble, etc.
-            // Ça évite que le fer soit en haut à gauche et doive descendre tout en bas à droite.
+            // TRI : On groupe par nom d'item pour éviter les croisements !
             let sortedIndices = colIndices.sorted {
                 finalNodes[$0].item.name < finalNodes[$1].item.name
             }
             
-            // Centrage vertical de la colonne
+            // Centrage vertical
             let totalHeight = CGFloat(sortedIndices.count) * rowHeight
-            let startY = (CGFloat(1000) - totalHeight) / 2 // Centré sur une toile virtuelle de 1000px de haut (ajustable)
+            let startY = max(100, (1000 - totalHeight) / 2)
             
             for (i, nodeIndex) in sortedIndices.enumerated() {
                 let xPx = CGFloat(d) * columnWidth + 100
-                // On fixe un Y minimum à 100 pour ne pas sortir en haut
-                let yPx = max(100, startY) + CGFloat(i) * rowHeight
+                let yPx = startY + CGFloat(i) * rowHeight
                 finalNodes[nodeIndex].position = CGPoint(x: xPx, y: yPx)
             }
         }
         
-        // Calcul taille canvas dynamique
         let maxWidth = CGFloat((maxDepth + 1) * Int(columnWidth) + 200)
         let maxItemsInCol = (0...maxDepth).map { d in nodes.filter { Int($0.position.x) == d }.count }.max() ?? 0
-        let maxHeight = CGFloat(maxItemsInCol * Int(rowHeight) + 400) // Marge généreuse
+        let maxHeight = CGFloat(maxItemsInCol * Int(rowHeight) + 400)
         
         return GraphLayout(nodes: finalNodes, links: links, contentSize: CGSize(width: maxWidth, height: maxHeight))
     }
     
-    // Helpers
     func getColorForBuilding(_ name: String) -> Color {
         let n = name.lowercased()
         if n.contains("smelter") || n.contains("foundry") { return Color.red.opacity(0.8) }

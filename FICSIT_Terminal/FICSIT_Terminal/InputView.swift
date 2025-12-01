@@ -19,7 +19,7 @@ struct InputView: View {
                     
                     ScrollView {
                         VStack(spacing: 20) {
-                            // NOUVEAU : Gros bouton d'action
+                            // NOUVEAU : Gros bouton d'action clair
                             addNodeButton
                             
                             // Liste des nœuds existants
@@ -41,7 +41,7 @@ struct InputView: View {
             .sheet(isPresented: $showAddSheet) {
                 ResourceEditorSheet(viewModel: viewModel, db: db, mode: .add)
             }
-            // Modale d'ÉDITION (déclenchée quand editingInput n'est pas nil)
+            // Modale d'ÉDITION
             .sheet(item: $editingInput) { input in
                 ResourceEditorSheet(viewModel: viewModel, db: db, mode: .edit(input))
             }
@@ -109,13 +109,13 @@ struct InputView: View {
                 ForEach(viewModel.userInputs) { input in
                     Button(action: { editingInput = input }) {
                         HStack {
+                            // On passe 0 en sinkValue car c'est du brut, pas grave pour l'affichage
                             ItemIcon(item: ProductionItem(name: input.resourceName, category: "Raw", sinkValue: 0), size: 40)
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(input.resourceName)
                                     .font(.system(.headline, design: .monospaced))
                                     .foregroundColor(.white)
-                                
                                 HStack {
                                     // Badges pour Pureté et Miner
                                     Text(input.purity.rawValue.capitalized)

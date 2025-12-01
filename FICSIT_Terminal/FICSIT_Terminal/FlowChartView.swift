@@ -26,14 +26,14 @@ struct FlowChartView: View {
                     ScrollView([.horizontal, .vertical], showsIndicators: true) {
                         ZStack(alignment: .topLeading) {
                             
-                            // 1. LIENS (Derrière)
+                            // 1. LIENS
                             if let layout = layout {
                                 ForEach(layout.links) { link in
                                     drawLinkLine(link, nodes: layout.nodes)
                                 }
                             }
                             
-                            // 2. ÉTIQUETTES (Au milieu)
+                            // 2. ÉTIQUETTES
                             if let layout = layout {
                                 ForEach(layout.links) { link in
                                     drawSmartBeltLabel(
@@ -44,7 +44,7 @@ struct FlowChartView: View {
                                 }
                             }
                             
-                            // 3. NOEUDS (Devant)
+                            // 3. NOEUDS
                             if let layout = layout {
                                 ForEach(layout.nodes) { node in
                                     NodeView(node: node)
@@ -64,7 +64,9 @@ struct FlowChartView: View {
             }
             .navigationBarTitle("Blueprint Viz", displayMode: .inline)
             .onAppear { generateGraph() }
-            .onChange(of: viewModel.consolidatedPlan.count) { generateGraph() }
+            .onChange(of: viewModel.consolidatedPlan.count) {
+                generateGraph()
+            }
         }
     }
     
@@ -79,8 +81,7 @@ struct FlowChartView: View {
         }
     }
     
-    // --- DESSIN DES LIGNES ---
-    // AMÉLIORATION : Courbe de Bézier plus "Technique"
+    // --- DESSIN AMÉLIORÉ ---
     func drawLinkLine(_ link: GraphLink, nodes: [GraphNode]) -> some View {
         let start = nodes.first(where: { $0.id == link.fromNodeID })?.position ?? .zero
         let end = nodes.first(where: { $0.id == link.toNodeID })?.position ?? .zero
@@ -91,22 +92,20 @@ struct FlowChartView: View {
         return Path { path in
             path.move(to: startPoint)
             
-            // Calcul d'une courbe sigmoïde tendue
-            // Le point de contrôle est à mi-chemin horizontalement, mais reste au niveau Y de départ/arrivée
-            let midX = (startPoint.x + endPoint.x) / 2
-            let control1 = CGPoint(x: midX, y: startPoint.y)
-            let control2 = CGPoint(x: midX, y: endPoint.y)
+            // Courbe sigmoïde tendue (plus technique)
+            let controlDist = abs(endPoint.x - startPoint.x) * 0.5
+            let control1 = CGPoint(x: startPoint.x + controlDist, y: startPoint.y)
+            let control2 = CGPoint(x: endPoint.x - controlDist, y: endPoint.y)
             
             path.addCurve(to: endPoint, control1: control1, control2: control2)
         }
-        .stroke(link.color.opacity(0.5), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+        .stroke(link.color.opacity(0.4), style: StrokeStyle(lineWidth: 3, lineCap: .round))
     }
     
     func drawSmartBeltLabel(_ link: GraphLink, nodes: [GraphNode], userLimit: Double) -> some View {
         let start = nodes.first(where: { $0.id == link.fromNodeID })?.position ?? .zero
         let end = nodes.first(where: { $0.id == link.toNodeID })?.position ?? .zero
         
-        // Position au milieu géométrique de la courbe
         let midX = (start.x + end.x) / 2
         let midY = (start.y + end.y) / 2
         
@@ -147,17 +146,12 @@ struct FlowChartView: View {
     
     func getBeltName(limit: Double) -> String {
         switch Int(limit) {
-        case 60: return "Mk1"
-        case 120: return "Mk2"
-        case 270: return "Mk3"
-        case 480: return "Mk4"
-        case 780: return "Mk5"
-        default: return "Belt"
+        case 60: return "Mk1"; case 120: return "Mk2"; case 270: return "Mk3"; case 480: return "Mk4"; case 780: return "Mk5"; default: return "Belt"
         }
     }
 }
 
-// NodeView et GridPattern restent inchangés
+// --- Reste du fichier inchangé ---
 struct NodeView: View {
     let node: GraphNode
     var body: some View {
@@ -183,12 +177,8 @@ struct GridPattern: View {
         GeometryReader { geometry in
             Path { path in
                 let step: CGFloat = 50
-                for x in stride(from: 0, to: geometry.size.width, by: step) {
-                    path.move(to: CGPoint(x: x, y: 0)); path.addLine(to: CGPoint(x: x, y: geometry.size.height))
-                }
-                for y in stride(from: 0, to: geometry.size.height, by: step) {
-                    path.move(to: CGPoint(x: 0, y: y)); path.addLine(to: CGPoint(x: geometry.size.width, y: y))
-                }
+                for x in stride(from: 0, to: geometry.size.width, by: step) { path.move(to: CGPoint(x: x, y: 0)); path.addLine(to: CGPoint(x: x, y: geometry.size.height)) }
+                for y in stride(from: 0, to: geometry.size.height, by: step) { path.move(to: CGPoint(x: 0, y: y)); path.addLine(to: CGPoint(x: geometry.size.width, y: y)) }
             }.stroke(Color.white.opacity(0.03), lineWidth: 1)
         }
     }

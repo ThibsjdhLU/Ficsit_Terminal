@@ -8,15 +8,30 @@ class GraphEngine {
         var contentSize: CGSize
     }
     
-    func generateLayout(from plan: [ConsolidatedStep], inputs: [ResourceInput], db: FICSITDatabase) -> GraphLayout {
+    // MODIFICATION ICI : Ajout de 'goals' et 'sinkResult' dans les paramètres
+    func generateLayout(from plan: [ConsolidatedStep], inputs: [ResourceInput], goals: [ProductionGoal], sinkResult: SinkResult?, db: FICSITDatabase) -> GraphLayout {
         var nodes: [GraphNode] = []
         var links: [GraphLink] = []
         var nodeMap: [String: UUID] = [:]
         var itemDepth: [String: Int] = [:]
         
-        // 1. CALCUL DE LA PROFONDEUR (RANG)
-        for input in inputs { itemDepth[input.resourceName] = 0 }
+        // Liste des noms d'items qui sont des objectifs explicites
+        let goalItemNames = Set(goals.map { $0.item.name })
+        let sinkItemName = sinkResult?.bestItem.name
         
+        // 1. DETECTION DES PRODUITS FINIS
+        // Un item est final s'il n'est consommé par personne... OU si c'est un GOAL !
+        var consumedItems: Set<String> = []
+        for step in plan {
+            if let recipe = step.recipe {
+                for (ing, _) in recipe.ingredients {
+                    consumedItems.insert(ing)
+                }
+            }
+        }
+        
+        // 2. PROFONDEUR
+        for input in inputs { itemDepth[input.resourceName] = 0 }
         for _ in 0..<10 {
             for step in plan {
                 var maxIngDepth = -1
@@ -33,56 +48,87 @@ class GraphEngine {
             }
         }
         
-        // 2. CRÉATION DES NOEUDS
+        // 3. NOEUDS
         
         // Inputs
         for input in inputs {
             if nodeMap[input.resourceName] == nil {
-                let node = GraphNode(
-                    item: ProductionItem(name: input.resourceName, category: "Raw", sinkValue: 0),
-                    label: "Resource Node",
-                    subLabel: input.resourceName,
-                    recipeName: "\(input.purity.rawValue.capitalized) \(input.miner.rawValue.uppercased())",
-                    color: Color.gray
-                )
-                var tempNode = node
-                tempNode.position = CGPoint(x: 0, y: 0)
-                nodes.append(tempNode)
+                let node = GraphNode(item: ProductionItem(name: input.resourceName, category: "Raw"), label: "Resource Node", subLabel: input.resourceName, recipeName: "\(input.purity.rawValue.capitalized) \(input.miner.rawValue.uppercased())", color: Color.gray, type: .input)
+                var temp = node; temp.position = CGPoint(x: 0, y: 0)
+                nodes.append(temp)
                 nodeMap[input.resourceName] = node.id
             }
         }
         
-        // Machines
+        // Machines & Outputs
         for step in plan {
             let depth = itemDepth[step.item.name] ?? 1
             let color = getColorForBuilding(step.buildingName)
             
-            let node = GraphNode(
+            // Noeud Machine
+            let machineNode = GraphNode(
                 item: step.item,
                 label: "\(String(format: "%.1f", step.machineCount))x \(step.buildingName)",
                 subLabel: step.item.name,
                 recipeName: step.recipe?.name,
-                color: color
+                color: color,
+                type: .machine
             )
+            var tempMachine = machineNode
+            tempMachine.position = CGPoint(x: CGFloat(depth), y: 0)
+            nodes.append(tempMachine)
+            nodeMap[step.item.name] = machineNode.id
             
-            var tempNode = node
-            tempNode.position = CGPoint(x: CGFloat(depth), y: 0)
-            nodes.append(tempNode)
-            nodeMap[step.item.name] = node.id
+            // LOGIQUE CORRIGÉE POUR L'OUTPUT
+            // On affiche un output SI :
+            // 1. C'est un Goal utilisateur (PRIORITÉ)
+            // 2. OU C'est l'item du Sink
+            // 3. OU Ce n'est pas consommé ailleurs (fallback)
+            let isGoal = goalItemNames.contains(step.item.name)
+            let isSink = (step.item.name == sinkItemName)
+            let isNotConsumed = !consumedItems.contains(step.item.name)
+            
+            if isGoal || isSink || isNotConsumed {
+                
+                // Calculer combien part vers la sortie
+                // Si c'est un goal, on prend le ratio demandé * multiplicateur (approximatif ici, ou on affiche tout)
+                // Pour simplifier graphiquement : On affiche le total produit par la machine comme dispo en sortie
+                // (Même si une partie part vers une autre machine, c'est visuellement acceptable de voir une sortie "Tiges" ET un lien vers "Assembler")
+                
+                let outputNode = GraphNode(
+                    item: step.item,
+                    label: isSink && !isGoal ? "SINK OVERFLOW" : "FINAL PRODUCT",
+                    subLabel: step.item.name,
+                    recipeName: nil, // Pas de recette pour une boite de sortie
+                    color: isSink && !isGoal ? Color.purple : Color.ficsitOrange,
+                    type: .output
+                )
+                
+                var tempOutput = outputNode
+                tempOutput.position = CGPoint(x: CGFloat(depth + 1), y: 0)
+                nodes.append(tempOutput)
+                
+                // Lien Machine -> Output
+                let link = GraphLink(
+                    fromNodeID: machineNode.id,
+                    toNodeID: outputNode.id,
+                    rate: step.totalRate, // On affiche le débit total sortant
+                    itemName: step.item.name,
+                    color: getColorForResource(step.item.name)
+                )
+                links.append(link)
+            }
         }
         
-        // 3. CRÉATION DES LIENS
+        // 4. LIENS ENTRE MACHINES
         for step in plan {
-            guard let recipe = step.recipe else { continue }
-            guard let targetID = nodeMap[step.item.name] else { continue }
-            
+            guard let recipe = step.recipe, let targetID = nodeMap[step.item.name] else { continue }
             for (ingName, ingRatePerMachine) in recipe.ingredients {
                 if let sourceID = nodeMap[ingName] {
-                    let totalLinkRate = ingRatePerMachine * step.machineCount
                     let link = GraphLink(
                         fromNodeID: sourceID,
                         toNodeID: targetID,
-                        rate: totalLinkRate,
+                        rate: ingRatePerMachine * step.machineCount,
                         itemName: ingName,
                         color: getColorForResource(ingName)
                     )
@@ -91,30 +137,29 @@ class GraphEngine {
             }
         }
         
-        // 4. POSITIONNEMENT FINAL OPTIMISÉ
+        // 5. POSITIONS (Tri)
         let maxDepth = (nodes.map { Int($0.position.x) }.max() ?? 0)
         var finalNodes = nodes
         
-        // Espacements augmentés pour réduire le chevauchement
-        let columnWidth: CGFloat = 350
-        let rowHeight: CGFloat = 200
+        let columnWidth: CGFloat = 350; let rowHeight: CGFloat = 200
         
         for d in 0...maxDepth {
             let colIndices = finalNodes.indices.filter { Int(finalNodes[$0].position.x) == d }
-            
-            // TRI : On groupe par nom d'item pour éviter les croisements !
             let sortedIndices = colIndices.sorted {
-                finalNodes[$0].item.name < finalNodes[$1].item.name
+                let n1 = finalNodes[$0]; let n2 = finalNodes[$1]
+                if n1.type == n2.type { return n1.item.name < n2.item.name }
+                // Ordre : Input > Machine > Output
+                let typeScore: (GraphNodeType) -> Int = { t in switch t { case .input: return 0; case .machine: return 1; case .output: return 2 } }
+                return typeScore(n1.type) < typeScore(n2.type)
             }
             
-            // Centrage vertical
-            let totalHeight = CGFloat(sortedIndices.count) * rowHeight
-            let startY = max(100, (1000 - totalHeight) / 2)
+            let totalH = CGFloat(sortedIndices.count) * rowHeight
+            let startY = max(100, (1000 - totalH) / 2)
             
-            for (i, nodeIndex) in sortedIndices.enumerated() {
+            for (i, idx) in sortedIndices.enumerated() {
                 let xPx = CGFloat(d) * columnWidth + 100
                 let yPx = startY + CGFloat(i) * rowHeight
-                finalNodes[nodeIndex].position = CGPoint(x: xPx, y: yPx)
+                finalNodes[idx].position = CGPoint(x: xPx, y: yPx)
             }
         }
         

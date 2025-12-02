@@ -60,7 +60,6 @@ struct ProductionItem: Identifiable, Hashable, Codable {
     var id: UUID = UUID()
     let name: String
     let category: String
-    // Propriété critique pour l'algo Sink (Mise à 0 par défaut si absente du JSON)
     var sinkValue: Int = 0
 }
 
@@ -99,7 +98,6 @@ struct PowerResult {
     let waterExtractors: Double
 }
 
-// NOUVEAU : Résultat de l'optimisation SINK
 struct SinkResult {
     let bestItem: ProductionItem
     let producedAmount: Double
@@ -124,7 +122,15 @@ struct ProjectData: Codable, Identifiable {
     var fuelAmount: String
 }
 
-// Graph
+// MARK: - GRAPH MODELS (MODIFIÉ)
+
+// Nouveau : Type de noeud pour l'affichage
+enum GraphNodeType {
+    case input      // Ressource (Gauche)
+    case machine    // Machine (Milieu)
+    case output     // Produit Final (Droite)
+}
+
 struct GraphNode: Identifiable {
     let id = UUID()
     let item: ProductionItem
@@ -132,6 +138,10 @@ struct GraphNode: Identifiable {
     let subLabel: String
     let recipeName: String?
     let color: Color
+    
+    // Nouveau type
+    let type: GraphNodeType
+    
     var position: CGPoint = .zero
     static let width: CGFloat = 180
     static let height: CGFloat = 90

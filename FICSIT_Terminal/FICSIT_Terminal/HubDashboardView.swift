@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HubDashboardView: View {
     @ObservedObject var viewModel: CalculatorViewModel
-    @State private var animate = false
+    @State private var animateStats = false
     
     var body: some View {
         NavigationView {
@@ -10,118 +10,134 @@ struct HubDashboardView: View {
                 FicsitBackground()
                 
                 ScrollView {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 25) {
+                        
                         // HEADER
-                        HStack(alignment: .bottom) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("EMPLOYEE #8294")
-                                    .font(.system(size: 10, design: .monospaced))
-                                    .foregroundColor(.gray)
+                        HStack {
+                            VStack(alignment: .leading, spacing: 5) {
+                                Text("WELCOME, PIONEER")
+                                    .font(.system(.caption, design: .monospaced))
+                                    .foregroundColor(.ficsitOrange)
+                                    .tracking(2)
+                                
                                 Text(viewModel.currentProjectName.uppercased())
-                                    .font(.system(size: 24, weight: .black, design: .monospaced))
+                                    .font(.system(.title, design: .monospaced))
+                                    .fontWeight(.heavy)
                                     .foregroundColor(.white)
                             }
                             Spacer()
-                            Image(systemName: "hexagon.fill")
-                                .font(.system(size: 40))
-                                .foregroundColor(.ficsitOrange)
-                                .overlay(Image(systemName: "person.fill").foregroundColor(.black).font(.caption))
-                        }
-                        .padding()
-                        
-                        // MAIN STATS GRID
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
-                            // Energy Card
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Image(systemName: "bolt.fill").foregroundColor(.yellow)
-                                    Text("GRID").font(.system(size: 10, design: .monospaced)).foregroundColor(.gray)
-                                }
-                                Spacer()
-                                let percent = viewModel.powerResult?.totalMW ?? 0 > 0 ? (viewModel.totalPower / viewModel.powerResult!.totalMW) : 0
-                                Text("\(Int(percent * 100))%")
-                                    .font(.system(size: 30, weight: .black, design: .monospaced))
-                                    .foregroundColor(percent > 1 ? .red : .white)
-                                Text("\(Int(viewModel.totalPower)) MW LOAD")
-                                    .font(.system(size: 9, design: .monospaced)).foregroundColor(.gray)
-                            }
-                            .frame(height: 100)
-                            .ficsitCard(borderColor: .yellow)
-                            
-                            // Factory Card
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Image(systemName: "gearshape.2.fill").foregroundColor(.blue)
-                                    Text("FACTORY").font(.system(size: 10, design: .monospaced)).foregroundColor(.gray)
-                                }
-                                Spacer()
-                                Text("\(viewModel.consolidatedPlan.count)")
-                                    .font(.system(size: 30, weight: .black, design: .monospaced))
-                                    .foregroundColor(.white)
-                                Text("ACTIVE STEPS")
-                                    .font(.system(size: 9, design: .monospaced)).foregroundColor(.gray)
-                            }
-                            .frame(height: 100)
-                            .ficsitCard(borderColor: .blue)
+                            Image(systemName: "person.crop.square.fill")
+                                .font(.largeTitle)
+                                .foregroundColor(.ficsitGray)
                         }
                         .padding(.horizontal)
+                        .padding(.top, 20)
                         
-                        // SINK CARD (NOUVEAU)
-                        VStack(alignment: .leading) {
-                            HStack {
-                                Image(systemName: "ticket.fill").foregroundColor(.purple)
-                                Text("AWESOME SINK").font(.system(size: 10, design: .monospaced)).foregroundColor(.gray)
-                            }
-                            Spacer()
-                            if let sink = viewModel.sinkResult {
-                                Text("\(sink.totalPoints)")
-                                    .font(.system(size: 24, weight: .black, design: .monospaced))
-                                    .foregroundColor(.white)
-                                Text("POINTS/MIN")
-                                    .font(.system(size: 9, design: .monospaced)).foregroundColor(.gray)
-                                Text("via \(sink.bestItem.name)")
-                                    .font(.system(size: 8, design: .monospaced)).foregroundColor(.purple)
-                            } else {
-                                Text("0")
-                                    .font(.system(size: 30, weight: .black, design: .monospaced))
-                                    .foregroundColor(.gray)
-                                Text("NO SURPLUS")
-                                    .font(.system(size: 9, design: .monospaced)).foregroundColor(.gray)
-                            }
-                        }
-                        .frame(height: 100)
-                        .ficsitCard(borderColor: .purple)
-                        // ACTIVE GOALS LIST
-                        VStack(alignment: .leading, spacing: 10) {
-                            FicsitHeader(title: "Production Targets", icon: "target")
+                        // DASHBOARD CARDS
+                        VStack(spacing: 15) {
                             
-                            if viewModel.goals.isEmpty {
-                                Text("// NO ACTIVE TARGETS //")
-                                    .font(.system(.caption, design: .monospaced))
-                                    .foregroundColor(.gray)
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(Color.white.opacity(0.03))
-                            } else {
-                                ForEach(viewModel.goals) { goal in
-                                    HStack {
-                                        ItemIcon(item: goal.item, size: 30)
-                                        Text(goal.item.name)
-                                            .font(.system(.subheadline, design: .monospaced))
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.white)
-                                        Spacer()
-                                        Text("x\(String(format: "%.1f", goal.ratio * viewModel.maxBundlesPossible))")
-                                            .font(.system(.body, design: .monospaced))
-                                            .foregroundColor(.ficsitOrange)
+                            // CARTE 1 : STATUT ÉNERGIE
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text("GRID STATUS")
+                                        .font(.system(.caption, design: .monospaced))
+                                        .foregroundColor(.gray)
+                                    
+                                    let load = viewModel.powerResult?.totalMW ?? 0 > 0 ? (viewModel.totalPower / viewModel.powerResult!.totalMW) : 0
+                                    
+                                    Text("\(Int(load * 100))%")
+                                        .font(.system(size: 40, weight: .black, design: .monospaced))
+                                        .foregroundColor(load > 1.0 ? .red : (load > 0.8 ? .yellow : .green))
+                                        .scaleEffect(animateStats ? 1.0 : 0.8)
+                                        .opacity(animateStats ? 1.0 : 0.0)
+                                    
+                                    Text("OPERATIONAL")
+                                        .font(.system(.caption2, design: .monospaced))
+                                        .foregroundColor(.green)
+                                        .padding(4)
+                                        .background(Color.green.opacity(0.2))
+                                        .cornerRadius(4)
+                                }
+                                Spacer()
+                                Image(systemName: "bolt.ring.closed")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(.ficsitOrange.opacity(0.5))
+                            }
+                            .padding()
+                            .background(Color.black.opacity(0.4))
+                            .clipShape(FicsitCardShape(cornerSize: 15))
+                            .overlay(FicsitCardShape(cornerSize: 15).stroke(Color.ficsitOrange, lineWidth: 1))
+                            
+                            // CARTE 2 : PRODUCTION EN COURS
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text("ACTIVE GOALS")
+                                        .font(.system(.caption, design: .monospaced))
+                                        .foregroundColor(.gray)
+                                    
+                                    if viewModel.goals.isEmpty {
+                                        Text("IDLE")
+                                            .font(.system(.title2, design: .monospaced))
+                                            .foregroundColor(.gray)
+                                            .padding(.top, 5)
+                                    } else {
+                                        ForEach(viewModel.goals.prefix(3)) { goal in
+                                            HStack {
+                                                Text("• \(goal.item.name)")
+                                                    .foregroundColor(.white)
+                                                Spacer()
+                                                
+                                                // CORRECTION ICI : On va chercher le VRAI taux calculé
+                                                let realRate = getRealRate(for: goal)
+                                                Text(String(format: "%.1f/m", realRate))
+                                                    .foregroundColor(.ficsitOrange)
+                                            }
+                                            .font(.system(.caption, design: .monospaced))
+                                            .padding(.vertical, 2)
+                                        }
+                                        if viewModel.goals.count > 3 {
+                                            Text("+ \(viewModel.goals.count - 3) more...")
+                                                .font(.caption)
+                                                .foregroundColor(.gray)
+                                        }
                                     }
-                                    .padding(8)
-                                    .background(Color.white.opacity(0.05))
-                                    .cornerRadius(5)
+                                }
+                                Spacer()
+                            }
+                            .padding()
+                            .background(Color.black.opacity(0.4))
+                            .clipShape(FicsitCardShape(cornerSize: 15))
+                            .overlay(FicsitCardShape(cornerSize: 15).stroke(Color.white.opacity(0.2), lineWidth: 1))
+                            
+                            // SINK CARD
+                            VStack(alignment: .leading) {
+                                HStack {
+                                    Image(systemName: "ticket.fill").foregroundColor(.purple)
+                                    Text("AWESOME SINK").font(.system(size: 10, design: .monospaced)).foregroundColor(.gray)
+                                }
+                                Spacer()
+                                if let sink = viewModel.sinkResult {
+                                    Text("\(sink.totalPoints)")
+                                        .font(.system(size: 24, weight: .black, design: .monospaced))
+                                        .foregroundColor(.white)
+                                    Text("POINTS/MIN")
+                                        .font(.system(size: 9, design: .monospaced)).foregroundColor(.gray)
+                                    Text("via \(sink.bestItem.name)")
+                                        .font(.system(size: 8, design: .monospaced)).foregroundColor(.purple)
+                                } else {
+                                    Text("0")
+                                        .font(.system(size: 30, weight: .black, design: .monospaced))
+                                        .foregroundColor(.gray)
+                                    Text("NO SURPLUS")
+                                        .font(.system(size: 9, design: .monospaced)).foregroundColor(.gray)
                                 }
                             }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading) // Alignement gauche forcé
+                            .background(Color.black.opacity(0.4))
+                            .clipShape(FicsitCardShape(cornerSize: 15))
+                            .overlay(FicsitCardShape(cornerSize: 15).stroke(Color.purple, lineWidth: 1))
                         }
-                        .ficsitCard()
                         .padding(.horizontal)
                         
                         // SHORTCUTS
@@ -129,16 +145,19 @@ struct HubDashboardView: View {
                             FicsitHeader(title: "Quick Actions", icon: "command")
                             
                             HStack {
-                                NavigationLink(destination: Text("New Project Flow")) {
+                                Button(action: {
+                                    viewModel.createNewProject()
+                                    HapticManager.shared.thud()
+                                }) {
                                     HStack {
-                                        Image(systemName: "plus")
+                                        Image(systemName: "plus.square.dashed")
                                         Text("New Project")
                                     }
                                 }
                                 .buttonStyle(FicsitButtonStyle(primary: false, color: .gray))
                                 
                                 Button(action: {
-                                    // Action
+                                    // Placeholder pour future feature Notes
                                 }) {
                                     HStack {
                                         Image(systemName: "doc.text")
@@ -153,8 +172,47 @@ struct HubDashboardView: View {
                         Spacer()
                     }
                 }
+                .onAppear {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                        animateStats = true
+                    }
+                }
             }
             .navigationBarHidden(true)
         }
+    }
+    
+    // Helper pour trouver le taux réel dans le plan calculé
+    func getRealRate(for goal: ProductionGoal) -> Double {
+        // On cherche l'étape qui produit l'item du goal
+        if let step = viewModel.consolidatedPlan.first(where: { $0.item.name == goal.item.name }) {
+            return step.totalRate
+        }
+        return 0.0
+    }
+}
+
+// Composant Bouton Dashboard (réintégré si manquant)
+struct DashboardButton: View {
+    let icon: String
+    let label: String
+    let color: Color
+    
+    var body: some View {
+        VStack {
+            Image(systemName: icon)
+                .font(.largeTitle)
+                .foregroundColor(color)
+                .padding(.bottom, 5)
+            Text(label)
+                .font(.system(.caption, design: .monospaced))
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 100)
+        .background(Color.black.opacity(0.4))
+        .clipShape(FicsitCardShape(cornerSize: 10))
+        .overlay(FicsitCardShape(cornerSize: 10).stroke(color.opacity(0.5), lineWidth: 1))
     }
 }

@@ -19,7 +19,7 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             
-            // TAB 0 : THE HUB (Dashboard) - NOUVEAU
+            // TAB 0 : THE HUB (Dashboard)
             HubDashboardView(viewModel: viewModel)
                 .tabItem {
                     Label("HUB", systemImage: "house.fill")
@@ -40,24 +40,24 @@ struct ContentView: View {
                 }
                 .tag(2)
             
-            // TAB 3 : BLUEPRINT
-            FlowChartView(viewModel: viewModel)
-                .tabItem {
-                    Label("Blueprint", systemImage: "map.fill")
-                }
-                .tag(3)
-            
-            // TAB 4 : POWER
+            // TAB 3 : POWER
             PowerPlannerView(viewModel: viewModel)
                 .tabItem {
                     Label("Energy", systemImage: "bolt.fill")
                 }
-                .tag(4)
+                .tag(3)
             
-            // TAB 5 : LIBRARY
+            // TAB 4 : LIBRARY
             RecipeLibraryView(viewModel: viewModel, db: db)
                 .tabItem {
                     Label("M.A.M.", systemImage: "book.fill")
+                }
+                .tag(4)
+            
+            // TAB 5 : FLOW GRAPH
+            FactoryFlowGraphView(viewModel: viewModel, db: db)
+                .tabItem {
+                    Label("Flow", systemImage: "arrow.triangle.branch")
                 }
                 .tag(5)
         }

@@ -43,7 +43,13 @@ struct HubDashboardView: View {
                                         .font(.system(.caption, design: .monospaced))
                                         .foregroundColor(.gray)
                                     
-                                    let load = viewModel.powerResult?.totalMW ?? 0 > 0 ? (viewModel.totalPower / viewModel.powerResult!.totalMW) : 0
+                                    let load: Double = {
+                                        if let powerResult = viewModel.powerResult, powerResult.totalMW > 0 {
+                                            return viewModel.totalPower / powerResult.totalMW
+                                        } else {
+                                            return 0
+                                        }
+                                    }()
                                     
                                     Text("\(Int(load * 100))%")
                                         .font(.system(size: 40, weight: .black, design: .monospaced))
@@ -51,12 +57,26 @@ struct HubDashboardView: View {
                                         .scaleEffect(animateStats ? 1.0 : 0.8)
                                         .opacity(animateStats ? 1.0 : 0.0)
                                     
-                                    Text("OPERATIONAL")
-                                        .font(.system(.caption2, design: .monospaced))
-                                        .foregroundColor(.green)
+                                    if viewModel.isCalculating {
+                                        HStack {
+                                            ProgressView()
+                                                .progressViewStyle(CircularProgressViewStyle(tint: .ficsitOrange))
+                                                .scaleEffect(0.7)
+                                            Text("CALCULATING...")
+                                                .font(.system(.caption2, design: .monospaced))
+                                                .foregroundColor(.ficsitOrange)
+                                        }
                                         .padding(4)
-                                        .background(Color.green.opacity(0.2))
+                                        .background(Color.ficsitOrange.opacity(0.2))
                                         .cornerRadius(4)
+                                    } else {
+                                        Text("OPERATIONAL")
+                                            .font(.system(.caption2, design: .monospaced))
+                                            .foregroundColor(.green)
+                                            .padding(4)
+                                            .background(Color.green.opacity(0.2))
+                                            .cornerRadius(4)
+                                    }
                                 }
                                 Spacer()
                                 Image(systemName: "bolt.ring.closed")

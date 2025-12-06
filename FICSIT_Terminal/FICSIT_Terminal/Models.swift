@@ -132,7 +132,7 @@ enum GraphNodeType {
 }
 
 struct GraphNode: Identifiable {
-    let id = UUID()
+    let id: UUID
     let item: ProductionItem
     let label: String
     let subLabel: String
@@ -145,6 +145,30 @@ struct GraphNode: Identifiable {
     var position: CGPoint = .zero
     static let width: CGFloat = 180
     static let height: CGFloat = 90
+    
+    // Initializer par défaut pour compatibilité
+    init(item: ProductionItem, label: String, subLabel: String, recipeName: String?, color: Color, type: GraphNodeType) {
+        self.id = UUID()
+        self.item = item
+        self.label = label
+        self.subLabel = subLabel
+        self.recipeName = recipeName
+        self.color = color
+        self.type = type
+        self.position = .zero
+    }
+    
+    // Initializer avec ID personnalisé
+    init(id: UUID, item: ProductionItem, label: String, subLabel: String, recipeName: String?, color: Color, type: GraphNodeType, position: CGPoint) {
+        self.id = id
+        self.item = item
+        self.label = label
+        self.subLabel = subLabel
+        self.recipeName = recipeName
+        self.color = color
+        self.type = type
+        self.position = position
+    }
 }
 
 struct GraphLink: Identifiable {
@@ -160,4 +184,74 @@ extension ProductionItem {
     var iconName: String {
         return name.lowercased().replacingOccurrences(of: " ", with: "_").replacingOccurrences(of: "-", with: "_")
     }
+}
+
+// MARK: - ERROR HANDLING
+enum ProductionError: LocalizedError {
+    case noRecipeFound(item: String)
+    case insufficientResources(item: String, needed: [String: Double], available: [String: Double])
+    case circularDependency(items: [String])
+    case invalidRecipe(recipe: String, reason: String)
+    case invalidResource(name: String)
+    case invalidRate(resource: String)
+    case invalidGoal(item: String)
+    case calculationTimeout
+    case invalidInput(message: String)
+    
+    var errorDescription: String? {
+        switch self {
+        case .noRecipeFound(let item):
+            return "Aucune recette trouvée pour \(item). Vérifiez que l'item existe dans la base de données."
+        case .insufficientResources(let item, let needed, let available):
+            let missing = needed.compactMap { (key, value) -> String? in
+                let avail = available[key] ?? 0
+                if value > avail {
+                    return "\(key): besoin \(String(format: "%.1f", value)), disponible \(String(format: "%.1f", avail))"
+                }
+                return nil
+            }
+            return "Ressources insuffisantes pour produire \(item).\nManquant:\n\(missing.joined(separator: "\n"))"
+        case .circularDependency(let items):
+            return "Dépendance circulaire détectée: \(items.joined(separator: " → "))"
+        case .invalidRecipe(let recipe, let reason):
+            return "Recette invalide '\(recipe)': \(reason)"
+        case .invalidResource(let name):
+            return "Ressource invalide: \(name)"
+        case .invalidRate(let resource):
+            return "Taux de production invalide pour \(resource)"
+        case .invalidGoal(let item):
+            return "Objectif invalide: \(item)"
+        case .calculationTimeout:
+            return "Le calcul a pris trop de temps (\(ProductionConfig.maxIterations) itérations). Cela peut indiquer des ressources insuffisantes ou un problème de configuration. Essayez de réduire le nombre d'objectifs ou d'ajouter plus de ressources."
+        case .invalidInput(let message):
+            return "Données d'entrée invalides: \(message)"
+        }
+    }
+    
+    var recoverySuggestion: String? {
+        switch self {
+        case .noRecipeFound:
+            return "Vérifiez que vous avez débloqué les recettes nécessaires dans le M.A.M."
+        case .insufficientResources:
+            return "Ajoutez plus de nœuds de ressources ou réduisez vos objectifs de production."
+        case .circularDependency:
+            return "Vérifiez vos recettes actives. Une recette ne peut pas dépendre d'elle-même."
+        default:
+            return nil
+        }
+    }
+}
+
+// MARK: - CONFIGURATION
+struct ProductionConfig {
+    static let defaultStepSize: Double = 1.0 // Augmenté de 0.1 à 1.0 pour améliorer les performances
+    static let maxIterations: Int = 2000 // Augmenté pour permettre plus d'itérations si nécessaire
+    static let maxDepthIterations: Int = 10
+    static let cacheTimeout: TimeInterval = 300 // 5 minutes
+}
+
+struct GraphConfig {
+    static let columnWidth: CGFloat = 350
+    static let rowHeight: CGFloat = 200
+    static let gridStep: CGFloat = 40
 }

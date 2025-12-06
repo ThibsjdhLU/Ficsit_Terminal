@@ -53,9 +53,19 @@ class GraphEngine {
         // Inputs
         for input in inputs {
             if nodeMap[input.resourceName] == nil {
-                let node = GraphNode(item: ProductionItem(name: input.resourceName, category: "Raw"), label: "Resource Node", subLabel: input.resourceName, recipeName: "\(input.purity.rawValue.capitalized) \(input.miner.rawValue.uppercased())", color: Color.gray, type: .input)
-                var temp = node; temp.position = CGPoint(x: 0, y: 0)
-                nodes.append(temp)
+                // Créer un ID stable basé sur le nom et le type
+                let stableID = UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", (input.resourceName + "_input").hashValue & 0xFFFFFFFFFFFF))") ?? UUID()
+                let node = GraphNode(
+                    id: stableID,
+                    item: ProductionItem(name: input.resourceName, category: "Raw"),
+                    label: "Resource Node",
+                    subLabel: input.resourceName,
+                    recipeName: "\(input.purity.rawValue.capitalized) \(input.miner.rawValue.uppercased())",
+                    color: Color.gray,
+                    type: .input,
+                    position: CGPoint(x: 0, y: 0)
+                )
+                nodes.append(node)
                 nodeMap[input.resourceName] = node.id
             }
         }
@@ -65,18 +75,19 @@ class GraphEngine {
             let depth = itemDepth[step.item.name] ?? 1
             let color = getColorForBuilding(step.buildingName)
             
-            // Noeud Machine
+            // Noeud Machine - ID stable basé sur le nom de l'item et le type
+            let machineNodeID = UUID(uuidString: "00000000-0000-0000-0001-\(String(format: "%012x", (step.item.name + "_machine").hashValue & 0xFFFFFFFFFFFF))") ?? UUID()
             let machineNode = GraphNode(
+                id: machineNodeID,
                 item: step.item,
                 label: "\(String(format: "%.1f", step.machineCount))x \(step.buildingName)",
                 subLabel: step.item.name,
                 recipeName: step.recipe?.name,
                 color: color,
-                type: .machine
+                type: .machine,
+                position: CGPoint(x: CGFloat(depth), y: 0)
             )
-            var tempMachine = machineNode
-            tempMachine.position = CGPoint(x: CGFloat(depth), y: 0)
-            nodes.append(tempMachine)
+            nodes.append(machineNode)
             nodeMap[step.item.name] = machineNode.id
             
             // LOGIQUE CORRIGÉE POUR L'OUTPUT
@@ -95,20 +106,22 @@ class GraphEngine {
                 // Pour simplifier graphiquement : On affiche le total produit par la machine comme dispo en sortie
                 // (Même si une partie part vers une autre machine, c'est visuellement acceptable de voir une sortie "Tiges" ET un lien vers "Assembler")
                 
+                // Output Node - ID stable basé sur le nom de l'item et le type
+                let outputNodeID = UUID(uuidString: "00000000-0000-0000-0002-\(String(format: "%012x", (step.item.name + "_output").hashValue & 0xFFFFFFFFFFFF))") ?? UUID()
                 let outputNode = GraphNode(
+                    id: outputNodeID,
                     item: step.item,
                     label: isSink && !isGoal ? "SINK OVERFLOW" : "FINAL PRODUCT",
                     subLabel: step.item.name,
                     recipeName: nil, // Pas de recette pour une boite de sortie
                     color: isSink && !isGoal ? Color.purple : Color.ficsitOrange,
-                    type: .output
+                    type: .output,
+                    position: CGPoint(x: CGFloat(depth + 1), y: 0)
                 )
-                
-                var tempOutput = outputNode
-                tempOutput.position = CGPoint(x: CGFloat(depth + 1), y: 0)
-                nodes.append(tempOutput)
+                nodes.append(outputNode)
                 
                 // Lien Machine -> Output
+                // IMPORTANT: Utiliser les IDs des noeuds qui sont DÉJÀ dans la liste nodes
                 let link = GraphLink(
                     fromNodeID: machineNode.id,
                     toNodeID: outputNode.id,
@@ -121,18 +134,37 @@ class GraphEngine {
         }
         
         // 4. LIENS ENTRE MACHINES
+        // IMPORTANT: Créer les liens APRÈS avoir tous les noeuds, mais AVANT de modifier les positions
         for step in plan {
-            guard let recipe = step.recipe, let targetID = nodeMap[step.item.name] else { continue }
+            guard let recipe = step.recipe else { continue }
+            
+            // Trouver le noeud machine cible (celui qui produit l'item)
+            guard let targetMachineNode = nodes.first(where: { 
+                $0.item.name == step.item.name && $0.type == .machine 
+            }) else {
+                print("⚠️ No machine node found for \(step.item.name)")
+                continue
+            }
+            
             for (ingName, ingRatePerMachine) in recipe.ingredients {
-                if let sourceID = nodeMap[ingName] {
+                // Trouver le noeud source (peut être input ou machine)
+                // PRIORITÉ: Prendre le noeud machine s'il existe, sinon l'input
+                let sourceNode = nodes.first(where: { 
+                    $0.item.name == ingName && $0.type == .machine
+                }) ?? nodes.first(where: { 
+                    $0.item.name == ingName && $0.type == .input
+                })
+                
+                if let sourceNode = sourceNode {
                     let link = GraphLink(
-                        fromNodeID: sourceID,
-                        toNodeID: targetID,
+                        fromNodeID: sourceNode.id,
+                        toNodeID: targetMachineNode.id,
                         rate: ingRatePerMachine * step.machineCount,
                         itemName: ingName,
                         color: getColorForResource(ingName)
                     )
                     links.append(link)
+                    
                 }
             }
         }
@@ -141,7 +173,9 @@ class GraphEngine {
         let maxDepth = (nodes.map { Int($0.position.x) }.max() ?? 0)
         var finalNodes = nodes
         
-        let columnWidth: CGFloat = 350; let rowHeight: CGFloat = 200
+        
+        let columnWidth: CGFloat = GraphConfig.columnWidth
+        let rowHeight: CGFloat = GraphConfig.rowHeight
         
         for d in 0...maxDepth {
             let colIndices = finalNodes.indices.filter { Int(finalNodes[$0].position.x) == d }
@@ -167,7 +201,19 @@ class GraphEngine {
         let maxItemsInCol = (0...maxDepth).map { d in nodes.filter { Int($0.position.x) == d }.count }.max() ?? 0
         let maxHeight = CGFloat(maxItemsInCol * Int(rowHeight) + 400)
         
-        return GraphLayout(nodes: finalNodes, links: links, contentSize: CGSize(width: maxWidth, height: maxHeight))
+        // FILTRER les liens pour ne garder que ceux dont les noeuds existent
+        let validNodeIDs = Set(finalNodes.map { $0.id })
+        let validLinks = links.filter { link in
+            validNodeIDs.contains(link.fromNodeID) && validNodeIDs.contains(link.toNodeID)
+        }
+        
+        if validLinks.count != links.count {
+            print("⚠️ Filtered out \(links.count - validLinks.count) invalid links")
+            print("   Valid node IDs: \(validNodeIDs)")
+            print("   Invalid link IDs: \(Set(links.map { $0.fromNodeID }).union(Set(links.map { $0.toNodeID })).subtracting(validNodeIDs))")
+        }
+        
+        return GraphLayout(nodes: finalNodes, links: validLinks, contentSize: CGSize(width: maxWidth, height: maxHeight))
     }
     
     func getColorForBuilding(_ name: String) -> Color {
@@ -182,13 +228,18 @@ class GraphEngine {
     
     func getColorForResource(_ name: String) -> Color {
         let n = name.lowercased()
-        if n.contains("iron") { return Color.gray }
-        if n.contains("copper") || n.contains("wire") || n.contains("cable") { return Color(red: 0.8, green: 0.5, blue: 0.2) }
-        if n.contains("caterium") || n.contains("quickwire") { return Color.yellow }
-        if n.contains("coal") || n.contains("steel") { return Color.black }
-        if n.contains("concrete") || n.contains("limestone") { return Color.gray.opacity(0.5) }
-        if n.contains("screw") { return Color.blue.opacity(0.6) }
-        if n.contains("plastic") || n.contains("rubber") { return Color.purple }
-        return Color.ficsitOrange
+        // Couleurs harmonieuses et saturées pour meilleure visibilité
+        if n.contains("iron") { return Color(red: 0.35, green: 0.35, blue: 0.45) } // Gris acier
+        if n.contains("copper") || n.contains("wire") || n.contains("cable") { return Color(red: 0.95, green: 0.65, blue: 0.25) } // Orange cuivre chaud
+        if n.contains("caterium") || n.contains("quickwire") { return Color(red: 1.0, green: 0.85, blue: 0.1) } // Or
+        if n.contains("coal") || n.contains("steel") { return Color(red: 0.15, green: 0.15, blue: 0.2) } // Noir charbon
+        if n.contains("concrete") || n.contains("limestone") { return Color(red: 0.65, green: 0.65, blue: 0.7) } // Gris béton
+        if n.contains("screw") { return Color(red: 0.25, green: 0.5, blue: 0.95) } // Bleu acier
+        if n.contains("plastic") || n.contains("rubber") { return Color(red: 0.75, green: 0.35, blue: 0.95) } // Violet vif
+        if n.contains("oil") || n.contains("fuel") { return Color(red: 0.25, green: 0.25, blue: 0.3) } // Gris pétrole
+        if n.contains("water") { return Color(red: 0.25, green: 0.6, blue: 0.95) } // Bleu océan
+        if n.contains("plate") { return Color(red: 0.5, green: 0.5, blue: 0.6) } // Gris métallique
+        if n.contains("rod") { return Color(red: 0.45, green: 0.45, blue: 0.55) } // Gris tige
+        return Color(red: 1.0, green: 0.65, blue: 0.35) // Orange FICSIT
     }
 }

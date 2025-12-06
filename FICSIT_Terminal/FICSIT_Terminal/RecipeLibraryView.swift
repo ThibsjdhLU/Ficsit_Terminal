@@ -12,7 +12,7 @@ struct RecipeLibraryView: View {
         let unique = Set(flattened)
         let sorted = unique.sorted()
         let filtered = sorted.filter { itemName in
-            let recipesForItem: [Recipe] = db.getRecipes(producing: itemName)
+            let recipesForItem: [Recipe] = db.getRecipesOptimized(producing: itemName)
             return recipesForItem.count > 1
         }
         return filtered
@@ -30,7 +30,7 @@ struct RecipeLibraryView: View {
                         ForEach(itemsWithChoices, id: \.self) { itemName in
                             DisclosureGroup(
                                 content: {
-                                    ForEach(db.getRecipes(producing: itemName)) { recipe in
+                                    ForEach(db.getRecipesOptimized(producing: itemName)) { recipe in
                                         HStack {
                                             // BOUTON SELECTION
                                             Button(action: {

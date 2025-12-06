@@ -19,13 +19,8 @@ struct InputView: View {
                     
                     ScrollView {
                         VStack(spacing: 20) {
-                            // GROS BOUTON
                             addNodeButton
-                            
-                            // LISTE
                             listSection
-                            
-                            // BELT
                             beltSection
                         }
                         .padding(.vertical)
@@ -42,15 +37,25 @@ struct InputView: View {
             .sheet(item: $editingInput) { input in
                 ResourceEditorSheet(viewModel: viewModel, db: db, mode: .edit(input))
             }
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
+                        .foregroundColor(.ficsitOrange)
+                }
+            }
         }
     }
     
-    // SOUS-VUES
+    // --- SOUS-VUES ---
     
     private var headerView: some View {
         HStack {
             Button(action: { showProjectManager = true }) { Image(systemName: "folder.fill").font(.title2).foregroundColor(.gray) }
-            Spacer(); Text("RESOURCE SURVEY").font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange); Spacer(); Image(systemName: "folder.fill").font(.title2).opacity(0)
+            Spacer()
+            Text("RESOURCE SURVEY").font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
+            Spacer()
+            Image(systemName: "folder.fill").font(.title2).opacity(0)
         }.padding().background(Color.black.opacity(0.5))
     }
     
@@ -78,22 +83,37 @@ struct InputView: View {
                 .frame(maxWidth: .infinity).padding(.vertical, 30).background(Color.white.opacity(0.02)).cornerRadius(10)
             } else {
                 ForEach(viewModel.userInputs) { input in
-                    Button(action: { editingInput = input }) {
-                        HStack {
-                            ItemIcon(item: ProductionItem(name: input.resourceName, category: "Raw", sinkValue: 0), size: 40)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(input.resourceName).font(.system(.headline, design: .monospaced)).foregroundColor(.white)
-                                HStack {
-                                    Text(input.purity.rawValue.capitalized).font(.caption).padding(4).background(getPurityColor(input.purity).opacity(0.3)).cornerRadius(4)
-                                    Text(input.miner.rawValue.uppercased()).font(.caption).padding(4).background(Color.gray.opacity(0.3)).cornerRadius(4)
-                                }.foregroundColor(.white)
+                    HStack {
+                        Button(action: { editingInput = input }) {
+                            HStack {
+                                ItemIcon(item: ProductionItem(name: input.resourceName, category: "Raw", sinkValue: 0), size: 40)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(input.resourceName).font(.system(.headline, design: .monospaced)).foregroundColor(.white)
+                                    HStack {
+                                        Text(input.purity.rawValue.capitalized).font(.caption).padding(4).background(getPurityColor(input.purity).opacity(0.3)).cornerRadius(4)
+                                        Text(input.miner.rawValue.uppercased()).font(.caption).padding(4).background(Color.gray.opacity(0.3)).cornerRadius(4)
+                                    }.foregroundColor(.white)
+                                }
+                                Spacer()
+                                Text(verbatim: "\(Int(input.productionRate))/m")
+                                    .font(.system(.title3, design: .monospaced)).fontWeight(.bold).foregroundColor(.ficsitOrange)
                             }
-                            Spacer()
-                            Text("\(Int(input.productionRate))/m").font(.system(.title3, design: .monospaced)).fontWeight(.bold).foregroundColor(.ficsitOrange)
+                            .padding().background(Color(red: 0.15, green: 0.15, blue: 0.17)).cornerRadius(10).overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.1), lineWidth: 1))
                         }
-                        .padding().background(Color(red: 0.15, green: 0.15, blue: 0.17)).cornerRadius(10).overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Button(action: {
+                            if let index = viewModel.userInputs.firstIndex(where: { $0.id == input.id }) {
+                                viewModel.removeInput(at: IndexSet(integer: index))
+                                HapticManager.shared.click()
+                            }
+                        }) {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                                .padding(8)
+                        }
                     }
-                }.onDelete(perform: viewModel.removeInput)
+                }
             }
         }.padding(.horizontal)
     }
@@ -105,7 +125,10 @@ struct InputView: View {
                 HStack(spacing: 10) {
                     ForEach(BeltLevel.allCases) { belt in
                         Button(action: { withAnimation { viewModel.selectedBeltLevel = belt }; HapticManager.shared.click() }) {
-                            VStack { Text("Mk\(belt.rawValue.last!)").fontWeight(.bold); Text("\(Int(belt.speed))").font(.caption) }
+                            VStack {
+                                Text("Mk\(String(belt.rawValue.suffix(1)))").fontWeight(.bold)
+                                Text("\(Int(belt.speed))").font(.caption)
+                            }
                                 .padding(.vertical, 8).padding(.horizontal, 16)
                                 .background(viewModel.selectedBeltLevel == belt ? Color.ficsitOrange : Color.gray.opacity(0.2))
                                 .foregroundColor(viewModel.selectedBeltLevel == belt ? .black : .white).cornerRadius(8)
@@ -121,11 +144,13 @@ struct InputView: View {
     }
 }
 
+// --- MODALE UNIFIÉE ---
 struct ResourceEditorSheet: View {
     @ObservedObject var viewModel: CalculatorViewModel
     @ObservedObject var db: FICSITDatabase
     @Environment(\.presentationMode) var presentationMode
     
+    // RENOMMÉ POUR ÉVITER CONFLIT
     enum EditorMode { case add; case edit(ResourceInput) }
     let mode: EditorMode
     
@@ -162,9 +187,7 @@ struct ResourceEditorSheet: View {
                                 Spacer(); Image(systemName: "chevron.right").foregroundColor(.gray)
                             }.padding().background(Color.white.opacity(0.1)).cornerRadius(10).foregroundColor(.white)
                         }
-                        .sheet(isPresented: $showSearch) {
-                            ItemSelectorView(title: "Select Resource", items: db.items.filter { db.rawResources.contains($0.name) }, selection: $selectedItem)
-                        }
+                        .sheet(isPresented: $showSearch) { ItemSelectorView(title: "Select Resource", items: db.items.filter { db.rawResources.contains($0.name) }, selection: $selectedItem) }
                     }
                     VStack(alignment: .leading) {
                         Text("NODE PURITY").font(.caption).foregroundColor(.gray)
@@ -195,11 +218,15 @@ struct ResourceEditorSheet: View {
                 }.fontWeight(.bold).foregroundColor(.ficsitOrange)
             )
         }
-        .onChange(of: selectedItem) { _ in if let item = selectedItem { resName = item.name } }
+        .onChange(of: selectedItem) { _, newValue in
+            if let item = newValue {
+                resName = item.name
+            }
+        }
     }
 }
 
-// Extension pour l'égalité de l'enum
+// Correction de l'extension Equatable pour l'enum
 extension ResourceEditorSheet.EditorMode: Equatable {
     static func == (lhs: ResourceEditorSheet.EditorMode, rhs: ResourceEditorSheet.EditorMode) -> Bool {
         switch (lhs, rhs) {

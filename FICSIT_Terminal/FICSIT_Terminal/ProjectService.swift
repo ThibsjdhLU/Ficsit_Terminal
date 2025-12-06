@@ -3,7 +3,12 @@ import Foundation
 class ProjectService {
     static let shared = ProjectService()
     private let fileManager = FileManager.default
-    private var documentsDirectory: URL { fileManager.urls(for: .documentDirectory, in: .userDomainMask).first! }
+    private var documentsDirectory: URL {
+        guard let url = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            fatalError("Unable to access documents directory")
+        }
+        return url
+    }
     
     func saveProject(_ project: ProjectData) {
         let fileName = "\(project.id.uuidString).json"

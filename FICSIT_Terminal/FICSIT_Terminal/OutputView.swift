@@ -3,9 +3,11 @@ import SwiftUI
 struct OutputView: View {
     @ObservedObject var viewModel: CalculatorViewModel
     @ObservedObject var db: FICSITDatabase
-    
-    @State private var showCatalog = false
+    @State private var selectedItem: ProductionItem?
+    @State private var ratioStr: String = "1"
     @State private var showShoppingList = false
+    @State private var showSearchSheet = false
+    @State private var editingGoal: ProductionGoal?
     
     var body: some View {
         NavigationView {
@@ -13,236 +15,197 @@ struct OutputView: View {
                 FicsitBackground()
                 
                 VStack(spacing: 0) {
-                    // HEADER FIXE
-                    HStack {
-                        Text("PRODUCTION LINES")
-                            .font(.system(.title3, design: .monospaced))
-                            .fontWeight(.black)
-                            .foregroundColor(.ficsitOrange)
-                        Spacer()
-                        Button(action: { showShoppingList = true }) {
-                            Image(systemName: "cart.fill")
-                                .padding(8)
-                                .background(Color.ficsitOrange.opacity(0.2))
-                                .clipShape(Circle())
-                        }
+                    // 1. ZONE FIXE
+                    VStack(spacing: 15) {
+                        headerView
+                        inputSection
+                        goalsList
+                        actionButtons
                     }
                     .padding()
-                    .background(Color(red: 0.1, green: 0.1, blue: 0.12).opacity(0.9))
+                    .background(Color(red: 0.1, green: 0.1, blue: 0.12))
+                    .overlay(Rectangle().frame(height: 1).foregroundColor(.white.opacity(0.1)), alignment: .bottom)
                     
-                    // CONTENU
+                    // 2. ZONE SCROLLABLE
                     ScrollView {
-                        VStack(spacing: 20) {
-                            
-                            // LISTE DES OBJECTIFS ACTIFS
-                            if viewModel.goals.isEmpty {
-                                VStack(spacing: 15) {
-                                    Image(systemName: "cube.transparent")
-                                        .font(.system(size: 50))
-                                        .foregroundColor(.gray.opacity(0.5))
-                                    Text("No production goals set.")
-                                        .font(.system(.body, design: .monospaced))
-                                        .foregroundColor(.gray)
-                                    
-                                    Button("OPEN CATALOG") { showCatalog = true }
-                                        .buttonStyle(FicsitButtonStyle())
-                                        .padding(.top)
-                                }
-                                .padding(.vertical, 50)
-                            } else {
-                                VStack(spacing: 12) {
-                                    ForEach(viewModel.goals) { goal in
-                                        GoalRow(goal: goal, viewModel: viewModel)
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                            
-                            // BOUTON D'AJOUT FLOTTANT (si liste non vide)
-                            if !viewModel.goals.isEmpty {
-                                Button(action: { showCatalog = true }) {
-                                    HStack {
-                                        Image(systemName: "plus")
-                                        Text("ADD PRODUCT")
-                                    }
-                                }
-                                .buttonStyle(FicsitButtonStyle(primary: false, color: .gray))
-                                .padding(.top, 10)
-                            }
-                            
-                            Divider().background(Color.gray.opacity(0.3)).padding(.vertical)
-                            
-                            // BOUTON CALCULER
-                            Button(action: {
-                                viewModel.maximizeProduction()
-                                HapticManager.shared.thud()
-                            }) {
-                                HStack {
-                                    Image(systemName: "bolt.fill")
-                                    Text("CALCULATE OPTIMIZATION")
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                            .buttonStyle(FicsitButtonStyle())
-                            .padding(.horizontal)
-                            .disabled(viewModel.goals.isEmpty)
-                            
-                            // RÉSULTATS (OVERVIEW)
-                            if viewModel.maxBundlesPossible > 0 {
-                                ResultsOverview(viewModel: viewModel)
-                                    .padding(.horizontal)
-                                    .padding(.bottom, 50)
-                            }
-                        }
-                        .padding(.vertical)
+                        resultsSection.padding(.vertical)
                     }
                 }
             }
             .navigationBarHidden(true)
-            // SHEET CATALOGUE
-            .sheet(isPresented: $showCatalog) {
-                ProductCatalogSheet(db: db, viewModel: viewModel)
-            }
-            // SHEET SHOPPING
-            .sheet(isPresented: $showShoppingList) {
-                ShoppingListView(viewModel: viewModel)
-            }
-        }
-    }
-}
-
-// LIGNE D'OBJECTIF AVEC STEPPER
-struct GoalRow: View {
-    let goal: ProductionGoal
-    @ObservedObject var viewModel: CalculatorViewModel
-    
-    // Binding local pour le stepper qui met à jour le modèle
-    var ratioBinding: Binding<Double> {
-        Binding(
-            get: { goal.ratio },
-            set: { newVal in
-                var newGoal = goal
-                newGoal.ratio = newVal
-                viewModel.updateGoal(goal: newGoal)
-            }
-        )
-    }
-    
-    var body: some View {
-        HStack {
-            ItemIcon(item: goal.item, size: 40)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text(goal.item.name)
-                    .font(.system(.headline, design: .monospaced))
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                Text(goal.item.category.uppercased())
-                    .font(.system(.caption2, design: .monospaced))
-                    .foregroundColor(.gray)
-            }
-            
-            Spacer()
-            
-            // Stepper Custom
-            FicsitStepper(value: ratioBinding)
-            
-            // Delete
-            Button(action: {
-                if let index = viewModel.goals.firstIndex(where: {$0.id == goal.id}) {
-                    withAnimation { viewModel.removeGoal(at: IndexSet(integer: index)) }
+            .sheet(item: $editingGoal) { goal in EditGoalSheet(goal: goal, viewModel: viewModel) }
+            .sheet(isPresented: $showShoppingList) { ShoppingListView(viewModel: viewModel) }
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }.foregroundColor(.ficsitOrange)
                 }
-            }) {
-                Image(systemName: "trash")
-                    .foregroundColor(.red.opacity(0.7))
-                    .padding(8)
             }
         }
-        .padding()
-        .ficsitCard()
+    }
+    
+    // --- SOUS-VUES ---
+    
+    private var headerView: some View {
+        Text("PRODUCTION MANAGER").font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
+    }
+    
+    private var inputSection: some View {
+        HStack {
+            Button(action: { showSearchSheet = true }) {
+                HStack {
+                    if let item = selectedItem { Text(item.name).foregroundColor(.white).lineLimit(1) } else { Text("Select Part...").foregroundColor(.gray) }
+                    Spacer(); Image(systemName: "magnifyingglass").foregroundColor(.gray)
+                }.padding(10).background(Color.ficsitOrange.opacity(0.2)).cornerRadius(5).overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ficsitOrange, lineWidth: 1))
+            }.sheet(isPresented: $showSearchSheet) { ItemSelectorView(title: "Select Product", items: db.items.filter { $0.category == "Part" }, selection: $selectedItem) }
+            
+            TextField("1.0", text: $ratioStr).keyboardType(.decimalPad).padding(10).frame(width: 70).background(Color.black.opacity(0.5)).overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ficsitOrange, lineWidth: 1)).foregroundColor(.white)
+            
+            Button(action: { if let item = selectedItem, let ratio = Double(ratioStr) { viewModel.addGoal(item: item, ratio: ratio); HapticManager.shared.success() } }) {
+                Image(systemName: "plus").padding().background(Color.ficsitOrange).foregroundColor(.black).cornerRadius(5)
+            }
+        }
+    }
+    
+    private var goalsList: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(viewModel.goals) { goal in
+                    Button(action: { editingGoal = goal }) {
+                        HStack {
+                            Text(goal.item.name).font(.system(.caption, design: .monospaced)).foregroundColor(.white)
+                            Text("x\(String(format: "%.1f", goal.ratio))").font(.system(.caption, design: .monospaced)).fontWeight(.bold).foregroundColor(.ficsitOrange)
+                        }.padding(8).background(Color.gray.opacity(0.3)).cornerRadius(4).overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.3), lineWidth: 1))
+                    }
+                }
+            }.padding(.horizontal, 4)
+        }.frame(height: 40)
+    }
+    
+    private var actionButtons: some View {
+        HStack {
+            Button("CALCULATE") {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                viewModel.maximizeProduction()
+                HapticManager.shared.thud()
+            }
+            .buttonStyle(FicsitButtonStyle())
+            .disabled(viewModel.isCalculating)
+            
+            if viewModel.isCalculating {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .ficsitOrange))
+                    .frame(width: 60)
+            } else {
+                Button(action: { showShoppingList = true }) {
+                    Image(systemName: "cart.fill")
+                }
+                .buttonStyle(FicsitButtonStyle(primary: false, color: .white))
+                .frame(width: 60)
+            }
+        }
+    }
+    
+    private var resultsSection: some View {
+        VStack(spacing: 20) {
+            // Affichage de la progression
+            if viewModel.isCalculating {
+                VStack(spacing: 10) {
+                    ProgressView(value: viewModel.calculationProgress)
+                        .progressViewStyle(LinearProgressViewStyle(tint: .ficsitOrange))
+                    Text(viewModel.calculationStatus)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundColor(.gray)
+                }
+                .padding()
+            }
+            
+            // Affichage des erreurs
+            if let error = viewModel.lastError {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.red)
+                        Text("ERREUR")
+                            .font(.system(.headline, design: .monospaced))
+                            .foregroundColor(.red)
+                    }
+                    Text(error.localizedDescription)
+                        .font(.system(.caption, design: .monospaced))
+                        .foregroundColor(.white)
+                    if let suggestion = error.recoverySuggestion {
+                        Text(suggestion)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundColor(.ficsitOrange)
+                            .padding(.top, 5)
+                    }
+                }
+                .padding()
+                .background(Color.red.opacity(0.2))
+                .cornerRadius(10)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.red, lineWidth: 1))
+            }
+            
+            if !viewModel.consolidatedPlan.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack { Text("POWER DRAW"); Spacer(); Text("\(Int(viewModel.totalPower)) MW").foregroundColor(.yellow) }
+                        .font(.system(.caption, design: .monospaced)).padding().background(Color.black.opacity(0.3))
+                    Divider().background(Color.gray)
+                    
+                    // NOUVEAU : AFFICHER LES VRAIS TAUX DE PRODUCTION
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("REAL OUTPUTS").font(.system(.caption2, design: .monospaced)).fontWeight(.black).foregroundColor(.gray).padding(.top, 5)
+                        ForEach(viewModel.goals) { goal in
+                            HStack {
+                                Text(goal.item.name).font(.system(.caption, design: .monospaced)).foregroundColor(.white)
+                                Spacer()
+                                let realRate = getRealRate(for: goal)
+                                Text(verbatim: "\(String(format: "%.1f", realRate))/m").foregroundColor(.ficsitOrange).font(.system(.body, design: .monospaced)).fontWeight(.bold)
+                            }
+                        }
+                    }.padding()
+                    Divider().background(Color.gray)
+                    
+                    let grouped = Dictionary(grouping: viewModel.consolidatedPlan, by: { $0.buildingName })
+                    ForEach(grouped.keys.sorted(), id: \.self) { buildingName in
+                        VStack(alignment: .leading) {
+                            Text(buildingName.uppercased()).font(.system(.caption2, design: .monospaced)).fontWeight(.black).foregroundColor(.gray).padding(.horizontal).padding(.top, 10)
+                            if let steps = grouped[buildingName] {
+                                ForEach(steps) { step in MachineRow(step: step).padding(.horizontal) }
+                            }
+                        }
+                    }.padding(.bottom)
+                }.background(Color.white.opacity(0.02)).cornerRadius(10).overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.1), lineWidth: 1)).padding(.horizontal)
+            } else if !viewModel.goals.isEmpty {
+                Text("⚠️ Insufficient resources or bottleneck detected.").font(.system(.caption, design: .monospaced)).foregroundColor(.red).padding()
+            }
+        }
+    }
+    
+    func getRealRate(for goal: ProductionGoal) -> Double {
+        if let step = viewModel.consolidatedPlan.first(where: { $0.item.name == goal.item.name }) { return step.totalRate }
+        return 0.0
     }
 }
 
-// CATALOGUE DE PRODUITS
-struct ProductCatalogSheet: View {
-    @ObservedObject var db: FICSITDatabase
+struct EditGoalSheet: View {
+    @State var goal: ProductionGoal
     @ObservedObject var viewModel: CalculatorViewModel
     @Environment(\.presentationMode) var presentationMode
-    @State private var searchText = ""
-    
-    var filteredItems: [ProductionItem] {
-        let parts = db.items.filter { $0.category == "Part" }
-        if searchText.isEmpty { return parts }
-        return parts.filter { $0.name.lowercased().contains(searchText.lowercased()) }
-    }
-    
     var body: some View {
         NavigationView {
             ZStack {
                 Color.ficsitDark.ignoresSafeArea()
-                List {
-                    ForEach(filteredItems) { item in
-                        Button(action: {
-                            viewModel.addGoal(item: item, ratio: 1.0)
-                            HapticManager.shared.success()
-                            presentationMode.wrappedValue.dismiss()
-                        }) {
-                            HStack {
-                                ItemIcon(item: item, size: 32)
-                                Text(item.name).foregroundColor(.white).font(.system(.body, design: .monospaced))
-                                Spacer()
-                                Image(systemName: "plus.circle").foregroundColor(.ficsitOrange)
-                            }
-                        }
-                        .listRowBackground(Color.white.opacity(0.05))
+                Form {
+                    Section(header: Text("Target Ratio")) {
+                        Text(goal.item.name).foregroundColor(.gray)
+                        TextField("Ratio", value: $goal.ratio, format: .number).keyboardType(.decimalPad)
                     }
-                }
-                .listStyle(PlainListStyle())
-                .searchable(text: $searchText, prompt: "Search parts...")
-            }
-            .navigationTitle("Select Product")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button("Close") { presentationMode.wrappedValue.dismiss() })
-        }
-    }
-}
-
-// BLOC RÉSULTATS
-struct ResultsOverview: View {
-    @ObservedObject var viewModel: CalculatorViewModel
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Image(systemName: "bolt.fill").foregroundColor(.yellow)
-                Text("POWER USAGE")
-                Spacer()
-                Text("\(Int(viewModel.totalPower)) MW")
-                    .font(.system(.title3, design: .monospaced))
-                    .fontWeight(.bold)
-                    .foregroundColor(.yellow)
-            }
-            .font(.system(.caption, design: .monospaced))
-            .padding()
-            .background(Color.black.opacity(0.3))
-            
-            Divider().background(Color.gray)
-            
-            let grouped = Dictionary(grouping: viewModel.consolidatedPlan, by: { $0.buildingName })
-            ForEach(grouped.keys.sorted(), id: \.self) { buildingName in
-                VStack(alignment: .leading) {
-                    FicsitHeader(title: buildingName, icon: "gear")
-                        .padding(.horizontal)
-                    
-                    ForEach(grouped[buildingName]!) { step in
-                        MachineRow(step: step)
-                            .padding(.horizontal)
-                            .padding(.bottom, 4)
+                    Section {
+                        Button("Delete Goal") { if let index = viewModel.goals.firstIndex(where: {$0.id == goal.id}) { viewModel.removeGoal(at: IndexSet(integer: index)) }; presentationMode.wrappedValue.dismiss() }.foregroundColor(.red)
                     }
-                }
-                .padding(.top, 8)
-            }
+                }.scrollContentBackground(.hidden).background(Color.ficsitDark)
+            }.navigationTitle("Edit Goal").navigationBarItems(trailing: Button("Save") { viewModel.updateGoal(goal: goal); presentationMode.wrappedValue.dismiss() })
         }
-        .ficsitCard(borderColor: .white.opacity(0.1))
     }
 }

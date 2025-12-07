@@ -16,6 +16,7 @@ class FICSITDatabase: ObservableObject {
     
     // --- STRUCTURES DE DÉCODAGE (Miroir du JSON) ---
     private struct JSONWrapper: Codable {
+        let resources: [JSONItem]? // Ajout pour compatibilité avec le nouveau format
         let items: [JSONItem]
         let buildings: [JSONBuilding]
         let recipes: [JSONRecipe]
@@ -33,6 +34,8 @@ class FICSITDatabase: ObservableObject {
         let type: String
         let powerConsumption: Double
         let buildCost: [String: Int]
+        let dimensions: BuildingDimensions?
+        let ports: [BuildingPort]?
     }
     
     private struct JSONRecipe: Codable {
@@ -57,7 +60,13 @@ class FICSITDatabase: ObservableObject {
             // 4. Convertir en objets App (Mapping)
             
             // A. ITEMS (Correction Sink Value)
-            self.items = decoded.items.map { item in
+            // On combine resources et items si resources existe
+            var allItems = decoded.items
+            if let resources = decoded.resources {
+                allItems.append(contentsOf: resources)
+            }
+
+            self.items = allItems.map { item in
                 ProductionItem(
                     name: item.name,
                     category: item.category,
@@ -67,7 +76,13 @@ class FICSITDatabase: ObservableObject {
             
             // B. BUILDINGS
             self.buildings = decoded.buildings.map { b in
-                Building(name: b.name, powerConsumption: b.powerConsumption, buildCost: b.buildCost)
+                Building(
+                    name: b.name,
+                    powerConsumption: b.powerConsumption,
+                    buildCost: b.buildCost,
+                    dimensions: b.dimensions,
+                    ports: b.ports
+                )
             }
             
             // C. RECIPES

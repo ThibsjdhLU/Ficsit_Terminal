@@ -63,11 +63,32 @@ struct ProductionItem: Identifiable, Hashable, Codable {
     var sinkValue: Int = 0
 }
 
+struct BuildingDimensions: Codable {
+    let width: Double
+    let length: Double
+    let height: Double
+}
+
+enum PortType: String, Codable {
+    case input
+    case output
+}
+
+struct BuildingPort: Codable {
+    let id: String
+    let type: PortType
+    let x: Double
+    let y: Double
+    let z: Double
+}
+
 struct Building: Identifiable, Codable {
     var id: UUID = UUID()
     let name: String
     let powerConsumption: Double
     let buildCost: [String: Int]
+    var dimensions: BuildingDimensions?
+    var ports: [BuildingPort]?
 }
 
 struct Recipe: Identifiable, Codable {

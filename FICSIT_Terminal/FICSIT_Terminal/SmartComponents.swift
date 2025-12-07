@@ -55,7 +55,7 @@ struct MachineRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(step.item.name).font(.headline).foregroundColor(.white)
                 HStack(spacing: 6) {
-                    Text(step.recipe?.name ?? "Default").font(.caption).foregroundColor(.gray)
+                    Text(step.recipe?.name ?? "Défaut").font(.caption).foregroundColor(.gray)
                     if let recipe = step.recipe, recipe.isAlternate {
                         Text("ALT").font(.system(size: 8, weight: .bold)).padding(.horizontal, 4).padding(.vertical, 2).background(Color.blue.opacity(0.8)).foregroundColor(.white).cornerRadius(4)
                     }
@@ -101,10 +101,10 @@ struct ItemSelectorView: View {
                     }
                 }
                 .listStyle(InsetGroupedListStyle())
-                .searchable(text: $searchText, prompt: "Search items...")
+                .searchable(text: $searchText, prompt: "Rechercher...")
             }
             .navigationBarTitle(title, displayMode: .inline)
-            .navigationBarItems(trailing: Button("Cancel") { presentationMode.wrappedValue.dismiss() })
+            .navigationBarItems(trailing: Button("Annuler") { presentationMode.wrappedValue.dismiss() })
         }.accentColor(.ficsitOrange)
     }
 }
@@ -120,21 +120,21 @@ struct RecipeDetailView: View {
             }
             Divider().background(Color.gray)
             HStack {
-                Text("Made in:").foregroundColor(.gray)
+                Text("Fabriqué dans :").foregroundColor(.gray)
                 Text(recipe.machine.name).fontWeight(.bold).foregroundColor(.ficsitOrange)
                 Spacer()
                 Text("\(Int(recipe.machine.powerConsumption)) MW").font(.system(.body, design: .monospaced)).foregroundColor(.yellow)
             }.padding().background(Color.white.opacity(0.05)).cornerRadius(8)
             HStack(alignment: .top) {
                 VStack(alignment: .leading) {
-                    Text("INPUTS / min").font(.caption).foregroundColor(.gray)
+                    Text("ENTRÉES / min").font(.caption).foregroundColor(.gray)
                     ForEach(recipe.ingredients.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
                         HStack { Text("• \(key)"); Spacer(); Text("\(String(format: "%.1f", value))") }.padding(.vertical, 2)
                     }
                 }.frame(maxWidth: .infinity)
                 Divider().background(Color.gray)
                 VStack(alignment: .leading) {
-                    Text("OUTPUTS / min").font(.caption).foregroundColor(.gray)
+                    Text("SORTIES / min").font(.caption).foregroundColor(.gray)
                     ForEach(recipe.products.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
                         HStack { Text("• \(key)"); Spacer(); Text("\(String(format: "%.1f", value))") }.padding(.vertical, 2)
                     }

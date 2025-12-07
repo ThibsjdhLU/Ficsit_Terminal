@@ -65,7 +65,7 @@ struct FactoryLayoutView: View {
             // Overlay UI
             VStack {
                 HStack {
-                    Text("BLUEPRINT: \(plan.name)")
+                    Text("PLAN : \(plan.name)")
                         .font(.system(.headline, design: .monospaced))
                         .padding(8)
                         .background(Color.black.opacity(0.7))
@@ -87,9 +87,9 @@ struct FactoryLayoutView: View {
                 // Legend
                 HStack(spacing: 15) {
                     LegendLabel(color: .orange, text: "Machine")
-                    LegendLabel(color: .gray, text: "Splitter/Merger")
-                    LegendLabel(color: .green, text: "Input")
-                    LegendLabel(color: .red, text: "Output")
+                    LegendLabel(color: .gray, text: "Répartiteur/Groupeur")
+                    LegendLabel(color: .green, text: "Entrée")
+                    LegendLabel(color: .red, text: "Sortie")
                 }
                 .padding()
                 .background(Color.black.opacity(0.8))

@@ -719,7 +719,7 @@ struct ColumnSeparatorsView: View {
                 
                 // Label de niveau avec style amélioré
                 if depth > 0 {
-                    Text("TIER \(depth)")
+                    Text("NIVEAU \(depth)")
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
@@ -739,7 +739,7 @@ struct ColumnSeparatorsView: View {
                             y: 30
                         )
                 } else {
-                    Text("INPUTS")
+                    Text("ENTRÉES")
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(

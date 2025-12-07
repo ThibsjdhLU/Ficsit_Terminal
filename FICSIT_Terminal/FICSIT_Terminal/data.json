@@ -1,24 +1,26 @@
 {
+  "resources": [
+    { "name": "Iron Ore", "category": "Ore", "sinkValue": 1 },
+    { "name": "Copper Ore", "category": "Ore", "sinkValue": 3 },
+    { "name": "Limestone", "category": "Ore", "sinkValue": 2 },
+    { "name": "Coal", "category": "Ore", "sinkValue": 3 },
+    { "name": "Caterium Ore", "category": "Ore", "sinkValue": 7 },
+    { "name": "Raw Quartz", "category": "Ore", "sinkValue": 15 },
+    { "name": "Sulfur", "category": "Ore", "sinkValue": 11 },
+    { "name": "Bauxite", "category": "Ore", "sinkValue": 8 },
+    { "name": "Uranium", "category": "Ore", "sinkValue": 35 },
+    { "name": "Water", "category": "Fluid", "sinkValue": 0 },
+    { "name": "Oil", "category": "Fluid", "sinkValue": 0 },
+    { "name": "Heavy Oil Residue", "category": "Fluid", "sinkValue": 0 },
+    { "name": "Nitrogen Gas", "category": "Fluid", "sinkValue": 0 },
+    { "name": "Sulfuric Acid", "category": "Fluid", "sinkValue": 0 }
+  ],
   "items": [
-    { "name": "Iron Ore", "category": "Raw", "sinkValue": 0 },
-    { "name": "Copper Ore", "category": "Raw", "sinkValue": 0 },
-    { "name": "Limestone", "category": "Raw", "sinkValue": 0 },
-    { "name": "Coal", "category": "Raw", "sinkValue": 0 },
-    { "name": "Water", "category": "Raw", "sinkValue": 0 },
-    { "name": "Oil", "category": "Raw", "sinkValue": 0 },
-    { "name": "Caterium Ore", "category": "Raw", "sinkValue": 0 },
-    { "name": "Raw Quartz", "category": "Raw", "sinkValue": 0 },
-    { "name": "Sulfur", "category": "Raw", "sinkValue": 0 },
-    { "name": "Bauxite", "category": "Raw", "sinkValue": 0 },
-    { "name": "Uranium", "category": "Raw", "sinkValue": 0 },
-    { "name": "Nitrogen Gas", "category": "Raw", "sinkValue": 0 },
-    
-    { "name": "Iron Ingot", "category": "Part", "sinkValue": 2 },
-    { "name": "Copper Ingot", "category": "Part", "sinkValue": 6 },
-    { "name": "Steel Ingot", "category": "Part", "sinkValue": 8 },
-    { "name": "Caterium Ingot", "category": "Part", "sinkValue": 7 },
-    { "name": "Aluminum Ingot", "category": "Part", "sinkValue": 131 },
-    
+    { "name": "Iron Ingot", "category": "Ingot", "sinkValue": 2 },
+    { "name": "Copper Ingot", "category": "Ingot", "sinkValue": 6 },
+    { "name": "Steel Ingot", "category": "Ingot", "sinkValue": 8 },
+    { "name": "Caterium Ingot", "category": "Ingot", "sinkValue": 7 },
+    { "name": "Aluminum Ingot", "category": "Ingot", "sinkValue": 131 },
     { "name": "Concrete", "category": "Part", "sinkValue": 12 },
     { "name": "Iron Plate", "category": "Part", "sinkValue": 6 },
     { "name": "Iron Rod", "category": "Part", "sinkValue": 4 },
@@ -26,60 +28,190 @@
     { "name": "Reinforced Iron Plate", "category": "Part", "sinkValue": 120 },
     { "name": "Wire", "category": "Part", "sinkValue": 6 },
     { "name": "Cable", "category": "Part", "sinkValue": 24 },
+    { "name": "Quickwire", "category": "Part", "sinkValue": 17 },
     { "name": "Copper Sheet", "category": "Part", "sinkValue": 24 },
+    { "name": "Alclad Aluminum Sheet", "category": "Part", "sinkValue": 266 },
+    { "name": "Aluminum Casing", "category": "Part", "sinkValue": 393 },
     { "name": "Steel Beam", "category": "Part", "sinkValue": 64 },
     { "name": "Steel Pipe", "category": "Part", "sinkValue": 24 },
     { "name": "Encased Industrial Beam", "category": "Part", "sinkValue": 632 },
-    { "name": "Rotor", "category": "Part", "sinkValue": 140 },
-    { "name": "Stator", "category": "Part", "sinkValue": 240 },
-    { "name": "Motor", "category": "Part", "sinkValue": 1520 },
     { "name": "Modular Frame", "category": "Part", "sinkValue": 408 },
     { "name": "Heavy Modular Frame", "category": "Part", "sinkValue": 11520 },
     { "name": "Fused Modular Frame", "category": "Part", "sinkValue": 62840 },
-    
+    { "name": "Rotor", "category": "Part", "sinkValue": 140 },
+    { "name": "Stator", "category": "Part", "sinkValue": 240 },
+    { "name": "Motor", "category": "Part", "sinkValue": 1520 },
+    { "name": "Turbo Motor", "category": "Part", "sinkValue": 242720 },
     { "name": "Plastic", "category": "Part", "sinkValue": 75 },
     { "name": "Rubber", "category": "Part", "sinkValue": 60 },
-    { "name": "Fuel", "category": "Part", "sinkValue": 0 },
-    { "name": "Heavy Oil Residue", "category": "Part", "sinkValue": 0 },
-    { "name": "Polymer Resin", "category": "Part", "sinkValue": 12 },
-    { "name": "Alumina Solution", "category": "Part", "sinkValue": 0 },
-    { "name": "Aluminum Scrap", "category": "Part", "sinkValue": 27 },
-    { "name": "Sulfuric Acid", "category": "Part", "sinkValue": 0 },
-    { "name": "Nitric Acid", "category": "Part", "sinkValue": 0 },
-    
+    { "name": "Fuel", "category": "Fluid", "sinkValue": 0 },
     { "name": "Quartz Crystal", "category": "Part", "sinkValue": 50 },
     { "name": "Silica", "category": "Part", "sinkValue": 20 },
-    { "name": "Quickwire", "category": "Part", "sinkValue": 17 },
+    { "name": "Circuit Board", "category": "Part", "sinkValue": 696 },
     { "name": "AI Limiter", "category": "Part", "sinkValue": 920 },
     { "name": "High-Speed Connector", "category": "Part", "sinkValue": 3776 },
-    { "name": "Circuit Board", "category": "Part", "sinkValue": 696 },
     { "name": "Computer", "category": "Part", "sinkValue": 17260 },
     { "name": "Supercomputer", "category": "Part", "sinkValue": 99576 },
-    { "name": "Radio Control Unit", "category": "Part", "sinkValue": 19600 },
     { "name": "Crystal Oscillator", "category": "Part", "sinkValue": 3072 },
-    
-    { "name": "Alclad Aluminum Sheet", "category": "Part", "sinkValue": 266 },
-    { "name": "Aluminum Casing", "category": "Part", "sinkValue": 393 },
+    { "name": "Radio Control Unit", "category": "Part", "sinkValue": 19600 },
     { "name": "Heat Sink", "category": "Part", "sinkValue": 2804 },
     { "name": "Cooling System", "category": "Part", "sinkValue": 12006 },
-    { "name": "Turbo Motor", "category": "Part", "sinkValue": 242720 },
-    
     { "name": "Battery", "category": "Part", "sinkValue": 465 },
     { "name": "Electromagnetic Control Rod", "category": "Part", "sinkValue": 2560 },
-    { "name": "Uranium Fuel Rod", "category": "Part", "sinkValue": 44092 },
+    { "name": "Smart Plating", "category": "Part", "sinkValue": 520 },
+    { "name": "Versatile Framework", "category": "Part", "sinkValue": 1176 },
+    { "name": "Automated Wiring", "category": "Part", "sinkValue": 1440 },
+    { "name": "Modular Engine", "category": "Part", "sinkValue": 9960 },
+    { "name": "Adaptive Control Unit", "category": "Part", "sinkValue": 86120 },
     { "name": "Magnetic Field Generator", "category": "Part", "sinkValue": 15650 },
     { "name": "Thermal Propulsion Rocket", "category": "Part", "sinkValue": 732956 }
   ],
   "buildings": [
-    { "name": "Smelter", "type": "smelter", "powerConsumption": 4, "buildCost": {"Iron Rod": 5, "Wire": 8} },
-    { "name": "Foundry", "type": "smelter", "powerConsumption": 16, "buildCost": {"Modular Frame": 10, "Rotor": 10} },
-    { "name": "Constructor", "type": "constructor", "powerConsumption": 4, "buildCost": {"Reinforced Iron Plate": 2, "Cable": 8} },
-    { "name": "Assembler", "type": "assembler", "powerConsumption": 15, "buildCost": {"Reinforced Iron Plate": 8, "Rotor": 4, "Cable": 10} },
-    { "name": "Manufacturer", "type": "manufacturer", "powerConsumption": 55, "buildCost": {"Heavy Modular Frame": 10, "Computer": 10} },
-    { "name": "Refinery", "type": "refinery", "powerConsumption": 30, "buildCost": {"Motor": 10, "Encased Industrial Beam": 10} },
-    { "name": "Packager", "type": "packager", "powerConsumption": 10, "buildCost": {"Steel Plate": 10, "Rubber": 10} },
-    { "name": "Blender", "type": "blender", "powerConsumption": 75, "buildCost": {"Radio Control Unit": 5, "Aluminum Casing": 20} },
-    { "name": "Particle Accelerator", "type": "particle_accelerator", "powerConsumption": 500, "buildCost": {"Electromagnetic Control Rod": 20, "Fused Modular Frame": 10} }
+    {
+      "name": "Smelter",
+      "type": "smelter",
+      "powerConsumption": 4,
+      "buildCost": { "Iron Rod": 5, "Wire": 8 },
+      "dimensions": { "width": 6, "length": 9, "height": 9 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 3, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 3, "y": 9, "z": 0 }
+      ]
+    },
+    {
+      "name": "Foundry",
+      "type": "smelter",
+      "powerConsumption": 16,
+      "buildCost": { "Modular Frame": 10, "Rotor": 10 },
+      "dimensions": { "width": 10, "length": 9, "height": 9 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 2.5, "y": 0, "z": 0 },
+        { "id": "in2", "type": "input", "x": 7.5, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 5, "y": 9, "z": 0 }
+      ]
+    },
+    {
+      "name": "Constructor",
+      "type": "constructor",
+      "powerConsumption": 4,
+      "buildCost": { "Reinforced Iron Plate": 2, "Cable": 8 },
+      "dimensions": { "width": 8, "length": 10, "height": 8 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 4, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 4, "y": 10, "z": 0 }
+      ]
+    },
+    {
+      "name": "Assembler",
+      "type": "assembler",
+      "powerConsumption": 15,
+      "buildCost": { "Reinforced Iron Plate": 8, "Rotor": 4, "Cable": 10 },
+      "dimensions": { "width": 10, "length": 15, "height": 11 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 2.5, "y": 0, "z": 0 },
+        { "id": "in2", "type": "input", "x": 7.5, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 5, "y": 15, "z": 0 }
+      ]
+    },
+    {
+      "name": "Manufacturer",
+      "type": "manufacturer",
+      "powerConsumption": 55,
+      "buildCost": { "Heavy Modular Frame": 10, "Computer": 10 },
+      "dimensions": { "width": 18, "length": 20, "height": 12 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 3, "y": 0, "z": 0 },
+        { "id": "in2", "type": "input", "x": 7, "y": 0, "z": 0 },
+        { "id": "in3", "type": "input", "x": 11, "y": 0, "z": 0 },
+        { "id": "in4", "type": "input", "x": 15, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 9, "y": 20, "z": 0 }
+      ]
+    },
+    {
+      "name": "Refinery",
+      "type": "refinery",
+      "powerConsumption": 30,
+      "buildCost": { "Motor": 10, "Encased Industrial Beam": 10 },
+      "dimensions": { "width": 10, "length": 20, "height": 21 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 2.5, "y": 0, "z": 0 },
+        { "id": "in2", "type": "input", "x": 7.5, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 2.5, "y": 20, "z": 0 },
+        { "id": "out2", "type": "output", "x": 7.5, "y": 20, "z": 0 }
+      ]
+    },
+    {
+      "name": "Packager",
+      "type": "packager",
+      "powerConsumption": 10,
+      "buildCost": { "Steel Plate": 10, "Rubber": 10 },
+      "dimensions": { "width": 8, "length": 8, "height": 12 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 2, "y": 0, "z": 0 },
+        { "id": "in2", "type": "input", "x": 6, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 2, "y": 8, "z": 0 },
+        { "id": "out2", "type": "output", "x": 6, "y": 8, "z": 0 }
+      ]
+    },
+    {
+      "name": "Blender",
+      "type": "blender",
+      "powerConsumption": 75,
+      "buildCost": { "Radio Control Unit": 5, "Aluminum Casing": 20 },
+      "dimensions": { "width": 18, "length": 16, "height": 15 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 3, "y": 0, "z": 0 },
+        { "id": "in2", "type": "input", "x": 7, "y": 0, "z": 0 },
+        { "id": "in3", "type": "input", "x": 11, "y": 0, "z": 0 },
+        { "id": "in4", "type": "input", "x": 15, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 6, "y": 16, "z": 0 },
+        { "id": "out2", "type": "output", "x": 12, "y": 16, "z": 0 }
+      ]
+    },
+    {
+      "name": "Particle Accelerator",
+      "type": "particle_accelerator",
+      "powerConsumption": 500,
+      "buildCost": { "Electromagnetic Control Rod": 20, "Fused Modular Frame": 10 },
+      "dimensions": { "width": 24, "length": 30, "height": 20 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 8, "y": 0, "z": 0 },
+        { "id": "in2", "type": "input", "x": 16, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 12, "y": 30, "z": 0 }
+      ]
+    },
+    {
+      "name": "Coal Generator",
+      "type": "generator",
+      "powerConsumption": 0,
+      "buildCost": { "Reinforced Iron Plate": 20, "Rotor": 10, "Cable": 30 },
+      "dimensions": { "width": 10, "length": 26, "height": 36 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 5, "y": 0, "z": 0 }
+      ]
+    },
+    {
+      "name": "Fuel Generator",
+      "type": "generator",
+      "powerConsumption": 0,
+      "buildCost": { "Computer": 5, "Heavy Modular Frame": 10, "Motor": 15, "Rubber": 50, "Quickwire": 50 },
+      "dimensions": { "width": 10, "length": 20, "height": 18 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 5, "y": 0, "z": 0 }
+      ]
+    },
+    {
+      "name": "Nuclear Power Plant",
+      "type": "generator",
+      "powerConsumption": 0,
+      "buildCost": { "Concrete": 250, "Heavy Modular Frame": 25, "Supercomputer": 10, "Cable": 200 },
+      "dimensions": { "width": 36, "length": 43, "height": 49 },
+      "ports": [
+        { "id": "in1", "type": "input", "x": 10, "y": 0, "z": 0 },
+        { "id": "in2", "type": "input", "x": 26, "y": 0, "z": 0 },
+        { "id": "out1", "type": "output", "x": 18, "y": 43, "z": 0 }
+      ]
+    }
   ],
   "recipes": [
     {

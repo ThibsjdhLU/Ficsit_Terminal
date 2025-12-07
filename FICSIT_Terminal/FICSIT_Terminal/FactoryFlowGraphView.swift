@@ -1094,6 +1094,8 @@ struct MachineDetailSheet: View {
     @ObservedObject var db: FICSITDatabase
     @Environment(\.presentationMode) var presentationMode
     
+    @State private var showingBlueprint = false
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -1114,6 +1116,24 @@ struct MachineDetailSheet: View {
                         }
                         .padding()
                         
+                        // Blueprint Button
+                        if node.type == .machine, let step = getStep() {
+                            Button(action: { showingBlueprint = true }) {
+                                HStack {
+                                    Image(systemName: "square.dashed")
+                                    Text("VIEW BLUEPRINT")
+                                }
+                                .font(.system(.subheadline, design: .monospaced))
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue.opacity(0.8))
+                                .cornerRadius(8)
+                            }
+                            .padding(.horizontal)
+                        }
+
                         // Recette
                         if let recipe = getRecipe() {
                             VStack(alignment: .leading, spacing: 12) {
@@ -1194,6 +1214,10 @@ struct MachineDetailSheet: View {
     private func getRecipe() -> Recipe? {
         db.getRecipesOptimized(producing: node.item.name).first
     }
+
+    private func getStep() -> ConsolidatedStep? {
+        viewModel.consolidatedPlan.first(where: { $0.item.name == node.item.name })
+    }
 }
 
 // MARK: - Sheet de Détails Lien
@@ -1255,6 +1279,11 @@ struct LinkDetailSheet: View {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .foregroundColor(.ficsitOrange)
+                }
+            }
+            .fullScreenCover(isPresented: $showingBlueprint) {
+                if let step = getStep() {
+                    FactoryLayoutView(plan: ConstructionEngine().generateManifold(for: step, db: db))
                 }
             }
         }

@@ -197,7 +197,11 @@ struct Localization {
         "Upgrade Miner to Mk3": "Améliorer le foreur à Mk3",
         "Increase production of": "Augmenter la production de",
         "Check alternate recipes": "Vérifier les recettes alternatives",
-        "Verify Mk5 belts are used": "Vérifier que les convoyeurs Mk5 sont utilisés"
+        "Verify Mk5 belts are used": "Vérifier que les convoyeurs Mk5 sont utilisés",
+
+        // BLUEPRINT
+        "BLUEPRINT": "PLAN",
+        "Splitter/Merger": "Répartiteur/Groupeur"
     ]
 
     static func translate(_ key: String) -> String {

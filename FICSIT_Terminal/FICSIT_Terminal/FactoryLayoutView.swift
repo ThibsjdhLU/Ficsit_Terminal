@@ -16,13 +16,13 @@ struct FactoryLayoutView: View {
     var body: some View {
         ZStack {
             // Background grid
-            Color(red: 0.1, green: 0.12, blue: 0.15).ignoresSafeArea()
+            Color.ficsitDark.ignoresSafeArea()
 
             GeometryReader { geometry in
                 ZStack {
                     // Infinite Grid Layer
                     GridBackground(spacing: foundationSize)
-                        .opacity(0.3)
+                        .opacity(0.1)
 
                     // Content Layer
                     Canvas { context, size in
@@ -65,19 +65,20 @@ struct FactoryLayoutView: View {
             // Overlay UI
             VStack {
                 HStack {
-                    Text("PLAN : \(plan.name)")
+                    Text("\(Localization.translate("BLUEPRINT")) : \(plan.name)")
                         .font(.system(.headline, design: .monospaced))
                         .padding(8)
                         .background(Color.black.opacity(0.7))
-                        .foregroundColor(.white)
+                        .foregroundColor(.ficsitOrange)
                         .cornerRadius(4)
+                        .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.ficsitOrange, lineWidth: 1))
 
                     Spacer()
 
                     Button(action: { presentationMode.wrappedValue.dismiss() }) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.ficsitGray)
                     }
                 }
                 .padding()
@@ -86,14 +87,15 @@ struct FactoryLayoutView: View {
 
                 // Legend
                 HStack(spacing: 15) {
-                    LegendLabel(color: .orange, text: "Machine")
-                    LegendLabel(color: .gray, text: "Répartiteur/Groupeur")
-                    LegendLabel(color: .green, text: "Entrée")
-                    LegendLabel(color: .red, text: "Sortie")
+                    LegendLabel(color: .ficsitOrange, text: Localization.translate("Machine"))
+                    LegendLabel(color: .ficsitGray, text: Localization.translate("Splitter/Merger"))
+                    LegendLabel(color: .green, text: Localization.translate("Input"))
+                    LegendLabel(color: .ficsitOrange.opacity(0.5), text: Localization.translate("Output"))
                 }
                 .padding()
                 .background(Color.black.opacity(0.8))
                 .cornerRadius(8)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.ficsitOrange.opacity(0.5), lineWidth: 1))
                 .padding(.bottom)
             }
         }
@@ -111,12 +113,12 @@ struct FactoryLayoutView: View {
                 let rect = CGRect(x: x, y: y, width: w, height: l)
 
                 // Body
-                context.fill(Path(rect), with: .color(Color.orange.opacity(0.8)))
+                context.fill(Path(rect), with: .color(Color.ficsitOrange.opacity(0.8)))
                 context.stroke(Path(rect), with: .color(.white), lineWidth: 2)
 
                 // Name
                 context.draw(
-                    Text(item.name).font(.system(size: 10, weight: .bold)).foregroundColor(.black),
+                    Text(Localization.translate(item.name)).font(.system(size: 10, weight: .bold)).foregroundColor(.black),
                     at: CGPoint(x: x + w/2, y: y + l/2)
                 )
 
@@ -134,14 +136,14 @@ struct FactoryLayoutView: View {
         case .splitter:
             let size = 2.0 * metersToPoints
             let rect = CGRect(x: x - size/2, y: y - size/2, width: size, height: size)
-            context.fill(Path(rect), with: .color(Color.gray))
+            context.fill(Path(rect), with: .color(.ficsitGray))
             context.stroke(Path(rect), with: .color(.white), lineWidth: 1)
             context.draw(Text("S").font(.caption).foregroundColor(.white), at: CGPoint(x: x, y: y))
 
         case .merger:
             let size = 2.0 * metersToPoints
             let rect = CGRect(x: x - size/2, y: y - size/2, width: size, height: size)
-            context.fill(Path(rect), with: .color(Color.gray))
+            context.fill(Path(rect), with: .color(.ficsitGray))
             context.stroke(Path(rect), with: .color(.white), lineWidth: 1)
             context.draw(Text("M").font(.caption).foregroundColor(.white), at: CGPoint(x: x, y: y))
 
@@ -158,7 +160,7 @@ struct FactoryLayoutView: View {
                 }
 
                 // Dessiner le convoyeur
-                context.stroke(pathObj, with: .color(Color.yellow.opacity(0.8)), lineWidth: 3)
+                context.stroke(pathObj, with: .color(Color.ficsitOrange.opacity(0.6)), lineWidth: 3)
 
                 // Dessiner les flèches de direction (tous les X points)
                 // (Simplifié pour V1: juste la ligne)
@@ -166,7 +168,7 @@ struct FactoryLayoutView: View {
             } else {
                 // Fallback si pas de chemin
                 let rect = CGRect(x: x - 2, y: y - 2, width: 4, height: 4)
-                context.fill(Path(rect), with: .color(.yellow))
+                context.fill(Path(rect), with: .color(.ficsitOrange))
             }
 
         default:

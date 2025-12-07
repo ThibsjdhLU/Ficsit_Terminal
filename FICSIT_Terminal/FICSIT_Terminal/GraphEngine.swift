@@ -53,15 +53,15 @@ class GraphEngine {
         // Inputs
         for input in inputs {
             if nodeMap[input.resourceName] == nil {
-                // Créer un ID stable basé sur le nom et le type
-                let stableID = UUID(uuidString: "00000000-0000-0000-0000-\(String(format: "%012x", (input.resourceName + "_input").hashValue & 0xFFFFFFFFFFFF))") ?? UUID()
+                // Créer un ID stable via SHA256 (simulé pour la stabilité)
+                let stableID = generateStableUUID(for: input.resourceName + "_input")
                 let node = GraphNode(
                     id: stableID,
                     item: ProductionItem(name: input.resourceName, category: "Raw"),
-                    label: "Resource Node",
-                    subLabel: input.resourceName,
+                    label: Localization.translate("Resource Node"),
+                    subLabel: Localization.translate(input.resourceName),
                     recipeName: "\(input.purity.rawValue.capitalized) \(input.miner.rawValue.uppercased())",
-                    color: Color.gray,
+                    color: .ficsitGray,
                     type: .input,
                     position: CGPoint(x: 0, y: 0)
                 )
@@ -75,14 +75,14 @@ class GraphEngine {
             let depth = itemDepth[step.item.name] ?? 1
             let color = getColorForBuilding(step.buildingName)
             
-            // Noeud Machine - ID stable basé sur le nom de l'item et le type
-            let machineNodeID = UUID(uuidString: "00000000-0000-0000-0001-\(String(format: "%012x", (step.item.name + "_machine").hashValue & 0xFFFFFFFFFFFF))") ?? UUID()
+            // Noeud Machine - ID stable
+            let machineNodeID = generateStableUUID(for: step.item.name + "_machine")
             let machineNode = GraphNode(
                 id: machineNodeID,
                 item: step.item,
-                label: "\(String(format: "%.1f", step.machineCount))x \(step.buildingName)",
-                subLabel: step.item.name,
-                recipeName: step.recipe?.name,
+                label: "\(String(format: "%.1f", step.machineCount))x \(Localization.translate(step.buildingName))",
+                subLabel: Localization.translate(step.item.name),
+                recipeName: step.recipe?.localizedName,
                 color: color,
                 type: .machine,
                 position: CGPoint(x: CGFloat(depth), y: 0)
@@ -91,30 +91,20 @@ class GraphEngine {
             nodeMap[step.item.name] = machineNode.id
             
             // LOGIQUE CORRIGÉE POUR L'OUTPUT
-            // On affiche un output SI :
-            // 1. C'est un Goal utilisateur (PRIORITÉ)
-            // 2. OU C'est l'item du Sink
-            // 3. OU Ce n'est pas consommé ailleurs (fallback)
             let isGoal = goalItemNames.contains(step.item.name)
             let isSink = (step.item.name == sinkItemName)
             let isNotConsumed = !consumedItems.contains(step.item.name)
             
             if isGoal || isSink || isNotConsumed {
-                
-                // Calculer combien part vers la sortie
-                // Si c'est un goal, on prend le ratio demandé * multiplicateur (approximatif ici, ou on affiche tout)
-                // Pour simplifier graphiquement : On affiche le total produit par la machine comme dispo en sortie
-                // (Même si une partie part vers une autre machine, c'est visuellement acceptable de voir une sortie "Tiges" ET un lien vers "Assembler")
-                
-                // Output Node - ID stable basé sur le nom de l'item et le type
-                let outputNodeID = UUID(uuidString: "00000000-0000-0000-0002-\(String(format: "%012x", (step.item.name + "_output").hashValue & 0xFFFFFFFFFFFF))") ?? UUID()
+                // Output Node - ID stable
+                let outputNodeID = generateStableUUID(for: step.item.name + "_output")
                 let outputNode = GraphNode(
                     id: outputNodeID,
                     item: step.item,
-                    label: isSink && !isGoal ? "SINK OVERFLOW" : "FINAL PRODUCT",
-                    subLabel: step.item.name,
-                    recipeName: nil, // Pas de recette pour une boite de sortie
-                    color: isSink && !isGoal ? Color.purple : Color.ficsitOrange,
+                    label: isSink && !isGoal ? Localization.translate("SINK OVERFLOW") : Localization.translate("FINAL PRODUCT"),
+                    subLabel: Localization.translate(step.item.name),
+                    recipeName: nil,
+                    color: isSink && !isGoal ? Color(red: 0.6, green: 0.2, blue: 0.8) : .ficsitOrange,
                     type: .output,
                     position: CGPoint(x: CGFloat(depth + 1), y: 0)
                 )
@@ -216,14 +206,33 @@ class GraphEngine {
         return GraphLayout(nodes: finalNodes, links: validLinks, contentSize: CGSize(width: maxWidth, height: maxHeight))
     }
     
+    // Fonction Helper pour ID Stable
+    private func generateStableUUID(for string: String) -> UUID {
+        // Simple hash DJB2 pour la stabilité (mieux que hashValue qui change)
+        var hash: UInt64 = 5381
+        for char in string.utf8 {
+            hash = ((hash << 5) &+ hash) &+ UInt64(char)
+        }
+        // Construire un UUID valide à partir du hash
+        let p1 = String(format: "%08x", (hash >> 32) & 0xFFFFFFFF)
+        let p2 = String(format: "%04x", (hash >> 16) & 0xFFFF)
+        let p3 = String(format: "%04x", hash & 0xFFFF)
+        // Partie aléatoire (pseudo) pour compléter mais rester déterministe par rapport à l'entrée
+        let p4 = String(format: "%04x", (hash & 0xABCD) )
+        let p5 = String(format: "%012x", hash )
+
+        return UUID(uuidString: "\(p1)-\(p2)-\(p3)-\(p4)-\(p5)") ?? UUID()
+    }
+
     func getColorForBuilding(_ name: String) -> Color {
         let n = name.lowercased()
-        if n.contains("smelter") || n.contains("foundry") { return Color.red.opacity(0.8) }
-        if n.contains("constructor") { return Color.orange.opacity(0.8) }
-        if n.contains("assembler") { return Color.blue.opacity(0.8) }
-        if n.contains("manufacturer") { return Color.purple.opacity(0.8) }
-        if n.contains("refinery") || n.contains("blender") { return Color.green.opacity(0.8) }
-        return Color.gray
+        // Utilisation des couleurs FICSIT modifiées pour différenciation
+        if n.contains("smelter") || n.contains("foundry") { return Color(red: 0.8, green: 0.3, blue: 0.3) } // Rouge FICSIT
+        if n.contains("constructor") { return .ficsitOrange }
+        if n.contains("assembler") { return Color(red: 0.3, green: 0.6, blue: 0.8) } // Bleu Industriel
+        if n.contains("manufacturer") { return Color(red: 0.6, green: 0.3, blue: 0.6) } // Violet
+        if n.contains("refinery") || n.contains("blender") { return Color(red: 0.3, green: 0.7, blue: 0.4) } // Vert Fluide
+        return .ficsitGray
     }
     
     func getColorForResource(_ name: String) -> Color {

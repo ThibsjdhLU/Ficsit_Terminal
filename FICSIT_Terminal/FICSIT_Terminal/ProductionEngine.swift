@@ -121,7 +121,10 @@ class ProductionEngine {
         let baseStepSize = ProductionConfig.defaultStepSize
         let maxIterations = ProductionConfig.maxIterations
         let totalResources = inventory.values.reduce(0, +)
-        let stepSize = max(baseStepSize, min(1.0, totalResources / 100.0))
+        // Correction Critique : stepSize doit être suffisamment grand pour converger
+        // Ancienne formule limitait à 1.0 : max(baseStepSize, min(1.0, totalResources / 100.0))
+        // Nouvelle formule : On prend au moins 1.0, et on augmente si les ressources sont énormes
+        let stepSize = max(1.0, totalResources / 200.0)
         
         var lastInventoryTotal: Double = 0
         var stagnantIterations = 0

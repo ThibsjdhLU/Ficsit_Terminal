@@ -53,11 +53,11 @@ struct MachineRow: View {
         HStack(spacing: 12) {
             ItemIcon(item: step.item, size: 45)
             VStack(alignment: .leading, spacing: 2) {
-                Text(step.item.name).font(.headline).foregroundColor(.white)
+                Text(step.item.localizedName).font(.headline).foregroundColor(.white)
                 HStack(spacing: 6) {
-                    Text(step.recipe?.name ?? "Défaut").font(.caption).foregroundColor(.gray)
+                    Text(step.recipe?.localizedName ?? "Défaut").font(.caption).foregroundColor(.gray)
                     if let recipe = step.recipe, recipe.isAlternate {
-                        Text("ALT").font(.system(size: 8, weight: .bold)).padding(.horizontal, 4).padding(.vertical, 2).background(Color.blue.opacity(0.8)).foregroundColor(.white).cornerRadius(4)
+                        Text("ALT").font(.system(size: 8, weight: .bold)).padding(.horizontal, 4).padding(.vertical, 2).background(Color.ficsitOrange.opacity(0.8)).foregroundColor(.white).cornerRadius(4)
                     }
                 }
             }
@@ -93,7 +93,7 @@ struct ItemSelectorView: View {
                         Button(action: { selection = item; presentationMode.wrappedValue.dismiss() }) {
                             HStack {
                                 ItemIcon(item: item, size: 30)
-                                Text(item.name).foregroundColor(.white)
+                                Text(item.localizedName).foregroundColor(.white)
                                 Spacer()
                                 if selection?.id == item.id { Image(systemName: "checkmark").foregroundColor(.ficsitOrange) }
                             }
@@ -115,13 +115,13 @@ struct RecipeDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
             HStack {
-                Text(recipe.name).font(.title).fontWeight(.black).foregroundColor(.white)
-                if recipe.isAlternate { Text("ALT").font(.caption).fontWeight(.bold).padding(5).background(Color.blue).cornerRadius(5) }
+                Text(recipe.localizedName).font(.title).fontWeight(.black).foregroundColor(.white)
+                if recipe.isAlternate { Text("ALT").font(.caption).fontWeight(.bold).padding(5).background(Color.ficsitOrange).cornerRadius(5) }
             }
             Divider().background(Color.gray)
             HStack {
                 Text("Fabriqué dans :").foregroundColor(.gray)
-                Text(recipe.machine.name).fontWeight(.bold).foregroundColor(.ficsitOrange)
+                Text(recipe.machine.localizedName).fontWeight(.bold).foregroundColor(.ficsitOrange)
                 Spacer()
                 Text("\(Int(recipe.machine.powerConsumption)) MW").font(.system(.body, design: .monospaced)).foregroundColor(.yellow)
             }.padding().background(Color.white.opacity(0.05)).cornerRadius(8)
@@ -129,14 +129,14 @@ struct RecipeDetailView: View {
                 VStack(alignment: .leading) {
                     Text("ENTRÉES / min").font(.caption).foregroundColor(.gray)
                     ForEach(recipe.ingredients.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
-                        HStack { Text("• \(key)"); Spacer(); Text("\(String(format: "%.1f", value))") }.padding(.vertical, 2)
+                        HStack { Text("• \(Localization.translate(key))"); Spacer(); Text("\(String(format: "%.1f", value))") }.padding(.vertical, 2)
                     }
                 }.frame(maxWidth: .infinity)
                 Divider().background(Color.gray)
                 VStack(alignment: .leading) {
                     Text("SORTIES / min").font(.caption).foregroundColor(.gray)
                     ForEach(recipe.products.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
-                        HStack { Text("• \(key)"); Spacer(); Text("\(String(format: "%.1f", value))") }.padding(.vertical, 2)
+                        HStack { Text("• \(Localization.translate(key))"); Spacer(); Text("\(String(format: "%.1f", value))") }.padding(.vertical, 2)
                     }
                 }.frame(maxWidth: .infinity)
             }.padding().background(Color.white.opacity(0.05)).cornerRadius(8)

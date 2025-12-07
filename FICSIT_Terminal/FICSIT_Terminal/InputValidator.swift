@@ -31,7 +31,7 @@ struct InputValidator {
                 throw ProductionError.invalidGoal(item: goal.item.name)
             }
             guard goal.ratio > 0 else {
-                throw ProductionError.invalidInput(message: "Le ratio doit être > 0 pour \(goal.item.name)")
+                throw ProductionError.invalidInput(message: "Le ratio doit être > 0 pour \(Localization.translate(goal.item.name))")
             }
         }
     }
@@ -42,7 +42,7 @@ struct InputValidator {
                 guard recipe.products.keys.contains(itemName) else {
                     throw ProductionError.invalidRecipe(
                         recipe: recipe.name,
-                        reason: "Ne produit pas \(itemName)"
+                        reason: "Ne produit pas \(Localization.translate(itemName))"
                     )
                 }
             }

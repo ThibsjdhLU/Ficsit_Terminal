@@ -61,6 +61,10 @@ struct ProductionItem: Identifiable, Hashable, Codable {
     let name: String
     let category: String
     var sinkValue: Int = 0
+
+    var localizedName: String {
+        Localization.translate(name)
+    }
 }
 
 struct BuildingDimensions: Codable {
@@ -89,6 +93,10 @@ struct Building: Identifiable, Codable {
     let buildCost: [String: Int]
     var dimensions: BuildingDimensions?
     var ports: [BuildingPort]?
+
+    var localizedName: String {
+        Localization.translate(name)
+    }
 }
 
 struct Recipe: Identifiable, Codable {
@@ -98,6 +106,10 @@ struct Recipe: Identifiable, Codable {
     let ingredients: [String: Double]
     let products: [String: Double]
     let isAlternate: Bool
+
+    var localizedName: String {
+        Localization.translate(name)
+    }
 }
 
 // Résultats
@@ -207,6 +219,15 @@ extension ProductionItem {
     }
 }
 
+extension PowerFuel {
+    var localizedName: String {
+        Localization.translate(self.rawValue)
+    }
+    var localizedGeneratorType: String {
+        Localization.translate(self.generatorType)
+    }
+}
+
 // MARK: - ERROR HANDLING
 enum ProductionError: LocalizedError {
     case noRecipeFound(item: String)
@@ -222,26 +243,27 @@ enum ProductionError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noRecipeFound(let item):
-            return "Aucune recette trouvée pour \(item). Vérifiez que l'item existe dans la base de données."
+            return "Aucune recette trouvée pour \(Localization.translate(item)). Vérifiez que l'item existe dans la base de données."
         case .insufficientResources(let item, let needed, let available):
             let missing = needed.compactMap { (key, value) -> String? in
                 let avail = available[key] ?? 0
                 if value > avail {
-                    return "\(key): besoin \(String(format: "%.1f", value)), disponible \(String(format: "%.1f", avail))"
+                    return "\(Localization.translate(key)): besoin \(String(format: "%.1f", value)), disponible \(String(format: "%.1f", avail))"
                 }
                 return nil
             }
-            return "Ressources insuffisantes pour produire \(item).\nManquant:\n\(missing.joined(separator: "\n"))"
+            return "Ressources insuffisantes pour produire \(Localization.translate(item)).\nManquant:\n\(missing.joined(separator: "\n"))"
         case .circularDependency(let items):
-            return "Dépendance circulaire détectée: \(items.joined(separator: " → "))"
+            let translatedItems = items.map { Localization.translate($0) }
+            return "Dépendance circulaire détectée: \(translatedItems.joined(separator: " → "))"
         case .invalidRecipe(let recipe, let reason):
-            return "Recette invalide '\(recipe)': \(reason)"
+            return "Recette invalide '\(Localization.translate(recipe))': \(reason)"
         case .invalidResource(let name):
-            return "Ressource invalide: \(name)"
+            return "Ressource invalide: \(Localization.translate(name))"
         case .invalidRate(let resource):
-            return "Taux de production invalide pour \(resource)"
+            return "Taux de production invalide pour \(Localization.translate(resource))"
         case .invalidGoal(let item):
-            return "Objectif invalide: \(item)"
+            return "Objectif invalide: \(Localization.translate(item))"
         case .calculationTimeout:
             return "Le calcul a pris trop de temps (\(ProductionConfig.maxIterations) itérations). Cela peut indiquer des ressources insuffisantes ou un problème de configuration. Essayez de réduire le nombre d'objectifs ou d'ajouter plus de ressources."
         case .invalidInput(let message):

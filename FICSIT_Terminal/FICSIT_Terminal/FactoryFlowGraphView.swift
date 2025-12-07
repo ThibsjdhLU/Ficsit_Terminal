@@ -83,10 +83,10 @@ struct FactoryFlowGraphView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("BLUEPRINT USINE")
                         .font(.system(.headline, design: .monospaced))
-                        .foregroundColor(.blue.opacity(0.8))
+                        .foregroundColor(.ficsitOrange)
                     Text("Diagramme de Flux")
                         .font(.system(.caption2, design: .monospaced))
-                        .foregroundColor(.gray)
+                        .foregroundColor(.ficsitGray)
                 }
                 
                 Spacer()
@@ -108,13 +108,13 @@ struct FactoryFlowGraphView: View {
                     .cornerRadius(6)
                     .overlay(
                         RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                            .stroke(Color.ficsitOrange.opacity(0.3), lineWidth: 1)
                     )
                     
                     // Machines totales
                     HStack(spacing: 6) {
                         Image(systemName: "gearshape.fill")
-                            .foregroundColor(.blue.opacity(0.7))
+                            .foregroundColor(.ficsitGray)
                             .font(.system(size: 10))
                         Text("\(viewModel.consolidatedPlan.count) machines")
                             .font(.system(size: 10, design: .monospaced))
@@ -224,6 +224,7 @@ struct FactoryFlowGraphView: View {
                             height: graphLayout.contentSize.height * zoomScale
                         )
                         .zIndex(0) // Entre séparateurs et noeuds
+                        .drawingGroup() // OPTIMISATION PERFORMANCE
                         
                         // Labels de débit sur les connexions
                         ForEach(graphLayout.links) { link in
@@ -260,6 +261,7 @@ struct FactoryFlowGraphView: View {
                             }
                         }
                     }
+                    .drawingGroup() // OPTIMISATION PERFORMANCE (RENDERING METAL)
                     .frame(
                         width: graphLayout.contentSize.width * zoomScale,
                         height: graphLayout.contentSize.height * zoomScale
@@ -378,7 +380,7 @@ struct MachineNodeView: View {
                 .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0.5)
             
             // Item name
-            Text(node.item.name)
+            Text(node.item.localizedName)
                 .font(.system(isCompact ? .caption2 : .caption, design: .rounded))
                 .fontWeight(.medium)
                 .foregroundColor(itemColor)
@@ -489,7 +491,7 @@ struct MachineNodeView: View {
         } else if isBottleneck {
             return Color.red.opacity(0.9)
         } else if isOverproducing {
-            return Color.blue.opacity(0.8)
+            return Color.ficsitGray.opacity(0.8)
         } else {
             // Utiliser la couleur du bâtiment avec une opacité harmonieuse
             return node.color.opacity(0.6)
@@ -512,7 +514,7 @@ struct MachineNodeView: View {
         if node.type == .output {
             return Color.ficsitOrange.opacity(0.3)
         } else {
-            return Color.blue.opacity(0.2)
+            return Color.ficsitDark.opacity(0.2)
         }
     }
     
@@ -899,13 +901,13 @@ struct LegendView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("LÉGENDE")
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundColor(.blue.opacity(0.6))
+                .foregroundColor(.ficsitGray)
             
             HStack(spacing: 12) {
-                LegendItem(color: .gray, label: "Entrée")
-                LegendItem(color: .red.opacity(0.8), label: "Fonderie")
-                LegendItem(color: .orange.opacity(0.8), label: "Constructeur")
-                LegendItem(color: .blue.opacity(0.8), label: "Assembleuse")
+                LegendItem(color: .ficsitGray, label: "Entrée")
+                LegendItem(color: Color(red: 0.8, green: 0.3, blue: 0.3), label: "Fonderie")
+                LegendItem(color: .ficsitOrange, label: "Constructeur")
+                LegendItem(color: Color(red: 0.3, green: 0.6, blue: 0.8), label: "Assembleuse")
                 LegendItem(color: .ficsitOrange, label: "Sortie")
             }
         }
@@ -914,7 +916,7 @@ struct LegendView: View {
         .cornerRadius(8)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                .stroke(Color.ficsitOrange.opacity(0.3), lineWidth: 1)
         )
     }
 }

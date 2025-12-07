@@ -47,17 +47,17 @@ struct OutputView: View {
     // --- SOUS-VUES ---
     
     private var headerView: some View {
-        Text("GESTION DE PRODUCTION").font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
+        Text(Localization.translate("PRODUCTION MANAGEMENT")).font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
     }
     
     private var inputSection: some View {
         HStack {
             Button(action: { showSearchSheet = true }) {
                 HStack {
-                    if let item = selectedItem { Text(item.name).foregroundColor(.white).lineLimit(1) } else { Text("Sélectionner Pièce...").foregroundColor(.gray) }
-                    Spacer(); Image(systemName: "magnifyingglass").foregroundColor(.gray)
+                    if let item = selectedItem { Text(item.localizedName).foregroundColor(.white).lineLimit(1) } else { Text(Localization.translate("Select Part...")).foregroundColor(.ficsitGray) }
+                    Spacer(); Image(systemName: "magnifyingglass").foregroundColor(.ficsitGray)
                 }.padding(10).background(Color.ficsitOrange.opacity(0.2)).cornerRadius(5).overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ficsitOrange, lineWidth: 1))
-            }.sheet(isPresented: $showSearchSheet) { ItemSelectorView(title: "Choisir Produit", items: db.items.filter { $0.category == "Part" }, selection: $selectedItem) }
+            }.sheet(isPresented: $showSearchSheet) { ItemSelectorView(title: Localization.translate("Select Part..."), items: db.items.filter { $0.category == "Part" }, selection: $selectedItem) }
             
             TextField("1.0", text: $ratioStr).keyboardType(.decimalPad).padding(10).frame(width: 70).background(Color.black.opacity(0.5)).overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ficsitOrange, lineWidth: 1)).foregroundColor(.white)
             
@@ -73,9 +73,9 @@ struct OutputView: View {
                 ForEach(viewModel.goals) { goal in
                     Button(action: { editingGoal = goal }) {
                         HStack {
-                            Text(goal.item.name).font(.system(.caption, design: .monospaced)).foregroundColor(.white)
+                            Text(goal.item.localizedName).font(.system(.caption, design: .monospaced)).foregroundColor(.white)
                             Text("x\(String(format: "%.1f", goal.ratio))").font(.system(.caption, design: .monospaced)).fontWeight(.bold).foregroundColor(.ficsitOrange)
-                        }.padding(8).background(Color.gray.opacity(0.3)).cornerRadius(4).overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.3), lineWidth: 1))
+                        }.padding(8).background(Color.ficsitGray.opacity(0.3)).cornerRadius(4).overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.white.opacity(0.3), lineWidth: 1))
                     }
                 }
             }.padding(.horizontal, 4)
@@ -84,7 +84,7 @@ struct OutputView: View {
     
     private var actionButtons: some View {
         HStack {
-            Button("CALCULER") {
+            Button(Localization.translate("CALCULATE")) {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 viewModel.maximizeProduction()
                 HapticManager.shared.thud()
@@ -115,7 +115,7 @@ struct OutputView: View {
                         .progressViewStyle(LinearProgressViewStyle(tint: .ficsitOrange))
                     Text(viewModel.calculationStatus)
                         .font(.system(.caption, design: .monospaced))
-                        .foregroundColor(.gray)
+                        .foregroundColor(.ficsitGray)
                 }
                 .padding()
             }
@@ -125,10 +125,10 @@ struct OutputView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.red)
-                        Text("ERREUR")
+                            .foregroundColor(Color(red: 0.8, green: 0.3, blue: 0.3))
+                        Text(Localization.translate("ERROR"))
                             .font(.system(.headline, design: .monospaced))
-                            .foregroundColor(.red)
+                            .foregroundColor(Color(red: 0.8, green: 0.3, blue: 0.3))
                     }
                     Text(error.localizedDescription)
                         .font(.system(.caption, design: .monospaced))
@@ -141,35 +141,35 @@ struct OutputView: View {
                     }
                 }
                 .padding()
-                .background(Color.red.opacity(0.2))
+                .background(Color(red: 0.8, green: 0.3, blue: 0.3).opacity(0.2))
                 .cornerRadius(10)
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.red, lineWidth: 1))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(red: 0.8, green: 0.3, blue: 0.3), lineWidth: 1))
             }
             
             if !viewModel.consolidatedPlan.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
-                    HStack { Text("CONSO ÉLECTRIQUE"); Spacer(); Text("\(Int(viewModel.totalPower)) MW").foregroundColor(.yellow) }
+                    HStack { Text(Localization.translate("POWER USAGE")); Spacer(); Text("\(Int(viewModel.totalPower)) MW").foregroundColor(.yellow) }
                         .font(.system(.caption, design: .monospaced)).padding().background(Color.black.opacity(0.3))
-                    Divider().background(Color.gray)
+                    Divider().background(Color.ficsitGray)
                     
                     // NOUVEAU : AFFICHER LES VRAIS TAUX DE PRODUCTION
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("SORTIES RÉELLES").font(.system(.caption2, design: .monospaced)).fontWeight(.black).foregroundColor(.gray).padding(.top, 5)
+                        Text(Localization.translate("REAL OUTPUTS")).font(.system(.caption2, design: .monospaced)).fontWeight(.black).foregroundColor(.ficsitGray).padding(.top, 5)
                         ForEach(viewModel.goals) { goal in
                             HStack {
-                                Text(goal.item.name).font(.system(.caption, design: .monospaced)).foregroundColor(.white)
+                                Text(goal.item.localizedName).font(.system(.caption, design: .monospaced)).foregroundColor(.white)
                                 Spacer()
                                 let realRate = getRealRate(for: goal)
                                 Text(verbatim: "\(String(format: "%.1f", realRate))/m").foregroundColor(.ficsitOrange).font(.system(.body, design: .monospaced)).fontWeight(.bold)
                             }
                         }
                     }.padding()
-                    Divider().background(Color.gray)
+                    Divider().background(Color.ficsitGray)
                     
                     let grouped = Dictionary(grouping: viewModel.consolidatedPlan, by: { $0.buildingName })
                     ForEach(grouped.keys.sorted(), id: \.self) { buildingName in
                         VStack(alignment: .leading) {
-                            Text(buildingName.uppercased()).font(.system(.caption2, design: .monospaced)).fontWeight(.black).foregroundColor(.gray).padding(.horizontal).padding(.top, 10)
+                            Text(Localization.translate(buildingName).uppercased()).font(.system(.caption2, design: .monospaced)).fontWeight(.black).foregroundColor(.ficsitGray).padding(.horizontal).padding(.top, 10)
                             if let steps = grouped[buildingName] {
                                 ForEach(steps) { step in MachineRow(step: step).padding(.horizontal) }
                             }
@@ -177,7 +177,7 @@ struct OutputView: View {
                     }.padding(.bottom)
                 }.background(Color.white.opacity(0.02)).cornerRadius(10).overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.1), lineWidth: 1)).padding(.horizontal)
             } else if !viewModel.goals.isEmpty {
-                Text("⚠️ Ressources insuffisantes ou goulot d'étranglement détecté.").font(.system(.caption, design: .monospaced)).foregroundColor(.red).padding()
+                Text(Localization.translate("Insufficient resources or bottleneck detected.")).font(.system(.caption, design: .monospaced)).foregroundColor(Color(red: 0.8, green: 0.3, blue: 0.3)).padding()
             }
         }
     }
@@ -197,15 +197,15 @@ struct EditGoalSheet: View {
             ZStack {
                 Color.ficsitDark.ignoresSafeArea()
                 Form {
-                    Section(header: Text("Ratio Cible")) {
-                        Text(goal.item.name).foregroundColor(.gray)
+                    Section(header: Text(Localization.translate("Target Ratio"))) {
+                        Text(goal.item.localizedName).foregroundColor(.ficsitGray)
                         TextField("Ratio", value: $goal.ratio, format: .number).keyboardType(.decimalPad)
                     }
                     Section {
-                        Button("Supprimer Objectif") { if let index = viewModel.goals.firstIndex(where: {$0.id == goal.id}) { viewModel.removeGoal(at: IndexSet(integer: index)) }; presentationMode.wrappedValue.dismiss() }.foregroundColor(.red)
+                        Button(Localization.translate("Delete Goal")) { if let index = viewModel.goals.firstIndex(where: {$0.id == goal.id}) { viewModel.removeGoal(at: IndexSet(integer: index)) }; presentationMode.wrappedValue.dismiss() }.foregroundColor(Color(red: 0.8, green: 0.3, blue: 0.3))
                     }
                 }.scrollContentBackground(.hidden).background(Color.ficsitDark)
-            }.navigationTitle("Modifier Objectif").navigationBarItems(trailing: Button("Sauver") { viewModel.updateGoal(goal: goal); presentationMode.wrappedValue.dismiss() })
+            }.navigationTitle(Localization.translate("Edit Goal")).navigationBarItems(trailing: Button(Localization.translate("Save")) { viewModel.updateGoal(goal: goal); presentationMode.wrappedValue.dismiss() })
         }
     }
 }

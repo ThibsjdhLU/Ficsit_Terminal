@@ -51,9 +51,9 @@ struct InputView: View {
     
     private var headerView: some View {
         HStack {
-            Button(action: { showProjectManager = true }) { Image(systemName: "folder.fill").font(.title2).foregroundColor(.gray) }
+            Button(action: { showProjectManager = true }) { Image(systemName: "folder.fill").font(.title2).foregroundColor(.ficsitGray) }
             Spacer()
-            Text("SURVEY RESSOURCES").font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
+            Text(Localization.translate("RESOURCE SURVEY")).font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
             Spacer()
             Image(systemName: "folder.fill").font(.title2).opacity(0)
         }.padding().background(Color.black.opacity(0.5))
@@ -63,7 +63,7 @@ struct InputView: View {
         Button(action: { showAddSheet = true; HapticManager.shared.click() }) {
             HStack {
                 Image(systemName: "plus.circle.fill").font(.title2)
-                Text("AJOUTER UN NOEUD").font(.system(.headline, design: .monospaced)).fontWeight(.bold)
+                Text(Localization.translate("ADD NODE")).font(.system(.headline, design: .monospaced)).fontWeight(.bold)
             }
             .frame(maxWidth: .infinity).padding()
             .background(Color.ficsitOrange.opacity(0.1)).cornerRadius(10)
@@ -74,11 +74,11 @@ struct InputView: View {
     
     private var listSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            FicsitHeader(title: "Noeuds Revendiqués", icon: "mappin.and.ellipse")
+            FicsitHeader(title: Localization.translate("Claimed Nodes"), icon: "mappin.and.ellipse")
             if viewModel.userInputs.isEmpty {
                 VStack(spacing: 15) {
-                    Image(systemName: "magnifyingglass.circle").font(.system(size: 40)).foregroundColor(.gray)
-                    Text("Aucune ressource scannée.").font(.system(.caption, design: .monospaced)).foregroundColor(.gray)
+                    Image(systemName: "magnifyingglass.circle").font(.system(size: 40)).foregroundColor(.ficsitGray)
+                    Text(Localization.translate("No scanned resources.")).font(.system(.caption, design: .monospaced)).foregroundColor(.ficsitGray)
                 }
                 .frame(maxWidth: .infinity).padding(.vertical, 30).background(Color.white.opacity(0.02)).cornerRadius(10)
             } else {
@@ -88,17 +88,17 @@ struct InputView: View {
                             HStack {
                                 ItemIcon(item: ProductionItem(name: input.resourceName, category: "Raw", sinkValue: 0), size: 40)
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(input.resourceName).font(.system(.headline, design: .monospaced)).foregroundColor(.white)
+                                    Text(Localization.translate(input.resourceName)).font(.system(.headline, design: .monospaced)).foregroundColor(.white)
                                     HStack {
                                         Text(input.purity.rawValue.capitalized).font(.caption).padding(4).background(getPurityColor(input.purity).opacity(0.3)).cornerRadius(4)
-                                        Text(input.miner.rawValue.uppercased()).font(.caption).padding(4).background(Color.gray.opacity(0.3)).cornerRadius(4)
+                                        Text(input.miner.rawValue.uppercased()).font(.caption).padding(4).background(Color.ficsitGray.opacity(0.3)).cornerRadius(4)
                                     }.foregroundColor(.white)
                                 }
                                 Spacer()
                                 Text(verbatim: "\(Int(input.productionRate))/m")
                                     .font(.system(.title3, design: .monospaced)).fontWeight(.bold).foregroundColor(.ficsitOrange)
                             }
-                            .padding().background(Color(red: 0.15, green: 0.15, blue: 0.17)).cornerRadius(10).overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.1), lineWidth: 1))
+                            .padding().background(Color.ficsitDark).cornerRadius(10).overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.1), lineWidth: 1))
                         }
                         .buttonStyle(PlainButtonStyle())
                         
@@ -109,7 +109,7 @@ struct InputView: View {
                             }
                         }) {
                             Image(systemName: "trash")
-                                .foregroundColor(.red)
+                                .foregroundColor(Color(red: 0.8, green: 0.3, blue: 0.3))
                                 .padding(8)
                         }
                     }
@@ -120,7 +120,7 @@ struct InputView: View {
     
     private var beltSection: some View {
         VStack {
-            FicsitHeader(title: "Niveau de Convoyeur", icon: "speedometer")
+            FicsitHeader(title: Localization.translate("Belt Level"), icon: "speedometer")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(BeltLevel.allCases) { belt in
@@ -130,7 +130,7 @@ struct InputView: View {
                                 Text("\(Int(belt.speed))").font(.caption)
                             }
                                 .padding(.vertical, 8).padding(.horizontal, 16)
-                                .background(viewModel.selectedBeltLevel == belt ? Color.ficsitOrange : Color.gray.opacity(0.2))
+                                .background(viewModel.selectedBeltLevel == belt ? Color.ficsitOrange : Color.ficsitGray.opacity(0.2))
                                 .foregroundColor(viewModel.selectedBeltLevel == belt ? .black : .white).cornerRadius(8)
                         }
                     }
@@ -180,34 +180,34 @@ struct ResourceEditorSheet: View {
                 Color.ficsitDark.ignoresSafeArea()
                 VStack(spacing: 25) {
                     VStack(alignment: .leading) {
-                        Text("TYPE DE RESSOURCE").font(.caption).foregroundColor(.gray)
+                        Text(Localization.translate("RESOURCE TYPE")).font(.caption).foregroundColor(.ficsitGray)
                         Button(action: { showSearch = true }) {
                             HStack {
-                                if let item = selectedItem { ItemIcon(item: item, size: 30); Text(item.name).font(.title3).fontWeight(.bold) }
-                                Spacer(); Image(systemName: "chevron.right").foregroundColor(.gray)
+                                if let item = selectedItem { ItemIcon(item: item, size: 30); Text(item.localizedName).font(.title3).fontWeight(.bold) }
+                                Spacer(); Image(systemName: "chevron.right").foregroundColor(.ficsitGray)
                             }.padding().background(Color.white.opacity(0.1)).cornerRadius(10).foregroundColor(.white)
                         }
-                        .sheet(isPresented: $showSearch) { ItemSelectorView(title: "Choisir Ressource", items: db.items.filter { db.rawResources.contains($0.name) }, selection: $selectedItem) }
+                        .sheet(isPresented: $showSearch) { ItemSelectorView(title: Localization.translate("Select Resource"), items: db.items.filter { db.rawResources.contains($0.name) }, selection: $selectedItem) }
                     }
                     VStack(alignment: .leading) {
-                        Text("PURETÉ DU NOEUD").font(.caption).foregroundColor(.gray)
+                        Text(Localization.translate("NODE PURITY")).font(.caption).foregroundColor(.ficsitGray)
                         Picker("Purity", selection: $purity) { ForEach(NodePurity.allCases) { p in Text(p.rawValue.capitalized).tag(p) } }.pickerStyle(SegmentedPickerStyle()).colorMultiply(.ficsitOrange)
                     }
                     VStack(alignment: .leading) {
-                        Text("NIVEAU DE MINEUR").font(.caption).foregroundColor(.gray)
+                        Text(Localization.translate("MINER LEVEL")).font(.caption).foregroundColor(.ficsitGray)
                         Picker("Miner", selection: $miner) { ForEach(MinerLevel.allCases) { m in Text(m.rawValue.uppercased()).tag(m) } }.pickerStyle(SegmentedPickerStyle()).colorMultiply(.ficsitOrange)
                     }
-                    Divider().background(Color.gray)
+                    Divider().background(Color.ficsitGray)
                     HStack {
-                        Text("DÉBIT EXTRACTION"); Spacer(); Text("\(Int(currentRate))/m").font(.system(size: 30, weight: .bold, design: .monospaced)).foregroundColor(.ficsitOrange)
+                        Text(Localization.translate("EXTRACTION RATE")); Spacer(); Text("\(Int(currentRate))/m").font(.system(size: 30, weight: .bold, design: .monospaced)).foregroundColor(.ficsitOrange)
                     }.padding().background(Color.black.opacity(0.3)).cornerRadius(10)
                     Spacer()
                 }.padding()
             }
-            .navigationTitle(mode == .add ? "Ajouter Noeud" : "Modifier Noeud").navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(mode == .add ? Localization.translate("Add Node") : Localization.translate("Edit Node")).navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
-                leading: Button("Annuler") { presentationMode.wrappedValue.dismiss() },
-                trailing: Button("Sauver") {
+                leading: Button(Localization.translate("Cancel")) { presentationMode.wrappedValue.dismiss() },
+                trailing: Button(Localization.translate("Save")) {
                     if let item = selectedItem {
                         switch mode {
                         case .add: viewModel.addInput(resource: item.name, purity: purity, miner: miner)

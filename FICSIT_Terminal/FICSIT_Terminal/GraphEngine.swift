@@ -219,7 +219,8 @@ class GraphEngine {
         let p3 = String(format: "%04x", hash & 0xFFFF)
         // Partie aléatoire (pseudo) pour compléter mais rester déterministe par rapport à l'entrée
         let p4 = String(format: "%04x", (hash & 0xABCD) )
-        let p5 = String(format: "%012x", hash )
+        // CORRECTION : On s'assure de ne prendre que les 48 bits de poids faible pour le dernier segment de 12 caractères (UUID standard)
+        let p5 = String(format: "%012x", hash & 0xFFFFFFFFFFFF)
 
         return UUID(uuidString: "\(p1)-\(p2)-\(p3)-\(p4)-\(p5)") ?? UUID()
     }

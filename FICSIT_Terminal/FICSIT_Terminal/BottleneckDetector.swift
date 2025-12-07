@@ -133,27 +133,29 @@ class BottleneckDetector {
     ) -> [String] {
         var suggestions: [String] = []
         
+        let localizedItem = Localization.translate(item)
+
         if isRawResource {
             // Suggestion 1: Ajouter plus de nœuds
-            suggestions.append("Ajouter un nœud de \(item) supplémentaire")
+            suggestions.append("\(Localization.translate("Add more nodes for")) \(localizedItem)")
             
             // Suggestion 2: Améliorer la pureté
             if let input = inputs.first(where: { $0.resourceName == item }) {
                 if input.purity != .pure {
-                    suggestions.append("Utiliser un nœud Pur de \(item)")
+                    suggestions.append("\(Localization.translate("Use a Pure node for")) \(localizedItem)")
                 }
                 if input.miner != .mk3 {
-                    suggestions.append("Améliorer le foreur à Mk3")
+                    suggestions.append(Localization.translate("Upgrade Miner to Mk3"))
                 }
             }
         } else {
             // Pour les items manufacturés
-            suggestions.append("Augmenter la production de \(item)")
-            suggestions.append("Vérifier que les recettes alternatives sont activées")
+            suggestions.append("\(Localization.translate("Increase production of")) \(localizedItem)")
+            suggestions.append(Localization.translate("Check alternate recipes"))
         }
         
         // Suggestion générale
-        suggestions.append("Vérifier que les ceintures Mk5 sont utilisées")
+        suggestions.append(Localization.translate("Verify Mk5 belts are used"))
         
         return suggestions
     }

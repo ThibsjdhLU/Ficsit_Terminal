@@ -26,7 +26,7 @@ struct RecipeLibraryView: View {
                 
                 // 2. LA LISTE
                 List {
-                    Section(header: Text("BIBLIOTHÈQUE M.A.M.").font(.system(.caption, design: .monospaced)).foregroundColor(.ficsitOrange)) {
+                    Section(header: Text(Localization.translate("M.A.M. LIBRARY")).font(.system(.caption, design: .monospaced)).foregroundColor(.ficsitOrange)) {
                         ForEach(itemsWithChoices, id: \.self) { itemName in
                             DisclosureGroup(
                                 content: {
@@ -39,24 +39,24 @@ struct RecipeLibraryView: View {
                                             }) {
                                                 HStack {
                                                     Image(systemName: viewModel.isRecipeActive(item: itemName, recipe: recipe) ? "checkmark.square.fill" : "square")
-                                                        .foregroundColor(viewModel.isRecipeActive(item: itemName, recipe: recipe) ? .ficsitOrange : .gray)
+                                                        .foregroundColor(viewModel.isRecipeActive(item: itemName, recipe: recipe) ? .ficsitOrange : .ficsitGray)
                                                         .font(.title3)
                                                     
                                                     VStack(alignment: .leading) {
-                                                        Text(recipe.name)
+                                                        Text(recipe.localizedName)
                                                             .font(.system(.body, design: .monospaced))
                                                             .fontWeight(viewModel.isRecipeActive(item: itemName, recipe: recipe) ? .bold : .regular)
                                                             .foregroundColor(.white)
                                                         
                                                         HStack {
                                                             if recipe.isAlternate {
-                                                                Text("ALT").font(.system(size: 8, weight: .bold)).padding(3).background(Color.blue).cornerRadius(3).foregroundColor(.white)
+                                                                Text("ALT").font(.system(size: 8, weight: .bold)).padding(3).background(Color.ficsitOrange).cornerRadius(3).foregroundColor(.white)
                                                             } else {
-                                                                Text("STD").font(.system(size: 8, weight: .bold)).padding(3).background(Color.gray).cornerRadius(3).foregroundColor(.white)
+                                                                Text("STD").font(.system(size: 8, weight: .bold)).padding(3).background(Color.ficsitGray).cornerRadius(3).foregroundColor(.white)
                                                             }
                                                             Text(ingredientsString(recipe))
                                                                 .font(.system(.caption, design: .monospaced))
-                                                                .foregroundColor(.gray)
+                                                                .foregroundColor(.ficsitGray)
                                                         }
                                                     }
                                                     Spacer()
@@ -78,13 +78,13 @@ struct RecipeLibraryView: View {
                                 label: {
                                     HStack {
                                         ItemIcon(item: ProductionItem(name: itemName, category: "Part", sinkValue: 0), size: 30)
-                                        Text(itemName)
+                                        Text(Localization.translate(itemName))
                                             .font(.system(.headline, design: .monospaced))
                                             .fontWeight(.bold)
                                             .foregroundColor(.white)
                                         Spacer()
                                         if let count = viewModel.activeRecipes[itemName]?.count, count > 0 {
-                                            Text("\(count) active")
+                                            Text("\(count) \(Localization.translate("active"))")
                                                 .font(.system(.caption, design: .monospaced))
                                                 .foregroundColor(.ficsitOrange)
                                                 .padding(.horizontal, 8)
@@ -110,6 +110,6 @@ struct RecipeLibraryView: View {
     }
     
     func ingredientsString(_ recipe: Recipe) -> String {
-        return recipe.ingredients.map { "\($0.key): \(Int($0.value))" }.joined(separator: ", ")
+        return recipe.ingredients.map { "\(Localization.translate($0.key)): \(String(format: "%g", $0.value))" }.joined(separator: ", ")
     }
 }

@@ -22,42 +22,42 @@ struct ContentView: View {
             // TAB 0 : THE HUB (Dashboard)
             HubDashboardView(viewModel: viewModel)
                 .tabItem {
-                    Label("HUB", systemImage: "house.fill")
+                    Label(Localization.translate("HUB"), systemImage: "house.fill")
                 }
                 .tag(0)
             
             // TAB 1 : RESOURCES
             InputView(viewModel: viewModel, db: db)
                 .tabItem {
-                    Label("Ressources", systemImage: "cube.box.fill")
+                    Label(Localization.translate("Resources"), systemImage: "cube.box.fill")
                 }
                 .tag(1)
             
             // TAB 2 : PRODUCTION
             OutputView(viewModel: viewModel, db: db)
                 .tabItem {
-                    Label("Usine", systemImage: "gearshape.2.fill")
+                    Label(Localization.translate("Factory"), systemImage: "gearshape.2.fill")
                 }
                 .tag(2)
             
             // TAB 3 : POWER
             PowerPlannerView(viewModel: viewModel)
                 .tabItem {
-                    Label("Énergie", systemImage: "bolt.fill")
+                    Label(Localization.translate("Power"), systemImage: "bolt.fill")
                 }
                 .tag(3)
             
             // TAB 4 : LIBRARY
             RecipeLibraryView(viewModel: viewModel, db: db)
                 .tabItem {
-                    Label("M.A.M.", systemImage: "book.fill")
+                    Label(Localization.translate("Library"), systemImage: "book.fill")
                 }
                 .tag(4)
             
             // TAB 5 : FLOW GRAPH
             FactoryFlowGraphView(viewModel: viewModel, db: db)
                 .tabItem {
-                    Label("Flux", systemImage: "arrow.triangle.branch")
+                    Label(Localization.translate("Flow"), systemImage: "arrow.triangle.branch")
                 }
                 .tag(5)
         }

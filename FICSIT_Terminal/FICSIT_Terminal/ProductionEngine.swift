@@ -112,81 +112,54 @@ class ProductionEngine {
         var productionPlan: [String: [UUID: Double]] = [:]
         
         // C. Boucle de Production Itérative (Par petits pas)
-        // On essaie de produire les goals petit à petit en consommant les ressources
-        // Si la recette 1 est bloquée, on essaie la recette 2 (si active)
-        
         var goalProduction: [UUID: Double] = [:]
         for goal in goals { goalProduction[goal.id] = 0.0 }
         
         var loop = true
         var iterations = 0
-        // StepSize adaptatif : plus grand pour les calculs simples, plus petit pour les complexes
+
         let baseStepSize = ProductionConfig.defaultStepSize
         let maxIterations = ProductionConfig.maxIterations
-        
-        // Calculer un stepSize adaptatif basé sur les ressources disponibles
         let totalResources = inventory.values.reduce(0, +)
-        let adaptiveStepSize = max(baseStepSize, min(1.0, totalResources / 100.0))
-        let stepSize = adaptiveStepSize
+        let stepSize = max(baseStepSize, min(1.0, totalResources / 100.0))
         
-        // Variables pour détecter les boucles stériles
         var lastInventoryTotal: Double = 0
         var stagnantIterations = 0
-        let maxStagnantIterations = 50 // Arrêter si on n'a pas progressé depuis 50 itérations
+        let maxStagnantIterations = 50
         
         while loop && iterations < maxIterations {
             iterations += 1
             var producedSomething = false
-            
-            // Calculer le total de l'inventaire pour détecter la stagnation
             let currentInventoryTotal = inventory.values.reduce(0, +)
             
             for goal in goals {
-                // On essaie de produire 'stepSize' de ce goal
                 let item = goal.item.name
                 let recipes = activeRecipes[item] ?? []
                 let defaultRecipe = db.getRecipesOptimized(producing: item).first(where: { !$0.isAlternate })
-                let candidates: [Recipe]
-                if recipes.isEmpty {
-                    if let defaultRecipe = defaultRecipe {
-                        candidates = [defaultRecipe]
-                    } else {
-                        candidates = []
-                    }
-                } else {
-                    candidates = recipes
-                }
+                let candidates: [Recipe] = recipes.isEmpty ? (defaultRecipe != nil ? [defaultRecipe!] : []) : recipes
                 
-                // On cherche une recette capable de produire ce pas
                 for recipe in candidates {
                     do {
                         if try canAfford(recipe: recipe, itemName: item, qty: stepSize, inventory: inventory, userRecipes: activeRecipes) {
-                            // On paie
                             try pay(recipe: recipe, itemName: item, qty: stepSize, inventory: &inventory, userRecipes: activeRecipes)
-                            // On enregistre
                             goalProduction[goal.id] = (goalProduction[goal.id] ?? 0) + stepSize
                             
-                            // On note la recette utilisée pour le rapport final
                             var itemPlan = productionPlan[item] ?? [:]
                             itemPlan[recipe.id] = (itemPlan[recipe.id] ?? 0) + stepSize
                             productionPlan[item] = itemPlan
                             
                             producedSomething = true
-                            break // On a réussi pour ce goal, on passe au suivant (pour équilibrer)
+                            break
                         }
                     } catch {
-                        // Ignorer les erreurs de coût pour cette recette, essayer la suivante
                         continue
                     }
                 }
             }
             
-            // Détecter si l'inventaire n'a pas changé (stagnation)
-            // Utiliser une tolérance pour les comparaisons de nombres flottants
             if abs(currentInventoryTotal - lastInventoryTotal) < 0.001 {
                 stagnantIterations += 1
                 if stagnantIterations >= maxStagnantIterations {
-                    // On n'a pas progressé depuis trop longtemps, arrêter
                     loop = false
                     break
                 }
@@ -198,18 +171,15 @@ class ProductionEngine {
             if !producedSomething { loop = false }
         }
         
-        // Vérifier si on a atteint la limite d'itérations
         if iterations >= maxIterations {
             throw ProductionError.calculationTimeout
         }
         
-        // D. Lissage
         var finalRates: [UUID: Double] = [:]
         for (id, amount) in goalProduction { finalRates[id] = floor(amount) }
         
         // --- PARTIE 3 : SINK ---
-        // On recalcule le surplus réel basé sur l'inventaire restant
-        let surplusPool = inventory // Ce qui reste après la boucle est le surplus
+        let surplusPool = inventory
         
         var bestSinkResult: SinkResult? = nil
         
@@ -247,17 +217,7 @@ class ProductionEngine {
         }
         
         // --- PARTIE 4 : GÉNÉRATION STEPS ---
-        // Cette fois, on génère les steps à partir de notre 'productionPlan' qui contient les recettes mixtes
         var steps: [ConsolidatedStep] = []
-        
-        // Fonction récursive pour ajouter les machines intermédiaires
-        // (Car notre boucle n'a calculé que les produits finaux)
-        // C'est complexe. Pour la V3, on va simplifier :
-        // On relance une simulation "Cost Only" basée sur les 'finalRates' et la recette principale
-        // pour générer les machines intermédiaires.
-        // *Note: Le vrai multi-recette complet demande un graphe de dépendance complet.
-        // Ici, on va assumer que les ingrédients utilisent leur recette principale.*
-        
         var totalDemandMap: [String: Double] = [:]
         
         func addDemand(item: String, rate: Double) {

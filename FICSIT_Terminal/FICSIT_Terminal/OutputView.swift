@@ -38,7 +38,7 @@ struct OutputView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }.foregroundColor(.ficsitOrange)
+                    Button("OK") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }.foregroundColor(.ficsitOrange)
                 }
             }
         }
@@ -47,17 +47,17 @@ struct OutputView: View {
     // --- SOUS-VUES ---
     
     private var headerView: some View {
-        Text("PRODUCTION MANAGER").font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
+        Text("GESTION DE PRODUCTION").font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
     }
     
     private var inputSection: some View {
         HStack {
             Button(action: { showSearchSheet = true }) {
                 HStack {
-                    if let item = selectedItem { Text(item.name).foregroundColor(.white).lineLimit(1) } else { Text("Select Part...").foregroundColor(.gray) }
+                    if let item = selectedItem { Text(item.name).foregroundColor(.white).lineLimit(1) } else { Text("Sélectionner Pièce...").foregroundColor(.gray) }
                     Spacer(); Image(systemName: "magnifyingglass").foregroundColor(.gray)
                 }.padding(10).background(Color.ficsitOrange.opacity(0.2)).cornerRadius(5).overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ficsitOrange, lineWidth: 1))
-            }.sheet(isPresented: $showSearchSheet) { ItemSelectorView(title: "Select Product", items: db.items.filter { $0.category == "Part" }, selection: $selectedItem) }
+            }.sheet(isPresented: $showSearchSheet) { ItemSelectorView(title: "Choisir Produit", items: db.items.filter { $0.category == "Part" }, selection: $selectedItem) }
             
             TextField("1.0", text: $ratioStr).keyboardType(.decimalPad).padding(10).frame(width: 70).background(Color.black.opacity(0.5)).overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ficsitOrange, lineWidth: 1)).foregroundColor(.white)
             
@@ -84,7 +84,7 @@ struct OutputView: View {
     
     private var actionButtons: some View {
         HStack {
-            Button("CALCULATE") {
+            Button("CALCULER") {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 viewModel.maximizeProduction()
                 HapticManager.shared.thud()
@@ -148,13 +148,13 @@ struct OutputView: View {
             
             if !viewModel.consolidatedPlan.isEmpty {
                 VStack(alignment: .leading, spacing: 0) {
-                    HStack { Text("POWER DRAW"); Spacer(); Text("\(Int(viewModel.totalPower)) MW").foregroundColor(.yellow) }
+                    HStack { Text("CONSO ÉLECTRIQUE"); Spacer(); Text("\(Int(viewModel.totalPower)) MW").foregroundColor(.yellow) }
                         .font(.system(.caption, design: .monospaced)).padding().background(Color.black.opacity(0.3))
                     Divider().background(Color.gray)
                     
                     // NOUVEAU : AFFICHER LES VRAIS TAUX DE PRODUCTION
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("REAL OUTPUTS").font(.system(.caption2, design: .monospaced)).fontWeight(.black).foregroundColor(.gray).padding(.top, 5)
+                        Text("SORTIES RÉELLES").font(.system(.caption2, design: .monospaced)).fontWeight(.black).foregroundColor(.gray).padding(.top, 5)
                         ForEach(viewModel.goals) { goal in
                             HStack {
                                 Text(goal.item.name).font(.system(.caption, design: .monospaced)).foregroundColor(.white)
@@ -177,7 +177,7 @@ struct OutputView: View {
                     }.padding(.bottom)
                 }.background(Color.white.opacity(0.02)).cornerRadius(10).overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.1), lineWidth: 1)).padding(.horizontal)
             } else if !viewModel.goals.isEmpty {
-                Text("⚠️ Insufficient resources or bottleneck detected.").font(.system(.caption, design: .monospaced)).foregroundColor(.red).padding()
+                Text("⚠️ Ressources insuffisantes ou goulot d'étranglement détecté.").font(.system(.caption, design: .monospaced)).foregroundColor(.red).padding()
             }
         }
     }
@@ -197,15 +197,15 @@ struct EditGoalSheet: View {
             ZStack {
                 Color.ficsitDark.ignoresSafeArea()
                 Form {
-                    Section(header: Text("Target Ratio")) {
+                    Section(header: Text("Ratio Cible")) {
                         Text(goal.item.name).foregroundColor(.gray)
                         TextField("Ratio", value: $goal.ratio, format: .number).keyboardType(.decimalPad)
                     }
                     Section {
-                        Button("Delete Goal") { if let index = viewModel.goals.firstIndex(where: {$0.id == goal.id}) { viewModel.removeGoal(at: IndexSet(integer: index)) }; presentationMode.wrappedValue.dismiss() }.foregroundColor(.red)
+                        Button("Supprimer Objectif") { if let index = viewModel.goals.firstIndex(where: {$0.id == goal.id}) { viewModel.removeGoal(at: IndexSet(integer: index)) }; presentationMode.wrappedValue.dismiss() }.foregroundColor(.red)
                     }
                 }.scrollContentBackground(.hidden).background(Color.ficsitDark)
-            }.navigationTitle("Edit Goal").navigationBarItems(trailing: Button("Save") { viewModel.updateGoal(goal: goal); presentationMode.wrappedValue.dismiss() })
+            }.navigationTitle("Modifier Objectif").navigationBarItems(trailing: Button("Sauver") { viewModel.updateGoal(goal: goal); presentationMode.wrappedValue.dismiss() })
         }
     }
 }

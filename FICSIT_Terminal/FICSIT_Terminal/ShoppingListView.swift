@@ -8,16 +8,16 @@ struct ShoppingListView: View {
             ZStack {
                 Color.ficsitDark.ignoresSafeArea()
                 if viewModel.shoppingList.isEmpty {
-                    VStack { Image(systemName: "cart.badge.minus").font(.system(size: 50)).foregroundColor(.gray); Text("No materials needed").font(.headline).foregroundColor(.gray).padding(); Text("Calculate a production plan first.").font(.caption).foregroundColor(.gray) }
+                    VStack { Image(systemName: "cart.badge.minus").font(.system(size: 50)).foregroundColor(.gray); Text("Aucun matériel requis").font(.headline).foregroundColor(.gray).padding(); Text("Calculez d'abord un plan.").font(.caption).foregroundColor(.gray) }
                 } else {
                     VStack {
-                        HStack { Image(systemName: "hammer.fill").foregroundColor(.ficsitOrange); Text("CONSTRUCTION MATERIALS").font(.headline).foregroundColor(.ficsitOrange); Spacer() }.padding().background(Color.white.opacity(0.05))
+                        HStack { Image(systemName: "hammer.fill").foregroundColor(.ficsitOrange); Text("MATÉRIAUX DE CONSTRUCTION").font(.headline).foregroundColor(.ficsitOrange); Spacer() }.padding().background(Color.white.opacity(0.05))
                         List { ForEach(viewModel.shoppingList) { entry in ShoppingRow(item: entry.item, count: entry.count) } }.listStyle(InsetGroupedListStyle())
                     }
                 }
             }
-            .navigationBarTitle("Shopping List", displayMode: .inline)
-            .navigationBarItems(trailing: Button("Done") { presentationMode.wrappedValue.dismiss() })
+            .navigationBarTitle("Liste d'Achats", displayMode: .inline)
+            .navigationBarItems(trailing: Button("Fermer") { presentationMode.wrappedValue.dismiss() })
         }.accentColor(.ficsitOrange)
     }
 }

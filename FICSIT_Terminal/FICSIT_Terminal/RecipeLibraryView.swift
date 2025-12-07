@@ -26,7 +26,7 @@ struct RecipeLibraryView: View {
                 
                 // 2. LA LISTE
                 List {
-                    Section(header: Text("M.A.M. HARD DRIVE LIBRARY").font(.system(.caption, design: .monospaced)).foregroundColor(.ficsitOrange)) {
+                    Section(header: Text("BIBLIOTHÈQUE M.A.M.").font(.system(.caption, design: .monospaced)).foregroundColor(.ficsitOrange)) {
                         ForEach(itemsWithChoices, id: \.self) { itemName in
                             DisclosureGroup(
                                 content: {

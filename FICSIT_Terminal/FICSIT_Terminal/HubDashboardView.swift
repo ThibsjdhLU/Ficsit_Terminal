@@ -15,7 +15,7 @@ struct HubDashboardView: View {
                         // HEADER
                         HStack {
                             VStack(alignment: .leading, spacing: 5) {
-                                Text("WELCOME, PIONEER")
+                                Text("BIENVENUE, PIONNIER")
                                     .font(.system(.caption, design: .monospaced))
                                     .foregroundColor(.ficsitOrange)
                                     .tracking(2)
@@ -39,7 +39,7 @@ struct HubDashboardView: View {
                             // CARTE 1 : STATUT ÉNERGIE
                             HStack {
                                 VStack(alignment: .leading) {
-                                    Text("GRID STATUS")
+                                    Text("ÉTAT DU RÉSEAU")
                                         .font(.system(.caption, design: .monospaced))
                                         .foregroundColor(.gray)
                                     
@@ -62,7 +62,7 @@ struct HubDashboardView: View {
                                             ProgressView()
                                                 .progressViewStyle(CircularProgressViewStyle(tint: .ficsitOrange))
                                                 .scaleEffect(0.7)
-                                            Text("CALCULATING...")
+                                            Text("CALCUL EN COURS...")
                                                 .font(.system(.caption2, design: .monospaced))
                                                 .foregroundColor(.ficsitOrange)
                                         }
@@ -70,7 +70,7 @@ struct HubDashboardView: View {
                                         .background(Color.ficsitOrange.opacity(0.2))
                                         .cornerRadius(4)
                                     } else {
-                                        Text("OPERATIONAL")
+                                        Text("OPÉRATIONNEL")
                                             .font(.system(.caption2, design: .monospaced))
                                             .foregroundColor(.green)
                                             .padding(4)
@@ -91,12 +91,12 @@ struct HubDashboardView: View {
                             // CARTE 2 : PRODUCTION EN COURS
                             HStack {
                                 VStack(alignment: .leading) {
-                                    Text("ACTIVE GOALS")
+                                    Text("OBJECTIFS ACTIFS")
                                         .font(.system(.caption, design: .monospaced))
                                         .foregroundColor(.gray)
                                     
                                     if viewModel.goals.isEmpty {
-                                        Text("IDLE")
+                                        Text("EN ATTENTE")
                                             .font(.system(.title2, design: .monospaced))
                                             .foregroundColor(.gray)
                                             .padding(.top, 5)
@@ -116,7 +116,7 @@ struct HubDashboardView: View {
                                             .padding(.vertical, 2)
                                         }
                                         if viewModel.goals.count > 3 {
-                                            Text("+ \(viewModel.goals.count - 3) more...")
+                                            Text("+ \(viewModel.goals.count - 3) autres...")
                                                 .font(.caption)
                                                 .foregroundColor(.gray)
                                         }
@@ -133,7 +133,7 @@ struct HubDashboardView: View {
                             VStack(alignment: .leading) {
                                 HStack {
                                     Image(systemName: "ticket.fill").foregroundColor(.purple)
-                                    Text("AWESOME SINK").font(.system(size: 10, design: .monospaced)).foregroundColor(.gray)
+                                    Text("BROYEUR A.W.E.S.O.M.E.").font(.system(size: 10, design: .monospaced)).foregroundColor(.gray)
                                 }
                                 Spacer()
                                 if let sink = viewModel.sinkResult {
@@ -148,7 +148,7 @@ struct HubDashboardView: View {
                                     Text("0")
                                         .font(.system(size: 30, weight: .black, design: .monospaced))
                                         .foregroundColor(.gray)
-                                    Text("NO SURPLUS")
+                                    Text("AUCUN SURPLUS")
                                         .font(.system(size: 9, design: .monospaced)).foregroundColor(.gray)
                                 }
                             }
@@ -162,7 +162,7 @@ struct HubDashboardView: View {
                         
                         // SHORTCUTS
                         VStack(alignment: .leading) {
-                            FicsitHeader(title: "Quick Actions", icon: "command")
+                            FicsitHeader(title: "Actions Rapides", icon: "command")
                             
                             HStack {
                                 Button(action: {
@@ -171,7 +171,7 @@ struct HubDashboardView: View {
                                 }) {
                                     HStack {
                                         Image(systemName: "plus.square.dashed")
-                                        Text("New Project")
+                                        Text("Nouveau Projet")
                                     }
                                 }
                                 .buttonStyle(FicsitButtonStyle(primary: false, color: .gray))

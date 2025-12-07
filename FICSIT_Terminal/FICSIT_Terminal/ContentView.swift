@@ -29,21 +29,21 @@ struct ContentView: View {
             // TAB 1 : RESOURCES
             InputView(viewModel: viewModel, db: db)
                 .tabItem {
-                    Label("Survey", systemImage: "cube.box.fill")
+                    Label("Ressources", systemImage: "cube.box.fill")
                 }
                 .tag(1)
             
             // TAB 2 : PRODUCTION
             OutputView(viewModel: viewModel, db: db)
                 .tabItem {
-                    Label("Factory", systemImage: "gearshape.2.fill")
+                    Label("Usine", systemImage: "gearshape.2.fill")
                 }
                 .tag(2)
             
             // TAB 3 : POWER
             PowerPlannerView(viewModel: viewModel)
                 .tabItem {
-                    Label("Energy", systemImage: "bolt.fill")
+                    Label("Énergie", systemImage: "bolt.fill")
                 }
                 .tag(3)
             
@@ -57,7 +57,7 @@ struct ContentView: View {
             // TAB 5 : FLOW GRAPH
             FactoryFlowGraphView(viewModel: viewModel, db: db)
                 .tabItem {
-                    Label("Flow", systemImage: "arrow.triangle.branch")
+                    Label("Flux", systemImage: "arrow.triangle.branch")
                 }
                 .tag(5)
         }

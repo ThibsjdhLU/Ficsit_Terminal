@@ -40,7 +40,7 @@ struct InputView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Done") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
+                    Button("OK") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
                         .foregroundColor(.ficsitOrange)
                 }
             }
@@ -53,7 +53,7 @@ struct InputView: View {
         HStack {
             Button(action: { showProjectManager = true }) { Image(systemName: "folder.fill").font(.title2).foregroundColor(.gray) }
             Spacer()
-            Text("RESOURCE SURVEY").font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
+            Text("SURVEY RESSOURCES").font(.system(.headline, design: .monospaced)).foregroundColor(.ficsitOrange)
             Spacer()
             Image(systemName: "folder.fill").font(.title2).opacity(0)
         }.padding().background(Color.black.opacity(0.5))
@@ -63,7 +63,7 @@ struct InputView: View {
         Button(action: { showAddSheet = true; HapticManager.shared.click() }) {
             HStack {
                 Image(systemName: "plus.circle.fill").font(.title2)
-                Text("ADD RESOURCE NODE").font(.system(.headline, design: .monospaced)).fontWeight(.bold)
+                Text("AJOUTER UN NOEUD").font(.system(.headline, design: .monospaced)).fontWeight(.bold)
             }
             .frame(maxWidth: .infinity).padding()
             .background(Color.ficsitOrange.opacity(0.1)).cornerRadius(10)
@@ -74,11 +74,11 @@ struct InputView: View {
     
     private var listSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            FicsitHeader(title: "Claimed Nodes", icon: "mappin.and.ellipse")
+            FicsitHeader(title: "Noeuds Revendiqués", icon: "mappin.and.ellipse")
             if viewModel.userInputs.isEmpty {
                 VStack(spacing: 15) {
                     Image(systemName: "magnifyingglass.circle").font(.system(size: 40)).foregroundColor(.gray)
-                    Text("No resources scanned yet.").font(.system(.caption, design: .monospaced)).foregroundColor(.gray)
+                    Text("Aucune ressource scannée.").font(.system(.caption, design: .monospaced)).foregroundColor(.gray)
                 }
                 .frame(maxWidth: .infinity).padding(.vertical, 30).background(Color.white.opacity(0.02)).cornerRadius(10)
             } else {
@@ -120,7 +120,7 @@ struct InputView: View {
     
     private var beltSection: some View {
         VStack {
-            FicsitHeader(title: "Belt Technology", icon: "speedometer")
+            FicsitHeader(title: "Niveau de Convoyeur", icon: "speedometer")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(BeltLevel.allCases) { belt in
@@ -180,34 +180,34 @@ struct ResourceEditorSheet: View {
                 Color.ficsitDark.ignoresSafeArea()
                 VStack(spacing: 25) {
                     VStack(alignment: .leading) {
-                        Text("RESOURCE TYPE").font(.caption).foregroundColor(.gray)
+                        Text("TYPE DE RESSOURCE").font(.caption).foregroundColor(.gray)
                         Button(action: { showSearch = true }) {
                             HStack {
                                 if let item = selectedItem { ItemIcon(item: item, size: 30); Text(item.name).font(.title3).fontWeight(.bold) }
                                 Spacer(); Image(systemName: "chevron.right").foregroundColor(.gray)
                             }.padding().background(Color.white.opacity(0.1)).cornerRadius(10).foregroundColor(.white)
                         }
-                        .sheet(isPresented: $showSearch) { ItemSelectorView(title: "Select Resource", items: db.items.filter { db.rawResources.contains($0.name) }, selection: $selectedItem) }
+                        .sheet(isPresented: $showSearch) { ItemSelectorView(title: "Choisir Ressource", items: db.items.filter { db.rawResources.contains($0.name) }, selection: $selectedItem) }
                     }
                     VStack(alignment: .leading) {
-                        Text("NODE PURITY").font(.caption).foregroundColor(.gray)
+                        Text("PURETÉ DU NOEUD").font(.caption).foregroundColor(.gray)
                         Picker("Purity", selection: $purity) { ForEach(NodePurity.allCases) { p in Text(p.rawValue.capitalized).tag(p) } }.pickerStyle(SegmentedPickerStyle()).colorMultiply(.ficsitOrange)
                     }
                     VStack(alignment: .leading) {
-                        Text("MINER LEVEL").font(.caption).foregroundColor(.gray)
+                        Text("NIVEAU DE MINEUR").font(.caption).foregroundColor(.gray)
                         Picker("Miner", selection: $miner) { ForEach(MinerLevel.allCases) { m in Text(m.rawValue.uppercased()).tag(m) } }.pickerStyle(SegmentedPickerStyle()).colorMultiply(.ficsitOrange)
                     }
                     Divider().background(Color.gray)
                     HStack {
-                        Text("OUTPUT RATE"); Spacer(); Text("\(Int(currentRate))/m").font(.system(size: 30, weight: .bold, design: .monospaced)).foregroundColor(.ficsitOrange)
+                        Text("DÉBIT EXTRACTION"); Spacer(); Text("\(Int(currentRate))/m").font(.system(size: 30, weight: .bold, design: .monospaced)).foregroundColor(.ficsitOrange)
                     }.padding().background(Color.black.opacity(0.3)).cornerRadius(10)
                     Spacer()
                 }.padding()
             }
-            .navigationTitle(mode == .add ? "Add Node" : "Edit Node").navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(mode == .add ? "Ajouter Noeud" : "Modifier Noeud").navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
-                leading: Button("Cancel") { presentationMode.wrappedValue.dismiss() },
-                trailing: Button("Save") {
+                leading: Button("Annuler") { presentationMode.wrappedValue.dismiss() },
+                trailing: Button("Sauver") {
                     if let item = selectedItem {
                         switch mode {
                         case .add: viewModel.addInput(resource: item.name, purity: purity, miner: miner)

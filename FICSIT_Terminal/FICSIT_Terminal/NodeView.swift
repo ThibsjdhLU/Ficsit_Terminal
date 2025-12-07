@@ -41,7 +41,7 @@ struct NodeView: View {
                 // Nom de la recette (si machine)
                 if let recipe = node.recipeName {
                     Text(recipe)
-                        .font(.system(size: 10, weight: .light, design: .italic))
+                        .font(.system(size: 10, weight: .light).italic())
                         .foregroundColor(.gray)
                         .lineLimit(1)
                         .padding(.bottom, 4)

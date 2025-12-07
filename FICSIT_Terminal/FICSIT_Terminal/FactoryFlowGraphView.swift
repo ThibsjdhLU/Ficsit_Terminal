@@ -1117,7 +1117,7 @@ struct MachineDetailSheet: View {
                         .padding()
                         
                         // Blueprint Button
-                        if node.type == .machine, let step = getStep() {
+                        if node.type == .machine, getStep() != nil {
                             Button(action: { showingBlueprint = true }) {
                                 HStack {
                                     Image(systemName: "square.dashed")
@@ -1208,6 +1208,11 @@ struct MachineDetailSheet: View {
                     .foregroundColor(.ficsitOrange)
                 }
             }
+            .fullScreenCover(isPresented: $showingBlueprint) {
+                if let step = getStep() {
+                    FactoryLayoutView(plan: ConstructionEngine().generateManifold(for: step, db: db))
+                }
+            }
         }
     }
     
@@ -1279,11 +1284,6 @@ struct LinkDetailSheet: View {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .foregroundColor(.ficsitOrange)
-                }
-            }
-            .fullScreenCover(isPresented: $showingBlueprint) {
-                if let step = getStep() {
-                    FactoryLayoutView(plan: ConstructionEngine().generateManifold(for: step, db: db))
                 }
             }
         }

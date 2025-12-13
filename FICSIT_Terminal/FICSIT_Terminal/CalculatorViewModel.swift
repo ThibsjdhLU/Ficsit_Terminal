@@ -1,9 +1,9 @@
 import SwiftUI
 import Combine
 
-class CalculatorViewModel: ObservableObject {
+class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
     // MARK: - WORLD STATE
-    @Published var worldService = WorldService.shared
+    let worldService: WorldService
 
     // MARK: - ACTIVE FACTORY STATE
     @Published var currentProjectName: String = ""
@@ -39,24 +39,53 @@ class CalculatorViewModel: ObservableObject {
     private let db = FICSITDatabase.shared
     private let validator = InputValidator(db: FICSITDatabase.shared)
 
-    init() {
-        // Au démarrage, charger la dernière usine active ou créer une nouvelle
+    init(worldService: WorldService = .shared) {
+        self.worldService = worldService
+
+        // Wait for world to load if needed (this is tricky in init, ideally handled by a loading state)
+        // For now, we assume WorldService might be async loading.
+
+        setupAutoSave()
+
+        // Initial load check
         if let lastID = worldService.getLastActiveFactoryID(),
            let factory = worldService.getFactory(id: lastID) {
             loadFactoryInternal(factory)
-        } else if let first = worldService.world.factories.first {
-            loadFactoryInternal(first)
         } else {
-            createNewFactory()
+            // Check if world is loaded?
+            // If world is empty, we might need to wait or create new.
+            // Since WorldService.loadWorld() is async now, this synchronous init might miss the data.
+            // We should listen to world updates.
+            setupWorldObservation()
         }
-
-        setupAutoSave()
     }
+
+    private func setupWorldObservation() {
+        worldService.worldPublisher
+            .first() // Just get the initial load or first update
+            .receive(on: RunLoop.main)
+            .sink { [weak self] world in
+                guard let self = self else { return }
+                if self.currentProjectName.isEmpty { // Only if not already loaded
+                    if let lastID = self.worldService.getLastActiveFactoryID(),
+                       let factory = self.worldService.getFactory(id: lastID) {
+                        self.loadFactoryInternal(factory)
+                    } else if let first = world.factories.first {
+                        self.loadFactoryInternal(first)
+                    } else {
+                        self.createNewFactory()
+                    }
+                }
+            }
+            .store(in: &autoSaveCancellableSet) // Need a set for this
+    }
+
+    private var autoSaveCancellableSet = Set<AnyCancellable>()
 
     // MARK: - AUTO SAVE & SYNC
     private func setupAutoSave() {
         // On observe les changements des propriétés clés pour déclencher la sauvegarde
-        autoSaveCancellable = Publishers.MergeMany(
+        Publishers.MergeMany(
             $currentProjectName.map { _ in () }.eraseToAnyPublisher(),
             $userInputs.map { _ in () }.eraseToAnyPublisher(),
             $goals.map { _ in () }.eraseToAnyPublisher(),
@@ -65,10 +94,11 @@ class CalculatorViewModel: ObservableObject {
             $selectedFuel.map { _ in () }.eraseToAnyPublisher(),
             $fuelInputAmount.map { _ in () }.eraseToAnyPublisher()
         )
-        .debounce(for: .seconds(1.0), scheduler: RunLoop.main) // Sauvegarde 1s après la dernière modif
+        .debounce(for: .seconds(1.0), scheduler: RunLoop.main)
         .sink { [weak self] _ in
             self?.saveCurrentFactory()
         }
+        .store(in: &autoSaveCancellableSet)
     }
 
     func saveCurrentFactory() {
@@ -88,6 +118,11 @@ class CalculatorViewModel: ObservableObject {
     }
 
     // MARK: - FACTORY MANAGEMENT
+
+    // FactorySelectionDelegate implementation
+    func didSelectFactory(_ factory: Factory) {
+        loadFactory(factory)
+    }
 
     func createNewFactory() {
         let newFactory = Factory.empty()

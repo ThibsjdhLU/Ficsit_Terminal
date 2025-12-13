@@ -2,6 +2,8 @@ import SwiftUI
 
 struct HubDashboardView: View {
     @ObservedObject var viewModel: CalculatorViewModel
+    @State private var showingCreateAlert = false
+    @State private var newFactoryName = ""
     @State private var animateStats = false
     
     var body: some View {
@@ -12,179 +14,81 @@ struct HubDashboardView: View {
                 ScrollView {
                     VStack(spacing: 25) {
                         
-                        // HEADER
+                        // HEADER GLOBAL
                         HStack {
                             VStack(alignment: .leading, spacing: 5) {
-                                Text(Localization.translate("WELCOME, PIONEER"))
+                                Text(Localization.translate("FICSIT FACTORY OS"))
                                     .font(.system(.caption, design: .monospaced))
                                     .foregroundColor(.ficsitOrange)
                                     .tracking(2)
                                 
-                                Text(viewModel.currentProjectName.uppercased())
+                                Text(Localization.translate("GLOBAL COMMAND"))
                                     .font(.system(.title, design: .monospaced))
                                     .fontWeight(.heavy)
                                     .foregroundColor(.white)
                             }
                             Spacer()
-                            Image(systemName: "person.crop.square.fill")
+                            Image(systemName: "globe.europe.africa.fill")
                                 .font(.largeTitle)
                                 .foregroundColor(.ficsitGray)
                         }
                         .padding(.horizontal)
                         .padding(.top, 20)
                         
-                        // DASHBOARD CARDS
+                        // --- GLOBAL STATS ---
                         VStack(spacing: 15) {
                             
-                            // CARTE 1 : STATUT ÉNERGIE
+                            // TOTAL FACTORIES
                             HStack {
                                 VStack(alignment: .leading) {
-                                    Text(Localization.translate("GRID STATUS"))
+                                    Text(Localization.translate("ACTIVE FACTORIES"))
                                         .font(.system(.caption, design: .monospaced))
                                         .foregroundColor(.ficsitGray)
                                     
-                                    let load: Double = {
-                                        if let powerResult = viewModel.powerResult, powerResult.totalMW > 0 {
-                                            return viewModel.totalPower / powerResult.totalMW
-                                        } else {
-                                            return 0
-                                        }
-                                    }()
-                                    
-                                    Text("\(Int(load * 100))%")
+                                    Text("\(viewModel.worldService.world.factories.count)")
                                         .font(.system(size: 40, weight: .black, design: .monospaced))
-                                        .foregroundColor(load > 1.0 ? Color(red: 0.8, green: 0.3, blue: 0.3) : (load > 0.8 ? .yellow : .green))
-                                        .scaleEffect(animateStats ? 1.0 : 0.8)
-                                        .opacity(animateStats ? 1.0 : 0.0)
-                                    
-                                    if viewModel.isCalculating {
-                                        HStack {
-                                            ProgressView()
-                                                .progressViewStyle(CircularProgressViewStyle(tint: .ficsitOrange))
-                                                .scaleEffect(0.7)
-                                            Text(Localization.translate("CALCULATING..."))
-                                                .font(.system(.caption2, design: .monospaced))
-                                                .foregroundColor(.ficsitOrange)
-                                        }
-                                        .padding(4)
-                                        .background(Color.ficsitOrange.opacity(0.2))
-                                        .cornerRadius(4)
-                                    } else {
-                                        Text(Localization.translate("OPERATIONAL"))
-                                            .font(.system(.caption2, design: .monospaced))
-                                            .foregroundColor(.green)
-                                            .padding(4)
-                                            .background(Color.green.opacity(0.2))
-                                            .cornerRadius(4)
-                                    }
-                                }
-                                Spacer()
-                                Image(systemName: "bolt.ring.closed")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(.ficsitOrange.opacity(0.5))
-                            }
-                            .padding()
-                            .background(Color.black.opacity(0.4))
-                            .clipShape(FicsitCardShape(cornerSize: 15))
-                            .overlay(FicsitCardShape(cornerSize: 15).stroke(Color.ficsitOrange, lineWidth: 1))
-                            
-                            // CARTE 2 : PRODUCTION EN COURS
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(Localization.translate("ACTIVE GOALS"))
-                                        .font(.system(.caption, design: .monospaced))
-                                        .foregroundColor(.ficsitGray)
-                                    
-                                    if viewModel.goals.isEmpty {
-                                        Text(Localization.translate("IDLE"))
-                                            .font(.system(.title2, design: .monospaced))
-                                            .foregroundColor(.ficsitGray)
-                                            .padding(.top, 5)
-                                    } else {
-                                        ForEach(viewModel.goals.prefix(3)) { goal in
-                                            HStack {
-                                                Text("• \(goal.item.localizedName)")
-                                                    .foregroundColor(.white)
-                                                Spacer()
-                                                
-                                                // CORRECTION ICI : On va chercher le VRAI taux calculé
-                                                let realRate = getRealRate(for: goal)
-                                                Text(String(format: "%.1f/m", realRate))
-                                                    .foregroundColor(.ficsitOrange)
-                                            }
-                                            .font(.system(.caption, design: .monospaced))
-                                            .padding(.vertical, 2)
-                                        }
-                                        if viewModel.goals.count > 3 {
-                                            Text("+ \(viewModel.goals.count - 3) \(Localization.translate("others..."))")
-                                                .font(.caption)
-                                                .foregroundColor(.ficsitGray)
-                                        }
-                                    }
-                                }
-                                Spacer()
-                            }
-                            .padding()
-                            .background(Color.black.opacity(0.4))
-                            .clipShape(FicsitCardShape(cornerSize: 15))
-                            .overlay(FicsitCardShape(cornerSize: 15).stroke(Color.white.opacity(0.2), lineWidth: 1))
-                            
-                            // SINK CARD
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Image(systemName: "ticket.fill").foregroundColor(Color(red: 0.6, green: 0.2, blue: 0.8))
-                                    Text(Localization.translate("A.W.E.S.O.M.E. SINK")).font(.system(size: 10, design: .monospaced)).foregroundColor(.ficsitGray)
-                                }
-                                Spacer()
-                                if let sink = viewModel.sinkResult {
-                                    Text("\(sink.totalPoints)")
-                                        .font(.system(size: 24, weight: .black, design: .monospaced))
                                         .foregroundColor(.white)
-                                    Text(Localization.translate("POINTS/MIN"))
-                                        .font(.system(size: 9, design: .monospaced)).foregroundColor(.ficsitGray)
-                                    Text("\(Localization.translate("via")) \(sink.bestItem.localizedName)")
-                                        .font(.system(size: 8, design: .monospaced)).foregroundColor(Color(red: 0.6, green: 0.2, blue: 0.8))
-                                } else {
-                                    Text("0")
-                                        .font(.system(size: 30, weight: .black, design: .monospaced))
-                                        .foregroundColor(.ficsitGray)
-                                    Text(Localization.translate("NO OVERFLOW"))
-                                        .font(.system(size: 9, design: .monospaced)).foregroundColor(.ficsitGray)
                                 }
+                                Spacer()
+                                Image(systemName: "building.2.fill")
+                                    .font(.system(size: 30))
+                                    .foregroundColor(.ficsitGray.opacity(0.5))
                             }
                             .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading) // Alignement gauche forcé
                             .background(Color.black.opacity(0.4))
                             .clipShape(FicsitCardShape(cornerSize: 15))
-                            .overlay(FicsitCardShape(cornerSize: 15).stroke(Color(red: 0.6, green: 0.2, blue: 0.8), lineWidth: 1))
+                            .overlay(FicsitCardShape(cornerSize: 15).stroke(Color.ficsitGray.opacity(0.5), lineWidth: 1))
                         }
                         .padding(.horizontal)
-                        
-                        // SHORTCUTS
+
+                        // --- FACTORY LIST ---
                         VStack(alignment: .leading) {
-                            FicsitHeader(title: Localization.translate("Quick Actions"), icon: "command")
+                            FicsitHeader(title: Localization.translate("Production Sites"), icon: "list.bullet.rectangle.portrait")
                             
-                            HStack {
-                                Button(action: {
-                                    viewModel.createNewProject()
-                                    HapticManager.shared.thud()
-                                }) {
-                                    HStack {
-                                        Image(systemName: "plus.square.dashed")
-                                        Text(Localization.translate("New Project"))
+                            ForEach(viewModel.worldService.world.factories) { factory in
+                                FactoryListCard(factory: factory, isActive: factory.id == viewModel.currentProjectId)
+                                    .onTapGesture {
+                                        viewModel.loadFactory(factory)
+                                        HapticManager.shared.click()
                                     }
+                            }
+
+                            // CREATE NEW BUTTON
+                            Button(action: {
+                                newFactoryName = ""
+                                showingCreateAlert = true
+                            }) {
+                                HStack {
+                                    Image(systemName: "plus.circle.fill")
+                                    Text(Localization.translate("Establish New Site"))
                                 }
-                                .buttonStyle(FicsitButtonStyle(primary: false, color: .ficsitGray))
-                                
-                                Button(action: {
-                                    // Placeholder pour future feature Notes
-                                }) {
-                                    HStack {
-                                        Image(systemName: "doc.text")
-                                        Text(Localization.translate("Notes"))
-                                    }
-                                }
-                                .buttonStyle(FicsitButtonStyle(primary: false, color: .ficsitGray))
+                                .font(.system(.headline, design: .monospaced))
+                                .foregroundColor(.ficsitOrange)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.ficsitDark.opacity(0.5))
+                                .cornerRadius(10)
+                                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.ficsitOrange, style: StrokeStyle(lineWidth: 1, dash: [5])))
                             }
                         }
                         .padding(.horizontal)
@@ -199,40 +103,60 @@ struct HubDashboardView: View {
                 }
             }
             .navigationBarHidden(true)
+            .alert(Localization.translate("New Factory"), isPresented: $showingCreateAlert) {
+                TextField(Localization.translate("Name"), text: $newFactoryName)
+                Button(Localization.translate("Cancel"), role: .cancel) { }
+                Button(Localization.translate("Create")) {
+                    viewModel.createNewFactory()
+                    // Rename immediat
+                    viewModel.currentProjectName = newFactoryName.isEmpty ? "New Factory" : newFactoryName
+                    viewModel.saveCurrentFactory() // Force save pour update le nom
+                }
+            } message: {
+                Text(Localization.translate("Enter designation for the new production site."))
+            }
         }
-    }
-    
-    // Helper pour trouver le taux réel dans le plan calculé
-    func getRealRate(for goal: ProductionGoal) -> Double {
-        // On cherche l'étape qui produit l'item du goal
-        if let step = viewModel.consolidatedPlan.first(where: { $0.item.name == goal.item.name }) {
-            return step.totalRate
-        }
-        return 0.0
     }
 }
 
-// Composant Bouton Dashboard (réintégré si manquant)
-struct DashboardButton: View {
-    let icon: String
-    let label: String
-    let color: Color
+// Subview for Factory Card
+struct FactoryListCard: View {
+    let factory: Factory
+    let isActive: Bool
     
     var body: some View {
-        VStack {
-            Image(systemName: icon)
-                .font(.largeTitle)
-                .foregroundColor(color)
-                .padding(.bottom, 5)
-            Text(label)
-                .font(.system(.caption, design: .monospaced))
-                .fontWeight(.bold)
-                .foregroundColor(.white)
+        HStack {
+            VStack(alignment: .leading, spacing: 5) {
+                HStack {
+                    Text(factory.name)
+                        .font(.system(.headline, design: .monospaced))
+                        .fontWeight(.bold)
+                        .foregroundColor(isActive ? .ficsitOrange : .white)
+
+                    if isActive {
+                        Text(Localization.translate("ONLINE"))
+                            .font(.system(size: 8, weight: .bold, design: .monospaced))
+                            .padding(.horizontal, 4)
+                            .padding(.vertical, 2)
+                            .background(Color.green.opacity(0.2))
+                            .foregroundColor(.green)
+                            .cornerRadius(4)
+                    }
+                }
+
+                Text("\(factory.goals.count) Goals • \(factory.inputs.count) Inputs")
+                    .font(.caption)
+                    .foregroundColor(.ficsitGray)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .foregroundColor(isActive ? .ficsitOrange : .ficsitGray)
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 100)
-        .background(Color.black.opacity(0.4))
+        .padding()
+        .background(isActive ? Color.ficsitOrange.opacity(0.1) : Color.black.opacity(0.3))
         .clipShape(FicsitCardShape(cornerSize: 10))
-        .overlay(FicsitCardShape(cornerSize: 10).stroke(color.opacity(0.5), lineWidth: 1))
+        .overlay(FicsitCardShape(cornerSize: 10).stroke(isActive ? Color.ficsitOrange : Color.white.opacity(0.1), lineWidth: 1))
     }
 }

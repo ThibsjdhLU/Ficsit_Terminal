@@ -42,12 +42,106 @@ enum PowerFuel: String, CaseIterable, Identifiable, Codable {
 }
 
 // MARK: - DATA STRUCTURES
+
+// --- UPDATED RESOURCE INPUT FOR LOGISTICS ---
+enum InputSourceType: Codable, Hashable {
+    case node(purity: NodePurity, miner: MinerLevel)
+    case factory(id: UUID) // Import depuis une autre usine
+}
+
 struct ResourceInput: Identifiable, Codable, Hashable {
     var id: UUID = UUID()
     var resourceName: String
-    var purity: NodePurity
-    var miner: MinerLevel
-    var productionRate: Double { return miner.baseExtractionRate * purity.multiplier }
+
+    // Nouveau système de source
+    var sourceType: InputSourceType
+
+    // Taux personnalisé (pour les imports résolus ou overrides temporaires)
+    // Optionnel pour ne pas polluer le JSON si non utilisé, mais on le rend Codable pour persistance si besoin
+    var customRate: Double? = nil
+
+    // --- COMPATIBILITÉ UI & LEGACY ---
+
+    var purity: NodePurity {
+        get {
+            if case .node(let p, _) = sourceType { return p }
+            return .normal
+        }
+        set {
+            if case .node(_, let m) = sourceType { sourceType = .node(purity: newValue, miner: m) }
+            else { sourceType = .node(purity: newValue, miner: .mk1) } // Fallback si on édite un import comme un node
+        }
+    }
+
+    var miner: MinerLevel {
+        get {
+            if case .node(_, let m) = sourceType { return m }
+            return .mk1
+        }
+        set {
+            if case .node(let p, _) = sourceType { sourceType = .node(purity: p, miner: newValue) }
+            else { sourceType = .node(purity: .normal, miner: newValue) }
+        }
+    }
+
+    var factoryID: UUID? {
+        if case .factory(let id) = sourceType { return id }
+        return nil
+    }
+
+    var productionRate: Double {
+        if let custom = customRate { return custom }
+        switch sourceType {
+        case .node(let purity, let miner):
+            return miner.baseExtractionRate * purity.multiplier
+        case .factory:
+            return 0 // Sera remplacé par customRate lors du calcul
+        }
+    }
+
+    // --- CUSTOM DECODING FOR MIGRATION ---
+    enum CodingKeys: String, CodingKey {
+        case id, resourceName, sourceType, customRate
+        // Legacy keys
+        case purity, miner
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Champs communs
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        resourceName = try container.decode(String.self, forKey: .resourceName)
+        customRate = try container.decodeIfPresent(Double.self, forKey: .customRate)
+
+        // Tentative de décodage du nouveau format
+        if let source = try? container.decodeIfPresent(InputSourceType.self, forKey: .sourceType) {
+            sourceType = source
+        } else {
+            // Fallback : Format Legacy (purity/miner à la racine)
+            // On utilise decodeIfPresent pour ne pas crash si les clés manquent (ex: fichier corrompu),
+            // mais normalement elles sont là dans l'ancien format.
+            let purity = try container.decodeIfPresent(NodePurity.self, forKey: .purity) ?? .normal
+            let miner = try container.decodeIfPresent(MinerLevel.self, forKey: .miner) ?? .mk1
+            sourceType = .node(purity: purity, miner: miner)
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(resourceName, forKey: .resourceName)
+        try container.encode(sourceType, forKey: .sourceType)
+        try container.encodeIfPresent(customRate, forKey: .customRate)
+    }
+
+    // Init standard pour création code
+    init(id: UUID = UUID(), resourceName: String, sourceType: InputSourceType, customRate: Double? = nil) {
+        self.id = id
+        self.resourceName = resourceName
+        self.sourceType = sourceType
+        self.customRate = customRate
+    }
 }
 
 struct ProductionGoal: Identifiable, Hashable, Codable {
@@ -143,8 +237,10 @@ struct ShoppingItem: Identifiable {
     let count: Int
 }
 
-struct ProjectData: Codable, Identifiable {
-    var id = UUID()
+// --- NEW WORLD STRUCTURE ---
+
+struct Factory: Codable, Identifiable {
+    var id: UUID = UUID()
     var name: String
     var date: Date
     var inputs: [ResourceInput]
@@ -153,7 +249,22 @@ struct ProjectData: Codable, Identifiable {
     var beltLevel: BeltLevel
     var fuelType: PowerFuel
     var fuelAmount: String
+
+    // Helper pour initialiser vide
+    static func empty() -> Factory {
+        Factory(name: "New Factory", date: Date(), inputs: [], goals: [], activeRecipes: [:], beltLevel: .mk3, fuelType: .coal, fuelAmount: "0")
+    }
 }
+
+struct World: Codable {
+    var factories: [Factory]
+
+    // Le monde contient toutes les usines
+}
+
+// --- ALIAS FOR COMPATIBILITY ---
+// Pour éviter de casser tout le code existant qui référence ProjectData
+typealias ProjectData = Factory
 
 // MARK: - GRAPH MODELS (MODIFIÉ)
 
@@ -287,10 +398,10 @@ enum ProductionError: LocalizedError {
 
 // MARK: - CONFIGURATION
 struct ProductionConfig {
-    static let defaultStepSize: Double = 1.0 // Augmenté de 0.1 à 1.0 pour améliorer les performances
-    static let maxIterations: Int = 2000 // Augmenté pour permettre plus d'itérations si nécessaire
+    static let defaultStepSize: Double = 1.0
+    static let maxIterations: Int = 2000
     static let maxDepthIterations: Int = 10
-    static let cacheTimeout: TimeInterval = 300 // 5 minutes
+    static let cacheTimeout: TimeInterval = 300
 }
 
 struct GraphConfig {

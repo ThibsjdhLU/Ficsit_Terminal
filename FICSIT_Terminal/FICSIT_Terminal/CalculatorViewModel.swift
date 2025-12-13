@@ -71,7 +71,7 @@ class CalculatorViewModel: ObservableObject {
         }
     }
 
-    private func saveCurrentFactory() {
+    func saveCurrentFactory() {
         let factory = Factory(
             id: currentProjectId,
             name: currentProjectName,

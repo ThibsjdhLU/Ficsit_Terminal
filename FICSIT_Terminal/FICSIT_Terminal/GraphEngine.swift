@@ -125,35 +125,27 @@ class GraphEngine {
         
         // 4. LIENS ENTRE MACHINES
         // IMPORTANT: Créer les liens APRÈS avoir tous les noeuds, mais AVANT de modifier les positions
+        // OPTIMISATION (Bolt): Utilisation de nodeMap pour éviter la recherche linéaire O(N) -> O(1)
         for step in plan {
             guard let recipe = step.recipe else { continue }
             
-            // Trouver le noeud machine cible (celui qui produit l'item)
-            guard let targetMachineNode = nodes.first(where: { 
-                $0.item.name == step.item.name && $0.type == .machine 
-            }) else {
+            // Trouver le noeud machine cible (celui qui produit l'item) via Map O(1)
+            guard let targetNodeID = nodeMap[step.item.name] else {
                 continue
             }
             
             for (ingName, ingRatePerMachine) in recipe.ingredients {
-                // Trouver le noeud source (peut être input ou machine)
-                // PRIORITÉ: Prendre le noeud machine s'il existe, sinon l'input
-                let sourceNode = nodes.first(where: { 
-                    $0.item.name == ingName && $0.type == .machine
-                }) ?? nodes.first(where: { 
-                    $0.item.name == ingName && $0.type == .input
-                })
-                
-                if let sourceNode = sourceNode {
+                // Trouver le noeud source (input ou machine) via Map O(1)
+                // nodeMap contient déjà la priorité (Machine écrase Input lors de la construction)
+                if let sourceNodeID = nodeMap[ingName] {
                     let link = GraphLink(
-                        fromNodeID: sourceNode.id,
-                        toNodeID: targetMachineNode.id,
+                        fromNodeID: sourceNodeID,
+                        toNodeID: targetNodeID,
                         rate: ingRatePerMachine * step.machineCount,
                         itemName: ingName,
                         color: getColorForResource(ingName)
                     )
                     links.append(link)
-                    
                 }
             }
         }

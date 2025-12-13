@@ -126,11 +126,24 @@ struct Localization {
         "Notes": "Notes",
         "others...": "autres...",
 
+        // HUB (NEW)
+        "FICSIT FACTORY OS": "FICSIT FACTORY OS",
+        "GLOBAL COMMAND": "COMMANDEMENT GLOBAL",
+        "ACTIVE FACTORIES": "USINES ACTIVES",
+        "Production Sites": "Sites de Production",
+        "Establish New Site": "Établir Nouveau Site",
+        "New Factory": "Nouvelle Usine",
+        "Name": "Nom",
+        "Create": "Créer",
+        "Enter designation for the new production site.": "Entrez la désignation du nouveau site de production.",
+        "ONLINE": "EN LIGNE",
+
         // INPUT VIEW
         "RESOURCE SURVEY": "SURVEY RESSOURCES",
-        "ADD NODE": "AJOUTER UN NOEUD",
-        "Claimed Nodes": "Noeuds Revendiqués",
+        "ADD SOURCE": "AJOUTER SOURCE",
+        "Claimed Sources": "Sources Revendiquées",
         "No scanned resources.": "Aucune ressource scannée.",
+        "No resources configured.": "Aucune ressource configurée.",
         "Belt Level": "Niveau de Convoyeur",
         "Cancel": "Annuler",
         "Save": "Sauver",
@@ -139,8 +152,13 @@ struct Localization {
         "NODE PURITY": "PURETÉ DU NOEUD",
         "MINER LEVEL": "NIVEAU DE MINEUR",
         "EXTRACTION RATE": "DÉBIT EXTRACTION",
-        "Add Node": "Ajouter Noeud",
-        "Edit Node": "Modifier Noeud",
+        "Add Source": "Ajouter Source",
+        "Edit Source": "Modifier Source",
+        "Logistics Import": "Import Logistique",
+        "SOURCE FACTORY": "USINE SOURCE",
+        "No other factories available.": "Aucune autre usine disponible.",
+        "Select Factory...": "Sélectionner Usine...",
+        "This will import resources produced by the selected factory.": "Ceci importera les ressources produites par l'usine sélectionnée.",
 
         // OUTPUT VIEW
         "PRODUCTION MANAGEMENT": "GESTION DE PRODUCTION",

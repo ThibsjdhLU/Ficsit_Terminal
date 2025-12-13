@@ -1,14 +1,28 @@
 import Foundation
 import Combine
+import SwiftUI
 
-class WorldService: ObservableObject {
-    static let shared = WorldService()
+// MARK: - Protocol
 
-    @Published var world: World
+protocol WorldServiceProtocol: AnyObject {
+    var world: World { get }
+    var worldPublisher: AnyPublisher<World, Never> { get }
 
+    func loadWorld() async
+    func saveWorld() async
+    func addFactory(_ factory: Factory)
+    func updateFactory(_ factory: Factory)
+    func deleteFactory(_ factory: Factory)
+    func getFactory(id: UUID) -> Factory?
+    func getLastActiveFactoryID() -> UUID?
+    func setLastActiveFactoryID(_ id: UUID)
+}
+
+// MARK: - Actor for I/O
+
+actor WorldStorage {
     private let fileManager = FileManager.default
     private let worldFileName = "ficsit_world.json"
-    private let lastActiveFactoryKey = "lastActiveFactoryID"
 
     private var documentsDirectory: URL {
         guard let url = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
@@ -17,88 +31,120 @@ class WorldService: ObservableObject {
         return url
     }
 
-    init() {
-        self.world = World(factories: [])
-        self.loadWorld()
-    }
-
-    // MARK: - PERSISTENCE
-
-    func saveWorld() {
+    func save(_ world: World) throws {
         let fileURL = documentsDirectory.appendingPathComponent(worldFileName)
-        do {
-            let data = try JSONEncoder().encode(world)
-            try data.write(to: fileURL)
-            print("World saved successfully to \(fileURL.path)")
-        } catch {
-            print("Error saving world: \(error)")
-        }
+        let data = try JSONEncoder().encode(world)
+        try data.write(to: fileURL)
     }
 
-    func loadWorld() {
+    func load() throws -> World {
         let fileURL = documentsDirectory.appendingPathComponent(worldFileName)
-        if fileManager.fileExists(atPath: fileURL.path) {
-            do {
-                let data = try Data(contentsOf: fileURL)
-                let loadedWorld = try JSONDecoder().decode(World.self, from: data)
-                self.world = loadedWorld
-            } catch {
-                print("Error loading world: \(error)")
-                // En cas d'erreur critique, on garde un monde vide mais on ne l'écrase pas tout de suite
-            }
-        } else {
-            // Premier lancement ou fichier manquant : on migre les anciens fichiers si présents
-            migrateLegacyProjects()
-        }
+        let data = try Data(contentsOf: fileURL)
+        return try JSONDecoder().decode(World.self, from: data)
     }
 
-    // Migration des anciens fichiers ProjectData individuels vers le World unique
-    private func migrateLegacyProjects() {
-        print("Migrating legacy projects...")
+    func migrateLegacyProjects() throws -> [Factory] {
         var migratedFactories: [Factory] = []
+        let fileURLs = try fileManager.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil)
+        for url in fileURLs where url.pathExtension == "json" && url.lastPathComponent != worldFileName {
+            if let data = try? Data(contentsOf: url),
+               let project = try? JSONDecoder().decode(Factory.self, from: data) {
+                migratedFactories.append(project)
+            }
+        }
+        return migratedFactories
+    }
+
+    func fileExists() -> Bool {
+        let fileURL = documentsDirectory.appendingPathComponent(worldFileName)
+        return fileManager.fileExists(atPath: fileURL.path)
+    }
+}
+
+// MARK: - Service
+
+@MainActor
+class WorldService: ObservableObject, WorldServiceProtocol {
+
+    // Singleton for legacy compatibility, but prefer injection
+    static let shared = WorldService()
+
+    @Published private(set) var world: World = World(factories: [])
+    @Published var error: Error?
+
+    var worldPublisher: AnyPublisher<World, Never> {
+        $world.eraseToAnyPublisher()
+    }
+
+    private let storage = WorldStorage()
+    private let lastActiveFactoryKey = "lastActiveFactoryID"
+
+    init() {
+        // Initial empty state, should call loadWorld() immediately after
+        // Note: We cannot await in init, so we start a task or rely on caller
+        Task {
+            await loadWorld()
+        }
+    }
+
+    func loadWorld() async {
         do {
-            let fileURLs = try fileManager.contentsOfDirectory(at: documentsDirectory, includingPropertiesForKeys: nil)
-            for url in fileURLs where url.pathExtension == "json" && url.lastPathComponent != worldFileName {
-                if let data = try? Data(contentsOf: url),
-                   let project = try? JSONDecoder().decode(ProjectData.self, from: data) {
-                    migratedFactories.append(project)
+            if await storage.fileExists() {
+                let loadedWorld = try await storage.load()
+                self.world = loadedWorld
+            } else {
+                // Migration path
+                let migrated = try await storage.migrateLegacyProjects()
+                if !migrated.isEmpty {
+                    self.world = World(factories: migrated.sorted { $0.date > $1.date })
+                    await saveWorld()
                 }
             }
         } catch {
-            print("Error reading legacy files: \(error)")
-        }
-
-        if !migratedFactories.isEmpty {
-            self.world = World(factories: migratedFactories.sorted { $0.date > $1.date })
-            saveWorld()
-            print("Migration complete. \(migratedFactories.count) factories imported.")
+            print("Craft Error: Failed to load world: \(error)") // Debug log
+            self.error = error
         }
     }
 
-    // MARK: - FACTORY MANAGEMENT
+    func saveWorld() async {
+        do {
+            try await storage.save(self.world)
+        } catch {
+            print("Craft Error: Failed to save world: \(error)") // Debug log
+            self.error = error
+        }
+    }
+
+    // MARK: - CRUD
 
     func addFactory(_ factory: Factory) {
         world.factories.append(factory)
-        saveWorld()
+        triggerSave()
     }
 
     func updateFactory(_ factory: Factory) {
         if let index = world.factories.firstIndex(where: { $0.id == factory.id }) {
             world.factories[index] = factory
-            saveWorld()
+            triggerSave()
         }
     }
 
     func deleteFactory(_ factory: Factory) {
         world.factories.removeAll { $0.id == factory.id }
-        saveWorld()
+        triggerSave()
     }
 
     func getFactory(id: UUID) -> Factory? {
-        return world.factories.first(where: { $0.id == id })
+        world.factories.first(where: { $0.id == id })
     }
 
-    // MARK: - STATE RESTORATION
+    private func triggerSave() {
+        Task {
+            await saveWorld()
+        }
+    }
+
+    // MARK: - Preferences
 
     func getLastActiveFactoryID() -> UUID? {
         if let idString = UserDefaults.standard.string(forKey: lastActiveFactoryKey),

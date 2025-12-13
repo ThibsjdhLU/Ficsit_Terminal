@@ -17,12 +17,6 @@ class HapticManager {
     private let impactFeedbackHeavy = UIImpactFeedbackGenerator(style: .heavy)
     private let notificationFeedback = UINotificationFeedbackGenerator()
     
-    // Prépare les moteurs pour réduire la latence
-    func prepare() {
-        selectionFeedback.prepare()
-        impactFeedbackLight.prepare()
-    }
-    
     // Clic léger (Boutons, Toggles)
     func click() {
         impactFeedbackLight.impactOccurred()

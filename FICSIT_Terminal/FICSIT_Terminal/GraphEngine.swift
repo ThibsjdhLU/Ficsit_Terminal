@@ -132,7 +132,6 @@ class GraphEngine {
             guard let targetMachineNode = nodes.first(where: { 
                 $0.item.name == step.item.name && $0.type == .machine 
             }) else {
-                print("⚠️ No machine node found for \(step.item.name)")
                 continue
             }
             
@@ -195,12 +194,6 @@ class GraphEngine {
         let validNodeIDs = Set(finalNodes.map { $0.id })
         let validLinks = links.filter { link in
             validNodeIDs.contains(link.fromNodeID) && validNodeIDs.contains(link.toNodeID)
-        }
-        
-        if validLinks.count != links.count {
-            print("⚠️ Filtered out \(links.count - validLinks.count) invalid links")
-            print("   Valid node IDs: \(validNodeIDs)")
-            print("   Invalid link IDs: \(Set(links.map { $0.fromNodeID }).union(Set(links.map { $0.toNodeID })).subtracting(validNodeIDs))")
         }
         
         return GraphLayout(nodes: finalNodes, links: validLinks, contentSize: CGSize(width: maxWidth, height: maxHeight))

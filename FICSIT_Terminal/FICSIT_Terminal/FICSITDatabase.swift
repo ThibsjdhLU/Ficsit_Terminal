@@ -99,10 +99,6 @@ class FICSITDatabase: ObservableObject {
         }
     }
     
-    func getRecipes(producing itemName: String) -> [Recipe] {
-        return recipes.filter { $0.products.keys.contains(itemName) }
-    }
-    
     // MARK: - INDEXATION OPTIMISÉE
     private var _recipeIndex: [String: [Recipe]]?
     private var _itemIndex: [String: ProductionItem]?

@@ -20,7 +20,7 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             
             // TAB 0 : THE HUB (Dashboard)
-            HubDashboardView(viewModel: viewModel)
+            HubDashboardView(calculatorViewModel: viewModel)
                 .tabItem {
                     Label(Localization.translate("HUB"), systemImage: "house.fill")
                 }

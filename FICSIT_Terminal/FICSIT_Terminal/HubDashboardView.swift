@@ -1,11 +1,16 @@
 import SwiftUI
 
 struct HubDashboardView: View {
-    @ObservedObject var viewModel: CalculatorViewModel
-    @State private var showingCreateAlert = false
-    @State private var newFactoryName = ""
+    @StateObject var viewModel: HubViewModel
+    @ObservedObject var calculatorViewModel: CalculatorViewModel // For selection state sync (legacy/delegate)
+
     @State private var animateStats = false
     
+    init(viewModel: HubViewModel = HubViewModel(), calculatorViewModel: CalculatorViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+        self.calculatorViewModel = calculatorViewModel
+    }
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -15,107 +20,138 @@ struct HubDashboardView: View {
                     VStack(spacing: 25) {
                         
                         // HEADER GLOBAL
-                        HStack {
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text(Localization.translate("FICSIT FACTORY OS"))
-                                    .font(.system(.caption, design: .monospaced))
-                                    .foregroundColor(.ficsitOrange)
-                                    .tracking(2)
-                                
-                                Text(Localization.translate("GLOBAL COMMAND"))
-                                    .font(.system(.title, design: .monospaced))
-                                    .fontWeight(.heavy)
-                                    .foregroundColor(.white)
-                            }
-                            Spacer()
-                            Image(systemName: "globe.europe.africa.fill")
-                                .font(.largeTitle)
-                                .foregroundColor(.ficsitGray)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 20)
+                        headerView
                         
                         // --- GLOBAL STATS ---
-                        VStack(spacing: 15) {
-                            
-                            // TOTAL FACTORIES
-                            HStack {
-                                VStack(alignment: .leading) {
-                                    Text(Localization.translate("ACTIVE FACTORIES"))
-                                        .font(.system(.caption, design: .monospaced))
-                                        .foregroundColor(.ficsitGray)
-                                    
-                                    Text("\(viewModel.worldService.world.factories.count)")
-                                        .font(.system(size: 40, weight: .black, design: .monospaced))
-                                        .foregroundColor(.white)
-                                }
-                                Spacer()
-                                Image(systemName: "building.2.fill")
-                                    .font(.system(size: 30))
-                                    .foregroundColor(.ficsitGray.opacity(0.5))
-                            }
-                            .padding()
-                            .background(Color.black.opacity(0.4))
-                            .clipShape(FicsitCardShape(cornerSize: 15))
-                            .overlay(FicsitCardShape(cornerSize: 15).stroke(Color.ficsitGray.opacity(0.5), lineWidth: 1))
-                        }
-                        .padding(.horizontal)
+                        globalStatsView
 
                         // --- FACTORY LIST ---
-                        VStack(alignment: .leading) {
-                            FicsitHeader(title: Localization.translate("Production Sites"), icon: "list.bullet.rectangle.portrait")
-                            
-                            ForEach(viewModel.worldService.world.factories) { factory in
-                                FactoryListCard(factory: factory, isActive: factory.id == viewModel.currentProjectId)
-                                    .onTapGesture {
-                                        viewModel.loadFactory(factory)
-                                        HapticManager.shared.click()
-                                    }
-                            }
-
-                            // CREATE NEW BUTTON
-                            Button(action: {
-                                newFactoryName = ""
-                                showingCreateAlert = true
-                            }) {
-                                HStack {
-                                    Image(systemName: "plus.circle.fill")
-                                    Text(Localization.translate("Establish New Site"))
-                                }
-                                .font(.system(.headline, design: .monospaced))
-                                .foregroundColor(.ficsitOrange)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.ficsitDark.opacity(0.5))
-                                .cornerRadius(10)
-                                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.ficsitOrange, style: StrokeStyle(lineWidth: 1, dash: [5])))
-                            }
-                        }
-                        .padding(.horizontal)
+                        factoryListView
                         
                         Spacer()
                     }
                 }
                 .onAppear {
+                    // Sync Delegate
+                    viewModel.delegate = calculatorViewModel
+
                     withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
                         animateStats = true
                     }
                 }
             }
             .navigationBarHidden(true)
-            .alert(Localization.translate("New Factory"), isPresented: $showingCreateAlert) {
-                TextField(Localization.translate("Name"), text: $newFactoryName)
+            .alert(Localization.translate("New Factory"), isPresented: $viewModel.showingCreateAlert) {
+                TextField(Localization.translate("Name"), text: $viewModel.newFactoryName)
                 Button(Localization.translate("Cancel"), role: .cancel) { }
                 Button(Localization.translate("Create")) {
                     viewModel.createNewFactory()
-                    // Rename immediat
-                    viewModel.currentProjectName = newFactoryName.isEmpty ? "New Factory" : newFactoryName
-                    viewModel.saveCurrentFactory() // Force save pour update le nom
                 }
             } message: {
                 Text(Localization.translate("Enter designation for the new production site."))
             }
         }
+    }
+
+    // MARK: - Subviews
+
+    private var headerView: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(Localization.translate("FICSIT FACTORY OS"))
+                    .font(.caption) // .monospaced is handled by DesignSystem if applicable or we add it
+                    .fontDesign(.monospaced)
+                    .foregroundColor(.ficsitOrange)
+                    .tracking(2)
+                    .accessibilityLabel("System Name")
+
+                Text(Localization.translate("GLOBAL COMMAND"))
+                    .font(.largeTitle)
+                    .fontWeight(.heavy)
+                    .fontDesign(.monospaced)
+                    .foregroundColor(.white)
+                    .accessibilityAddTraits(.isHeader)
+            }
+            Spacer()
+            Image(systemName: "globe.europe.africa.fill")
+                .font(.largeTitle)
+                .foregroundColor(.ficsitGray)
+                .accessibilityHidden(true)
+        }
+        .padding(.horizontal)
+        .padding(.top, 20)
+    }
+
+    private var globalStatsView: some View {
+        VStack(spacing: 15) {
+            HStack {
+                VStack(alignment: .leading) {
+                    Text(Localization.translate("ACTIVE FACTORIES"))
+                        .font(.caption)
+                        .fontDesign(.monospaced)
+                        .foregroundColor(.ficsitGray)
+
+                    Text("\(viewModel.globalFactoryCount)")
+                        .font(.system(size: 40, weight: .black, design: .monospaced)) // Using system(size:) for specific impact but checking if it scales...
+                        .minimumScaleFactor(0.5) // Allow scaling down
+                        .foregroundColor(.white)
+                        .accessibilityLabel("\(viewModel.globalFactoryCount) active factories")
+                }
+                Spacer()
+                Image(systemName: "building.2.fill")
+                    .font(.largeTitle)
+                    .foregroundColor(.ficsitGray.opacity(0.5))
+            }
+            .padding()
+            .ficsitCard(borderColor: .ficsitGray.opacity(0.5))
+        }
+        .padding(.horizontal)
+    }
+
+    private var factoryListView: some View {
+        VStack(alignment: .leading) {
+            FicsitHeader(title: Localization.translate("Production Sites"), icon: "list.bullet.rectangle.portrait")
+
+            if case .empty = viewModel.state {
+                Text(Localization.translate("No active factories. Initialize new site."))
+                    .font(.body)
+                    .fontDesign(.monospaced)
+                    .foregroundColor(.ficsitGray)
+                    .padding()
+            } else {
+                ForEach(viewModel.factories) { factory in
+                    FactoryListCard(factory: factory, isActive: factory.id == calculatorViewModel.currentProjectId)
+                        .onTapGesture {
+                            viewModel.selectFactory(factory)
+                            HapticManager.shared.click()
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Factory \(factory.name), \(factory.goals.count) goals")
+                        .accessibilityHint("Double tap to activate")
+                }
+            }
+
+            // CREATE NEW BUTTON
+            Button(action: {
+                viewModel.newFactoryName = ""
+                viewModel.showingCreateAlert = true
+            }) {
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                    Text(Localization.translate("Establish New Site"))
+                }
+                .font(.headline)
+                .fontDesign(.monospaced)
+                .foregroundColor(.ficsitOrange)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.ficsitDark.opacity(0.5))
+                .cornerRadius(10)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.ficsitOrange, style: StrokeStyle(lineWidth: 1, dash: [5])))
+            }
+            .accessibilityLabel("Create new factory")
+        }
+        .padding(.horizontal)
     }
 }
 
@@ -129,15 +165,17 @@ struct FactoryListCard: View {
             VStack(alignment: .leading, spacing: 5) {
                 HStack {
                     Text(factory.name)
-                        .font(.system(.headline, design: .monospaced))
+                        .font(.headline)
+                        .fontDesign(.monospaced)
                         .fontWeight(.bold)
                         .foregroundColor(isActive ? .ficsitOrange : .white)
+                        .lineLimit(1)
 
                     if isActive {
                         Text(Localization.translate("ONLINE"))
-                            .font(.system(size: 8, weight: .bold, design: .monospaced))
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 2)
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
                             .background(Color.green.opacity(0.2))
                             .foregroundColor(.green)
                             .cornerRadius(4)

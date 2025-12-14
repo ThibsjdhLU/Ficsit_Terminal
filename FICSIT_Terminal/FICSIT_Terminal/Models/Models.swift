@@ -9,7 +9,7 @@ extension Color {
 }
 
 // MARK: - ENUMS
-enum NodePurity: String, CaseIterable, Codable, Identifiable {
+enum NodePurity: String, CaseIterable, Codable, Identifiable, Sendable {
     case impure, normal, pure
     var id: String { self.rawValue }
     var multiplier: Double {
@@ -17,7 +17,7 @@ enum NodePurity: String, CaseIterable, Codable, Identifiable {
     }
 }
 
-enum MinerLevel: String, CaseIterable, Codable, Identifiable {
+enum MinerLevel: String, CaseIterable, Codable, Identifiable, Sendable {
     case mk1, mk2, mk3
     var id: String { self.rawValue }
     var baseExtractionRate: Double {
@@ -25,7 +25,7 @@ enum MinerLevel: String, CaseIterable, Codable, Identifiable {
     }
 }
 
-enum BeltLevel: String, CaseIterable, Codable, Identifiable {
+enum BeltLevel: String, CaseIterable, Codable, Identifiable, Sendable {
     case mk1, mk2, mk3, mk4, mk5
     var id: String { self.rawValue }
     var speed: Double {
@@ -33,7 +33,7 @@ enum BeltLevel: String, CaseIterable, Codable, Identifiable {
     }
 }
 
-enum PowerFuel: String, CaseIterable, Identifiable, Codable {
+enum PowerFuel: String, CaseIterable, Identifiable, Codable, Sendable {
     case coal = "Coal", fuel = "Fuel", turbofuel = "Turbofuel"
     var id: String { self.rawValue }
     var energyValue: Double { switch self { case .coal: return 300; case .fuel: return 750; case .turbofuel: return 2000 } }
@@ -44,12 +44,12 @@ enum PowerFuel: String, CaseIterable, Identifiable, Codable {
 // MARK: - DATA STRUCTURES
 
 // --- UPDATED RESOURCE INPUT FOR LOGISTICS ---
-enum InputSourceType: Codable, Hashable {
+enum InputSourceType: Codable, Hashable, Sendable {
     case node(purity: NodePurity, miner: MinerLevel)
     case factory(id: UUID) // Import depuis une autre usine
 }
 
-struct ResourceInput: Identifiable, Codable, Hashable {
+struct ResourceInput: Identifiable, Codable, Hashable, Sendable {
     var id: UUID = UUID()
     var resourceName: String
 
@@ -106,7 +106,7 @@ struct ResourceInput: Identifiable, Codable, Hashable {
         case purity, miner
     }
 
-    init(from decoder: Decoder) throws {
+    nonisolated init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         // Champs communs
@@ -127,7 +127,7 @@ struct ResourceInput: Identifiable, Codable, Hashable {
         }
     }
 
-    func encode(to encoder: Encoder) throws {
+    nonisolated func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(resourceName, forKey: .resourceName)
@@ -144,13 +144,13 @@ struct ResourceInput: Identifiable, Codable, Hashable {
     }
 }
 
-struct ProductionGoal: Identifiable, Hashable, Codable {
+struct ProductionGoal: Identifiable, Hashable, Codable, Sendable {
     var id = UUID()
     let item: ProductionItem
     var ratio: Double = 1.0
 }
 
-struct ProductionItem: Identifiable, Hashable, Codable {
+struct ProductionItem: Identifiable, Hashable, Codable, Sendable {
     var id: UUID = UUID()
     let name: String
     let category: String
@@ -162,18 +162,18 @@ struct ProductionItem: Identifiable, Hashable, Codable {
     }
 }
 
-struct BuildingDimensions: Codable {
+struct BuildingDimensions: Codable, Sendable {
     let width: Double
     let length: Double
     let height: Double
 }
 
-enum PortType: String, Codable {
+enum PortType: String, Codable, Sendable {
     case input
     case output
 }
 
-struct BuildingPort: Codable {
+struct BuildingPort: Codable, Sendable {
     let id: String
     let type: PortType
     let x: Double
@@ -181,9 +181,10 @@ struct BuildingPort: Codable {
     let z: Double
 }
 
-struct Building: Identifiable, Codable {
+struct Building: Identifiable, Codable, Sendable {
     var id: UUID = UUID()
     let name: String
+    var type: String? // Added type property
     let powerConsumption: Double
     let buildCost: [String: Int]
     var dimensions: BuildingDimensions?
@@ -194,7 +195,7 @@ struct Building: Identifiable, Codable {
     }
 }
 
-struct Recipe: Identifiable, Codable {
+struct Recipe: Identifiable, Codable, Sendable {
     var id: UUID = UUID()
     let name: String
     let machine: Building
@@ -208,7 +209,7 @@ struct Recipe: Identifiable, Codable {
 }
 
 // Résultats
-struct ConsolidatedStep: Identifiable {
+struct ConsolidatedStep: Identifiable, Sendable {
     let id = UUID()
     let item: ProductionItem
     let totalRate: Double
@@ -219,7 +220,7 @@ struct ConsolidatedStep: Identifiable {
     var clockSpeed: Double = 1.0 // New: Overclocking (1.0 = 100%)
 }
 
-struct PowerResult {
+struct PowerResult: Sendable {
     let fuel: PowerFuel
     let generators: Double
     let totalMW: Double
@@ -227,20 +228,20 @@ struct PowerResult {
     let waterExtractors: Double
 }
 
-struct SinkResult {
+struct SinkResult: Sendable {
     let bestItem: ProductionItem
     let producedAmount: Double
     let totalPoints: Int
 }
 
-struct ShoppingItem: Identifiable {
+struct ShoppingItem: Identifiable, Sendable {
     let id = UUID()
     let item: ProductionItem
     let count: Int
 }
 
 // --- TO-DO LIST ITEMS ---
-struct ToDoItem: Identifiable, Codable, Hashable {
+struct ToDoItem: Identifiable, Codable, Hashable, Sendable {
     var id: UUID = UUID()
     var title: String
     var isCompleted: Bool = false
@@ -250,7 +251,7 @@ struct ToDoItem: Identifiable, Codable, Hashable {
 
 // --- NEW WORLD STRUCTURE ---
 
-struct Factory: Codable, Identifiable {
+struct Factory: Codable, Identifiable, Sendable {
     var id: UUID = UUID()
     var name: String
     var date: Date
@@ -292,7 +293,7 @@ struct Factory: Codable, Identifiable {
     }
 
     // Custom decoding to handle missing toDoList in old JSONs
-    init(from decoder: Decoder) throws {
+    nonisolated init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
         name = try container.decode(String.self, forKey: .name)
@@ -309,7 +310,7 @@ struct Factory: Codable, Identifiable {
     }
 
     // Custom encoding is not strictly necessary as synthesized one works, but for symmetry/safety:
-    func encode(to encoder: Encoder) throws {
+    nonisolated func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(name, forKey: .name)
@@ -325,7 +326,7 @@ struct Factory: Codable, Identifiable {
     }
 }
 
-struct World: Codable {
+struct World: Codable, Sendable {
     var factories: [Factory]
 
     // Le monde contient toutes les usines
@@ -338,13 +339,13 @@ typealias ProjectData = Factory
 // MARK: - GRAPH MODELS (MODIFIÉ)
 
 // Nouveau : Type de noeud pour l'affichage
-enum GraphNodeType {
+enum GraphNodeType: Sendable {
     case input      // Ressource (Gauche)
     case machine    // Machine (Milieu)
     case output     // Produit Final (Droite)
 }
 
-struct GraphNode: Identifiable {
+struct GraphNode: Identifiable, Sendable {
     let id: UUID
     let item: ProductionItem
     let label: String
@@ -384,7 +385,7 @@ struct GraphNode: Identifiable {
     }
 }
 
-struct GraphLink: Identifiable {
+struct GraphLink: Identifiable, Sendable {
     let id = UUID()
     let fromNodeID: UUID
     let toNodeID: UUID
@@ -409,7 +410,7 @@ extension PowerFuel {
 }
 
 // MARK: - ERROR HANDLING
-enum ProductionError: LocalizedError {
+enum ProductionError: LocalizedError, Sendable {
     case noRecipeFound(item: String)
     case insufficientResources(item: String, needed: [String: Double], available: [String: Double])
     case circularDependency(items: [String])

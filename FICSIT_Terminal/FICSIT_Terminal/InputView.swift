@@ -117,6 +117,7 @@ struct InputCard: View {
     let input: ResourceInput
     @ObservedObject var viewModel: CalculatorViewModel
     let onEdit: () -> Void
+    @State private var showingDeleteConfirmation = false
 
     var body: some View {
         HStack {
@@ -150,7 +151,7 @@ struct InputCard: View {
                         Text(verbatim: "\(Int(input.productionRate))/m")
                             .font(.system(.title3, design: .monospaced)).fontWeight(.bold).foregroundColor(.ficsitOrange)
                     } else {
-                         Text("Import")
+                         Text(Localization.translate("Import"))
                             .font(.system(.caption, design: .monospaced)).foregroundColor(.ficsitGray)
                     }
                 }
@@ -159,14 +160,24 @@ struct InputCard: View {
             .buttonStyle(PlainButtonStyle())
 
             Button(action: {
-                if let index = viewModel.userInputs.firstIndex(where: { $0.id == input.id }) {
-                    viewModel.removeInput(at: IndexSet(integer: index))
-                    HapticManager.shared.click()
-                }
+                showingDeleteConfirmation = true
+                HapticManager.shared.click()
             }) {
                 Image(systemName: "trash")
                     .foregroundColor(Color(red: 0.8, green: 0.3, blue: 0.3))
                     .padding(8)
+            }
+            .accessibilityLabel(Localization.translate("Delete input"))
+            .alert(Localization.translate("Delete Resource"), isPresented: $showingDeleteConfirmation) {
+                Button(Localization.translate("Delete"), role: .destructive) {
+                    if let index = viewModel.userInputs.firstIndex(where: { $0.id == input.id }) {
+                        viewModel.removeInput(at: IndexSet(integer: index))
+                        HapticManager.shared.click()
+                    }
+                }
+                Button(Localization.translate("Cancel"), role: .cancel) { }
+            } message: {
+                Text(Localization.translate("Are you sure you want to remove this resource source?"))
             }
         }
     }

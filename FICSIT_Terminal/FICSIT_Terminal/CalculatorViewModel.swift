@@ -39,7 +39,7 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
     private let db = FICSITDatabase.shared
     private let validator = InputValidator(db: FICSITDatabase.shared)
 
-    init(worldService: WorldService = .shared) {
+    init(worldService: WorldService) {
         self.worldService = worldService
 
         // Wait for world to load if needed (this is tricky in init, ideally handled by a loading state)

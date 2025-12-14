@@ -29,7 +29,7 @@ class HubViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
 
-    init(worldService: WorldService = .shared) {
+    init(worldService: WorldService) {
         self.worldService = worldService
         setupBindings()
     }

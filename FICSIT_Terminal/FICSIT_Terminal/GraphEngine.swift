@@ -198,16 +198,38 @@ class GraphEngine {
         for char in string.utf8 {
             hash = ((hash << 5) &+ hash) &+ UInt64(char)
         }
-        // Construire un UUID valide à partir du hash
-        let p1 = String(format: "%08x", (hash >> 32) & 0xFFFFFFFF)
-        let p2 = String(format: "%04x", (hash >> 16) & 0xFFFF)
-        let p3 = String(format: "%04x", hash & 0xFFFF)
-        // Partie aléatoire (pseudo) pour compléter mais rester déterministe par rapport à l'entrée
-        let p4 = String(format: "%04x", (hash & 0xABCD) )
-        // CORRECTION : On s'assure de ne prendre que les 48 bits de poids faible pour le dernier segment de 12 caractères (UUID standard)
-        let p5 = String(format: "%012x", hash & 0xFFFFFFFFFFFF)
 
-        return UUID(uuidString: "\(p1)-\(p2)-\(p3)-\(p4)-\(p5)") ?? UUID()
+        // OPTIMIZATION: Construct UUID bytes directly to avoid String(format:) overhead
+        // which was causing performance issues in large graphs.
+        // Mapping follows the original structure:
+        // p1 (8 chars) -> hash >> 32
+        // p2 (4 chars) -> (hash >> 16) & 0xFFFF
+        // p3 (4 chars) -> hash & 0xFFFF
+        // p4 (4 chars) -> hash & 0xABCD
+        // p5 (12 chars) -> hash & 0xFFFFFFFFFFFF (low 48 bits)
+
+        let h1 = UInt8((hash >> 56) & 0xFF)
+        let h2 = UInt8((hash >> 48) & 0xFF)
+        let h3 = UInt8((hash >> 40) & 0xFF)
+        let h4 = UInt8((hash >> 32) & 0xFF)
+        let h5 = UInt8((hash >> 24) & 0xFF)
+        let h6 = UInt8((hash >> 16) & 0xFF)
+        let h7 = UInt8((hash >> 8) & 0xFF)
+        let h8 = UInt8(hash & 0xFF)
+
+        let p4_val = hash & 0xABCD
+        let h9 = UInt8((p4_val >> 8) & 0xFF)
+        let h10 = UInt8(p4_val & 0xFF)
+
+        // p5 uses lower 48 bits of hash (h3..h8)
+
+        let uuidTuple: uuid_t = (
+            h1, h2, h3, h4, h5, h6, h7, h8,
+            h9, h10,
+            h3, h4, h5, h6, h7, h8
+        )
+
+        return UUID(uuid: uuidTuple)
     }
 
     func getColorForBuilding(_ name: String) -> Color {

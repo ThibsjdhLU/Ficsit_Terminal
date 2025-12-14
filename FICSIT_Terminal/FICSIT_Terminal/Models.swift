@@ -264,12 +264,15 @@ struct Factory: Codable, Identifiable {
     // Feature Request: To-Do List System
     var toDoList: [ToDoItem]
 
+    // Feature Request: Power Planner (Generators count)
+    var generators: [String: Double] // Key: Generator Name (e.g. "Coal Generator"), Value: Count
+
     enum CodingKeys: String, CodingKey {
-        case id, name, date, inputs, goals, activeRecipes, beltLevel, fuelType, fuelAmount, toDoList
+        case id, name, date, inputs, goals, activeRecipes, beltLevel, fuelType, fuelAmount, toDoList, generators
     }
 
     // Initializer
-    init(id: UUID = UUID(), name: String, date: Date, inputs: [ResourceInput], goals: [ProductionGoal], activeRecipes: [String: [Recipe]], beltLevel: BeltLevel, fuelType: PowerFuel, fuelAmount: String, toDoList: [ToDoItem] = []) {
+    init(id: UUID = UUID(), name: String, date: Date, inputs: [ResourceInput], goals: [ProductionGoal], activeRecipes: [String: [Recipe]], beltLevel: BeltLevel, fuelType: PowerFuel, fuelAmount: String, toDoList: [ToDoItem] = [], generators: [String: Double] = [:]) {
         self.id = id
         self.name = name
         self.date = date
@@ -280,11 +283,12 @@ struct Factory: Codable, Identifiable {
         self.fuelType = fuelType
         self.fuelAmount = fuelAmount
         self.toDoList = toDoList
+        self.generators = generators
     }
 
     // Helper pour initialiser vide
     static func empty() -> Factory {
-        Factory(name: "New Factory", date: Date(), inputs: [], goals: [], activeRecipes: [:], beltLevel: .mk3, fuelType: .coal, fuelAmount: "0", toDoList: [])
+        Factory(name: "New Factory", date: Date(), inputs: [], goals: [], activeRecipes: [:], beltLevel: .mk3, fuelType: .coal, fuelAmount: "0", toDoList: [], generators: [:])
     }
 
     // Custom decoding to handle missing toDoList in old JSONs
@@ -299,8 +303,9 @@ struct Factory: Codable, Identifiable {
         beltLevel = try container.decode(BeltLevel.self, forKey: .beltLevel)
         fuelType = try container.decode(PowerFuel.self, forKey: .fuelType)
         fuelAmount = try container.decode(String.self, forKey: .fuelAmount)
-        // Fallback for missing toDoList
+        // Fallback for missing fields
         toDoList = try container.decodeIfPresent([ToDoItem].self, forKey: .toDoList) ?? []
+        generators = try container.decodeIfPresent([String: Double].self, forKey: .generators) ?? [:]
     }
 
     // Custom encoding is not strictly necessary as synthesized one works, but for symmetry/safety:
@@ -316,6 +321,7 @@ struct Factory: Codable, Identifiable {
         try container.encode(fuelType, forKey: .fuelType)
         try container.encode(fuelAmount, forKey: .fuelAmount)
         try container.encode(toDoList, forKey: .toDoList)
+        try container.encode(generators, forKey: .generators)
     }
 }
 

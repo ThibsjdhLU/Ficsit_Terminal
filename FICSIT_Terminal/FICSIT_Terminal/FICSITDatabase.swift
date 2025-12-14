@@ -27,6 +27,7 @@ class FICSITDatabase: ObservableObject {
         let category: String
         // Ajout du champ optionnel pour le JSON
         let sinkValue: Int?
+        let tips: String? // New field for Tips
     }
     
     private struct JSONBuilding: Codable {
@@ -70,7 +71,8 @@ class FICSITDatabase: ObservableObject {
                 ProductionItem(
                     name: item.name,
                     category: item.category,
-                    sinkValue: item.sinkValue ?? 0 // Utilise la valeur du JSON ou 0
+                    sinkValue: item.sinkValue ?? 0, // Utilise la valeur du JSON ou 0
+                    tips: item.tips
                 )
             }
             

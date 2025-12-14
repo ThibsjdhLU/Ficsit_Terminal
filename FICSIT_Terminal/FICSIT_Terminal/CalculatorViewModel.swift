@@ -13,9 +13,15 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
     @Published var goals: [ProductionGoal] = []
     @Published var activeRecipes: [String: [Recipe]] = [:]
     
+    // Feature Request: To-Do List
+    @Published var toDoList: [ToDoItem] = []
+
     // Power Config (Factory Specific)
     @Published var selectedFuel: PowerFuel = .coal
     @Published var fuelInputAmount: String = "240"
+
+    // Feature Request: Power Capacity Planner
+    @Published var generatorCounts: [String: Double] = [:] // Matches Factory.generators
 
     // MARK: - RESULTS
     @Published var maxBundlesPossible: Double = 0
@@ -85,15 +91,23 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
     // MARK: - AUTO SAVE & SYNC
     private func setupAutoSave() {
         // On observe les changements des propriétés clés pour déclencher la sauvegarde
-        Publishers.MergeMany(
+        // Split into groups to avoid compiler complexity/limits if any
+        let group1 = Publishers.MergeMany(
             $currentProjectName.map { _ in () }.eraseToAnyPublisher(),
             $userInputs.map { _ in () }.eraseToAnyPublisher(),
             $goals.map { _ in () }.eraseToAnyPublisher(),
-            $activeRecipes.map { _ in () }.eraseToAnyPublisher(),
+            $activeRecipes.map { _ in () }.eraseToAnyPublisher()
+        )
+
+        let group2 = Publishers.MergeMany(
             $selectedBeltLevel.map { _ in () }.eraseToAnyPublisher(),
             $selectedFuel.map { _ in () }.eraseToAnyPublisher(),
-            $fuelInputAmount.map { _ in () }.eraseToAnyPublisher()
+            $fuelInputAmount.map { _ in () }.eraseToAnyPublisher(),
+            $toDoList.map { _ in () }.eraseToAnyPublisher(),
+            $generatorCounts.map { _ in () }.eraseToAnyPublisher()
         )
+
+        Publishers.Merge(group1, group2)
         .debounce(for: .seconds(1.0), scheduler: RunLoop.main)
         .sink { [weak self] _ in
             self?.saveCurrentFactory()
@@ -111,7 +125,9 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
             activeRecipes: activeRecipes,
             beltLevel: selectedBeltLevel,
             fuelType: selectedFuel,
-            fuelAmount: fuelInputAmount
+            fuelAmount: fuelInputAmount,
+            toDoList: toDoList,
+            generators: generatorCounts
         )
         worldService.updateFactory(factory)
         // print("Auto-saved factory: \(currentProjectName)")
@@ -145,6 +161,8 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
         self.selectedBeltLevel = factory.beltLevel
         self.selectedFuel = factory.fuelType
         self.fuelInputAmount = factory.fuelAmount
+        self.toDoList = factory.toDoList
+        self.generatorCounts = factory.generators
 
         worldService.setLastActiveFactoryID(factory.id)
 
@@ -217,6 +235,22 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
         let list = activeRecipes[item] ?? []
         if list.isEmpty { return !recipe.isAlternate }
         return list.contains(where: { $0.id == recipe.id })
+    }
+
+    // MARK: - TO-DO LIST MANAGEMENT
+    func addToDoItem(title: String, category: String? = nil, priority: Int = 0) {
+        let item = ToDoItem(title: title, category: category, priority: priority)
+        toDoList.append(item)
+    }
+
+    func toggleToDoItem(_ item: ToDoItem) {
+        if let index = toDoList.firstIndex(where: { $0.id == item.id }) {
+            toDoList[index].isCompleted.toggle()
+        }
+    }
+
+    func deleteToDoItem(at offsets: IndexSet) {
+        toDoList.remove(atOffsets: offsets)
     }
 
     // MARK: - PRODUCTION CALCULATION
@@ -344,5 +378,49 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
     func calculatePower() {
         guard let amount = Double(fuelInputAmount) else { return }
         self.powerResult = engine.calculatePowerScenario(fuel: selectedFuel, amountAvailable: amount)
+    }
+
+    // MARK: - POWER PLANNER UTILS
+
+    func getGridCapacity() -> Double {
+        var totalMW = 0.0
+        // Helper to get generator data
+        let generators = FICSITDatabase.shared.buildings.filter { $0.type == "generator" }
+
+        for (name, count) in generatorCounts {
+            guard count > 0 else { continue }
+            // Hardcoded power values or fetch from DB (DB values are 0 in data.json for some reason? Let's check)
+            // Looking at data.json: Coal Gen powerConsumption: 0? Yes. It produces.
+            // We need a production value in data.json or Models.
+            // For now, hardcode based on standard game values (Update 8)
+            let mwPerGen: Double
+            switch name {
+            case "Coal Generator": mwPerGen = 75
+            case "Fuel Generator": mwPerGen = 250 // Update 8 value is 250
+            case "Nuclear Power Plant": mwPerGen = 2500
+            case "Biomass Burner": mwPerGen = 30
+            default: mwPerGen = 0
+            }
+            totalMW += count * mwPerGen
+        }
+        return totalMW
+    }
+
+    func updateGeneratorCount(name: String, count: Double) {
+        if count <= 0 {
+            generatorCounts.removeValue(forKey: name)
+        } else {
+            generatorCounts[name] = count
+        }
+    }
+
+    func getBackupRecommendation(excessMW: Double) -> String {
+        if excessMW >= 0 { return "System Stable" }
+        let deficit = abs(excessMW)
+        let batteryCap = 100.0 // MW output per Power Storage (discharge rate is unlimited theoretically but let's assume 1 battery for small deficit)
+        // Actually Power Storage stores MWh (100 MWh).
+        // Recommendation is usually "Build X Power Storages to sustain for 1 hour".
+        let batteriesNeeded = ceil(deficit / 100.0) // Very rough
+        return "Install \(Int(batteriesNeeded)) Power Storages to buffer drops."
     }
 }

@@ -26,6 +26,7 @@ class HubViewModel: ObservableObject {
     @Published var globalFactoryCount: Int = 0
     @Published var showingCreateAlert = false
     @Published var newFactoryName = ""
+    @Published var currentFactoryId: String = "" // Added to track view state
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -71,7 +72,12 @@ class HubViewModel: ObservableObject {
     }
 
     func selectFactory(_ factory: Factory) {
+        currentFactoryId = factory.id.uuidString
         delegate?.didSelectFactory(factory)
+    }
+
+    func clearSelection() {
+        currentFactoryId = ""
     }
 
     func deleteFactory(_ factory: Factory) {

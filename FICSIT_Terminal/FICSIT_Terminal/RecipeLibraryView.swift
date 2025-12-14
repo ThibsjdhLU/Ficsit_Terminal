@@ -4,6 +4,7 @@ struct RecipeLibraryView: View {
     @ObservedObject var viewModel: CalculatorViewModel
     @ObservedObject var db: FICSITDatabase
     @State private var selectedRecipeForInfo: Recipe?
+    @State private var showComparison = false // New
     
     var itemsWithChoices: [String] {
         // Break into simpler steps to help the type-checker
@@ -101,10 +102,31 @@ struct RecipeLibraryView: View {
                 }
                 .listStyle(InsetGroupedListStyle())
                 .scrollContentBackground(.hidden) // REND LA LISTE TRANSPARENTE POUR VOIR LE FOND
+
+                // Floating Button for Comparison
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button(action: { showComparison = true }) {
+                            Image(systemName: "scalemass.fill")
+                                .font(.title)
+                                .foregroundColor(.ficsitDark)
+                                .padding()
+                                .background(Color.ficsitOrange)
+                                .clipShape(Circle())
+                                .shadow(radius: 5)
+                        }
+                        .padding()
+                    }
+                }
             }
             .navigationBarHidden(true)
             .sheet(item: $selectedRecipeForInfo) { recipe in
                 RecipeDetailView(recipe: recipe)
+            }
+            .sheet(isPresented: $showComparison) {
+                RecipeComparisonView(viewModel: viewModel, db: db)
             }
         }
     }

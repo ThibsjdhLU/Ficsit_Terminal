@@ -155,6 +155,7 @@ struct ProductionItem: Identifiable, Hashable, Codable {
     let name: String
     let category: String
     var sinkValue: Int = 0
+    var tips: String? // New: Wiki/Tips Integration
 
     var localizedName: String {
         Localization.translate(name)
@@ -211,10 +212,11 @@ struct ConsolidatedStep: Identifiable {
     let id = UUID()
     let item: ProductionItem
     let totalRate: Double
-    let machineCount: Double
+    var machineCount: Double // Var to allow overclock calc
     let recipe: Recipe?
-    let powerUsage: Double
+    var powerUsage: Double // Var to allow overclock calc
     let buildingName: String
+    var clockSpeed: Double = 1.0 // New: Overclocking (1.0 = 100%)
 }
 
 struct PowerResult {
@@ -237,6 +239,15 @@ struct ShoppingItem: Identifiable {
     let count: Int
 }
 
+// --- TO-DO LIST ITEMS ---
+struct ToDoItem: Identifiable, Codable, Hashable {
+    var id: UUID = UUID()
+    var title: String
+    var isCompleted: Bool = false
+    var category: String? = nil // Ex: "Tier 1", "Logistics"
+    var priority: Int = 0 // 0: Normal, 1: High
+}
+
 // --- NEW WORLD STRUCTURE ---
 
 struct Factory: Codable, Identifiable {
@@ -250,9 +261,61 @@ struct Factory: Codable, Identifiable {
     var fuelType: PowerFuel
     var fuelAmount: String
 
+    // Feature Request: To-Do List System
+    var toDoList: [ToDoItem]
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, date, inputs, goals, activeRecipes, beltLevel, fuelType, fuelAmount, toDoList
+    }
+
+    // Initializer
+    init(id: UUID = UUID(), name: String, date: Date, inputs: [ResourceInput], goals: [ProductionGoal], activeRecipes: [String: [Recipe]], beltLevel: BeltLevel, fuelType: PowerFuel, fuelAmount: String, toDoList: [ToDoItem] = []) {
+        self.id = id
+        self.name = name
+        self.date = date
+        self.inputs = inputs
+        self.goals = goals
+        self.activeRecipes = activeRecipes
+        self.beltLevel = beltLevel
+        self.fuelType = fuelType
+        self.fuelAmount = fuelAmount
+        self.toDoList = toDoList
+    }
+
     // Helper pour initialiser vide
     static func empty() -> Factory {
-        Factory(name: "New Factory", date: Date(), inputs: [], goals: [], activeRecipes: [:], beltLevel: .mk3, fuelType: .coal, fuelAmount: "0")
+        Factory(name: "New Factory", date: Date(), inputs: [], goals: [], activeRecipes: [:], beltLevel: .mk3, fuelType: .coal, fuelAmount: "0", toDoList: [])
+    }
+
+    // Custom decoding to handle missing toDoList in old JSONs
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try container.decode(String.self, forKey: .name)
+        date = try container.decode(Date.self, forKey: .date)
+        inputs = try container.decode([ResourceInput].self, forKey: .inputs)
+        goals = try container.decode([ProductionGoal].self, forKey: .goals)
+        activeRecipes = try container.decode([String: [Recipe]].self, forKey: .activeRecipes)
+        beltLevel = try container.decode(BeltLevel.self, forKey: .beltLevel)
+        fuelType = try container.decode(PowerFuel.self, forKey: .fuelType)
+        fuelAmount = try container.decode(String.self, forKey: .fuelAmount)
+        // Fallback for missing toDoList
+        toDoList = try container.decodeIfPresent([ToDoItem].self, forKey: .toDoList) ?? []
+    }
+
+    // Custom encoding is not strictly necessary as synthesized one works, but for symmetry/safety:
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(date, forKey: .date)
+        try container.encode(inputs, forKey: .inputs)
+        try container.encode(goals, forKey: .goals)
+        try container.encode(activeRecipes, forKey: .activeRecipes)
+        try container.encode(beltLevel, forKey: .beltLevel)
+        try container.encode(fuelType, forKey: .fuelType)
+        try container.encode(fuelAmount, forKey: .fuelAmount)
+        try container.encode(toDoList, forKey: .toDoList)
     }
 }
 

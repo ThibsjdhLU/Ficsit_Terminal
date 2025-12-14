@@ -16,28 +16,38 @@ struct HubDashboardView: View {
             ZStack {
                 FicsitBackground()
                 
-                ScrollView {
-                    VStack(spacing: 25) {
-                        
-                        // HEADER GLOBAL
-                        headerView
-                        
-                        // --- GLOBAL STATS ---
-                        globalStatsView
-
-                        // --- FACTORY LIST ---
-                        factoryListView
-                        
-                        Spacer()
+                if !viewModel.currentFactoryId.isEmpty && viewModel.factories.contains(where: { $0.id.uuidString == viewModel.currentFactoryId }) {
+                    // SHOW FACTORY DASHBOARD
+                    FactoryDashboardView(viewModel: calculatorViewModel) {
+                        viewModel.clearSelection()
                     }
+                    .transition(.move(edge: .trailing))
+                } else {
+                    // SHOW HUB LIST
+                    ScrollView {
+                        VStack(spacing: 25) {
+
+                            // HEADER GLOBAL
+                            headerView
+
+                            // --- GLOBAL STATS ---
+                            globalStatsView
+
+                            // --- FACTORY LIST ---
+                            factoryListView
+
+                            Spacer()
+                        }
+                    }
+                    .transition(.move(edge: .leading))
                 }
-                .onAppear {
-                    // Sync Delegate
-                    viewModel.delegate = calculatorViewModel
+            }
+            .onAppear {
+                // Sync Delegate
+                viewModel.delegate = calculatorViewModel
 
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-                        animateStats = true
-                    }
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                    animateStats = true
                 }
             }
             .navigationBarHidden(true)

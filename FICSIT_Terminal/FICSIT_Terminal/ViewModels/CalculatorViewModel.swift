@@ -417,10 +417,9 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
     func getBackupRecommendation(excessMW: Double) -> String {
         if excessMW >= 0 { return "System Stable" }
         let deficit = abs(excessMW)
-        let batteryCap = 100.0 // MW output per Power Storage (discharge rate is unlimited theoretically but let's assume 1 battery for small deficit)
-        // Actually Power Storage stores MWh (100 MWh).
-        // Recommendation is usually "Build X Power Storages to sustain for 1 hour".
-        let batteriesNeeded = ceil(deficit / 100.0) // Very rough
+        // Battery Cap (100MW discharge for 1 hour approx, actually 100MWh)
+        let batteryCap = 100.0
+        let batteriesNeeded = ceil(deficit / batteryCap)
         return "Install \(Int(batteriesNeeded)) Power Storages to buffer drops."
     }
 }

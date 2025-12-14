@@ -80,6 +80,7 @@ class FICSITDatabase: ObservableObject {
             self.buildings = decoded.buildings.map { b in
                 Building(
                     name: b.name,
+                    type: b.type,
                     powerConsumption: b.powerConsumption,
                     buildCost: b.buildCost,
                     dimensions: b.dimensions,

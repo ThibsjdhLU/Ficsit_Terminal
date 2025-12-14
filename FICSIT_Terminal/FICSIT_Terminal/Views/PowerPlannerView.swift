@@ -3,6 +3,13 @@ import SwiftUI
 struct PowerPlannerView: View {
     @ObservedObject var viewModel: CalculatorViewModel
     var body: some View {
+        let consumption = viewModel.totalPower
+        let production = viewModel.getGridCapacity()
+        let effectiveProduction = production > 0 ? production : (viewModel.powerResult?.totalMW ?? 0)
+
+        let loadPercentage = effectiveProduction > 0 ? (consumption / effectiveProduction) : 0
+        let isOverloaded = consumption > effectiveProduction
+
         NavigationView {
             ZStack {
                 Color.ficsitDark.ignoresSafeArea()
@@ -104,12 +111,6 @@ struct PowerPlannerView: View {
 
                         // --- UPDATED VISUALIZATION ---
                         VStack(spacing: 20) {
-                            let consumption = viewModel.totalPower
-                            let production = viewModel.getGridCapacity()
-                            let effectiveProduction = production > 0 ? production : (viewModel.powerResult?.totalMW ?? 0)
-
-                            let loadPercentage = effectiveProduction > 0 ? (consumption / effectiveProduction) : 0
-                            let isOverloaded = consumption > effectiveProduction
                             
                             ZStack {
                                 Circle()

@@ -384,8 +384,8 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
 
     func getGridCapacity() -> Double {
         var totalMW = 0.0
-        // Helper to get generator data
-        let generators = FICSITDatabase.shared.buildings.filter { $0.type == "generator" }
+        // Helper to get generator data (unused for now as we hardcode MW values for game accuracy)
+        // let generators = FICSITDatabase.shared.buildings.filter { $0.type == "generator" }
 
         for (name, count) in generatorCounts {
             guard count > 0 else { continue }

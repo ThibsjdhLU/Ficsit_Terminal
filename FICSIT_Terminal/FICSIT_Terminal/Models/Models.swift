@@ -106,7 +106,7 @@ struct ResourceInput: Identifiable, Codable, Hashable, Sendable {
         case purity, miner
     }
 
-    init(from decoder: Decoder) throws {
+    nonisolated init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         // Champs communs
@@ -127,7 +127,7 @@ struct ResourceInput: Identifiable, Codable, Hashable, Sendable {
         }
     }
 
-    func encode(to encoder: Encoder) throws {
+    nonisolated func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(resourceName, forKey: .resourceName)
@@ -293,7 +293,7 @@ struct Factory: Codable, Identifiable, Sendable {
     }
 
     // Custom decoding to handle missing toDoList in old JSONs
-    init(from decoder: Decoder) throws {
+    nonisolated init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
         name = try container.decode(String.self, forKey: .name)
@@ -310,7 +310,7 @@ struct Factory: Codable, Identifiable, Sendable {
     }
 
     // Custom encoding is not strictly necessary as synthesized one works, but for symmetry/safety:
-    func encode(to encoder: Encoder) throws {
+    nonisolated func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(id, forKey: .id)
         try container.encode(name, forKey: .name)

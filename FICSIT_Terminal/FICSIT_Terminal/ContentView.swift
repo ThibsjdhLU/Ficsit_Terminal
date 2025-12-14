@@ -30,6 +30,13 @@ struct ContentView: View {
                 }
                 .tag(0)
             
+            // TAB : TO-DO LIST
+            ToDoListView(viewModel: viewModel)
+                .tabItem {
+                    Label(Localization.translate("To-Do"), systemImage: "checklist")
+                }
+                .tag(6)
+
             // TAB 1 : RESOURCES
             InputView(viewModel: viewModel, db: db)
                 .tabItem {

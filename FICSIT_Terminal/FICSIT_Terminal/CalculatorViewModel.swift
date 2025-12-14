@@ -13,6 +13,9 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
     @Published var goals: [ProductionGoal] = []
     @Published var activeRecipes: [String: [Recipe]] = [:]
     
+    // Feature Request: To-Do List
+    @Published var toDoList: [ToDoItem] = []
+
     // Power Config (Factory Specific)
     @Published var selectedFuel: PowerFuel = .coal
     @Published var fuelInputAmount: String = "240"
@@ -85,15 +88,22 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
     // MARK: - AUTO SAVE & SYNC
     private func setupAutoSave() {
         // On observe les changements des propriétés clés pour déclencher la sauvegarde
-        Publishers.MergeMany(
+        // Split into groups to avoid compiler complexity/limits if any
+        let group1 = Publishers.MergeMany(
             $currentProjectName.map { _ in () }.eraseToAnyPublisher(),
             $userInputs.map { _ in () }.eraseToAnyPublisher(),
             $goals.map { _ in () }.eraseToAnyPublisher(),
-            $activeRecipes.map { _ in () }.eraseToAnyPublisher(),
+            $activeRecipes.map { _ in () }.eraseToAnyPublisher()
+        )
+
+        let group2 = Publishers.MergeMany(
             $selectedBeltLevel.map { _ in () }.eraseToAnyPublisher(),
             $selectedFuel.map { _ in () }.eraseToAnyPublisher(),
-            $fuelInputAmount.map { _ in () }.eraseToAnyPublisher()
+            $fuelInputAmount.map { _ in () }.eraseToAnyPublisher(),
+            $toDoList.map { _ in () }.eraseToAnyPublisher()
         )
+
+        Publishers.Merge(group1, group2)
         .debounce(for: .seconds(1.0), scheduler: RunLoop.main)
         .sink { [weak self] _ in
             self?.saveCurrentFactory()
@@ -111,7 +121,8 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
             activeRecipes: activeRecipes,
             beltLevel: selectedBeltLevel,
             fuelType: selectedFuel,
-            fuelAmount: fuelInputAmount
+            fuelAmount: fuelInputAmount,
+            toDoList: toDoList
         )
         worldService.updateFactory(factory)
         // print("Auto-saved factory: \(currentProjectName)")
@@ -145,6 +156,7 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
         self.selectedBeltLevel = factory.beltLevel
         self.selectedFuel = factory.fuelType
         self.fuelInputAmount = factory.fuelAmount
+        self.toDoList = factory.toDoList
 
         worldService.setLastActiveFactoryID(factory.id)
 
@@ -217,6 +229,22 @@ class CalculatorViewModel: ObservableObject, FactorySelectionDelegate {
         let list = activeRecipes[item] ?? []
         if list.isEmpty { return !recipe.isAlternate }
         return list.contains(where: { $0.id == recipe.id })
+    }
+
+    // MARK: - TO-DO LIST MANAGEMENT
+    func addToDoItem(title: String, category: String? = nil, priority: Int = 0) {
+        let item = ToDoItem(title: title, category: category, priority: priority)
+        toDoList.append(item)
+    }
+
+    func toggleToDoItem(_ item: ToDoItem) {
+        if let index = toDoList.firstIndex(where: { $0.id == item.id }) {
+            toDoList[index].isCompleted.toggle()
+        }
+    }
+
+    func deleteToDoItem(at offsets: IndexSet) {
+        toDoList.remove(atOffsets: offsets)
     }
 
     // MARK: - PRODUCTION CALCULATION

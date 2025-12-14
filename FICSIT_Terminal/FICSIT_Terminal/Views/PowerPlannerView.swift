@@ -11,18 +11,45 @@ struct PowerPlannerView: View {
                         VStack(alignment: .leading) {
                             Text(Localization.translate("GRID MONITOR")).font(.headline).foregroundColor(.ficsitOrange).padding(.top)
                             Text(Localization.translate("Balance production vs consumption.")).font(.caption).foregroundColor(.ficsitGray)
-                        }.frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
                         
                         VStack(spacing: 15) {
                             HStack { Text(Localization.translate("FUEL TYPE")).font(.caption).fontWeight(.bold).foregroundColor(.ficsitGray); Spacer() }
-                            Picker("Fuel", selection: $viewModel.selectedFuel) { ForEach(PowerFuel.allCases) { fuel in Text(fuel.localizedName).tag(fuel) } }.pickerStyle(SegmentedPickerStyle()).colorMultiply(.ficsitOrange)
+                            Picker("Fuel", selection: $viewModel.selectedFuel) {
+                                ForEach(PowerFuel.allCases) { fuel in
+                                    Text(fuel.localizedName).tag(fuel)
+                                }
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                            .colorMultiply(.ficsitOrange)
+                            
                             HStack { Text(Localization.translate("AVAILABLE AMOUNT")).font(.caption).fontWeight(.bold).foregroundColor(.ficsitGray); Spacer() }
                             HStack {
-                                TextField("Quantité", text: $viewModel.fuelInputAmount).keyboardType(.decimalPad).padding().background(Color.white.opacity(0.1)).cornerRadius(8).foregroundColor(.white).font(.system(.title3, design: .monospaced))
+                                TextField("Quantité", text: $viewModel.fuelInputAmount)
+                                    .keyboardType(.decimalPad)
+                                    .padding()
+                                    .background(Color.white.opacity(0.1))
+                                    .cornerRadius(8)
+                                    .foregroundColor(.white)
+                                    .font(.system(.title3, design: .monospaced))
                                 Text(viewModel.selectedFuel == .coal ? "/ min" : "m³/min").foregroundColor(.ficsitGray)
                             }
-                            Button(action: { withAnimation { viewModel.calculatePower() } }) { HStack { Image(systemName: "bolt.fill"); Text(Localization.translate("UPDATE GRID")) }.font(.headline).frame(maxWidth: .infinity).padding().background(Color.ficsitOrange).foregroundColor(.black).cornerRadius(10) }
-                        }.padding().background(Color.black.opacity(0.3)).cornerRadius(15).padding(.horizontal)
+                            Button(action: { withAnimation { viewModel.calculatePower() } }) {
+                                HStack { Image(systemName: "bolt.fill"); Text(Localization.translate("UPDATE GRID")) }
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.ficsitOrange)
+                                    .foregroundColor(.black)
+                                    .cornerRadius(10)
+                            }
+                        }
+                        .padding()
+                        .background(Color.black.opacity(0.3))
+                        .cornerRadius(15)
+                        .padding(.horizontal)
                         
                         // --- CAPACITY PLANNER (New Section) ---
                         VStack(alignment: .leading, spacing: 10) {
@@ -77,55 +104,87 @@ struct PowerPlannerView: View {
 
                         // --- UPDATED VISUALIZATION ---
                         VStack(spacing: 20) {
-                                let consumption = viewModel.totalPower
-                                let production = viewModel.getGridCapacity() // Use manual generator capacity if set, else fallback to sim? No, prioritize planner.
-                                // If planner is empty, maybe fallback to scenario? For now, let's show planner total if > 0
-                                let effectiveProduction = production > 0 ? production : (viewModel.powerResult?.totalMW ?? 0)
+                            let consumption = viewModel.totalPower
+                            let production = viewModel.getGridCapacity()
+                            let effectiveProduction = production > 0 ? production : (viewModel.powerResult?.totalMW ?? 0)
 
-                                let loadPercentage = effectiveProduction > 0 ? (consumption / effectiveProduction) : 0
-                                let isOverloaded = consumption > effectiveProduction
+                            let loadPercentage = effectiveProduction > 0 ? (consumption / effectiveProduction) : 0
+                            let isOverloaded = consumption > effectiveProduction
+                            
+                            ZStack {
+                                Circle()
+                                    .trim(from: 0, to: 0.5)
+                                    .stroke(Color.ficsitGray.opacity(0.3), style: StrokeStyle(lineWidth: 25, lineCap: .round))
+                                    .frame(width: 220, height: 220)
+                                    .rotationEffect(.degrees(180))
+                                    .offset(y: 50)
                                 
-                                ZStack {
-                                    Circle().trim(from: 0, to: 0.5).stroke(Color.ficsitGray.opacity(0.3), style: StrokeStyle(lineWidth: 25, lineCap: .round)).frame(width: 220, height: 220).rotationEffect(.degrees(180)).offset(y: 50)
-                                    Circle().trim(from: 0, to: min(0.5, 0.5 * loadPercentage)).stroke(isOverloaded ? Color(red: 0.8, green: 0.3, blue: 0.3) : (loadPercentage > 0.9 ? .yellow : .green), style: StrokeStyle(lineWidth: 25, lineCap: .round)).frame(width: 220, height: 220).rotationEffect(.degrees(180)).offset(y: 50).animation(.easeOut, value: loadPercentage)
-                                    VStack(spacing: 5) {
-                                        Text(isOverloaded ? Localization.translate("OVERLOAD") : Localization.translate("STABLE")).font(.caption).fontWeight(.black).foregroundColor(isOverloaded ? Color(red: 0.8, green: 0.3, blue: 0.3) : .green).padding(5).background(Color.black.opacity(0.5)).cornerRadius(5)
-                                        HStack(alignment: .lastTextBaseline, spacing: 0) {
-                                            Text("\(Int(consumption))").font(.system(size: 30, weight: .bold, design: .monospaced)).foregroundColor(.white)
-                                        Text(" / \(Int(effectiveProduction)) MW").font(.system(size: 16, weight: .medium, design: .monospaced)).foregroundColor(.ficsitGray)
-                                        }
-                                        Text("\(Localization.translate("Load")): \(Int(loadPercentage * 100))%").font(.caption).foregroundColor(.ficsitOrange)
-                                    }.offset(y: 10)
-                                }.frame(height: 160).padding(.top, 20)
-
-                        // ALERTS & RECOMMENDATIONS
-                        VStack(spacing: 15) {
-                            HStack {
-                                Image(systemName: isOverloaded ? "exclamationmark.triangle.fill" : "battery.100.bolt")
-                                    .foregroundColor(isOverloaded ? .red : .green)
-
-                                if isOverloaded {
-                                    VStack(alignment: .leading) {
-                                        Text(Localization.translate("GRID UNSTABLE"))
-                                            .fontWeight(.bold)
-                                            .foregroundColor(.red)
-                                        Text(viewModel.getBackupRecommendation(excessMW: effectiveProduction - consumption))
-                                            .font(.caption)
-                                            .foregroundColor(.white)
-                                        }
-                                } else {
-                                    Text("\(Localization.translate("Reserve Capacity")): \(Int(effectiveProduction - consumption)) MW")
+                                Circle()
+                                    .trim(from: 0, to: min(0.5, 0.5 * loadPercentage))
+                                    .stroke(isOverloaded ? Color(red: 0.8, green: 0.3, blue: 0.3) : (loadPercentage > 0.9 ? .yellow : .green), style: StrokeStyle(lineWidth: 25, lineCap: .round))
+                                    .frame(width: 220, height: 220)
+                                    .rotationEffect(.degrees(180))
+                                    .offset(y: 50)
+                                    .animation(.easeOut, value: loadPercentage)
+                                
+                                VStack(spacing: 5) {
+                                    Text(isOverloaded ? Localization.translate("OVERLOAD") : Localization.translate("STABLE"))
                                         .font(.caption)
-                                        .foregroundColor(.green)
+                                        .fontWeight(.black)
+                                        .foregroundColor(isOverloaded ? Color(red: 0.8, green: 0.3, blue: 0.3) : .green)
+                                        .padding(5)
+                                        .background(Color.black.opacity(0.5))
+                                        .cornerRadius(5)
+                                    
+                                    HStack(alignment: .lastTextBaseline, spacing: 0) {
+                                        Text("\(Int(consumption))")
+                                            .font(.system(size: 30, weight: .bold, design: .monospaced))
+                                            .foregroundColor(.white)
+                                        Text(" / \(Int(effectiveProduction)) MW")
+                                            .font(.system(size: 16, weight: .medium, design: .monospaced))
+                                            .foregroundColor(.ficsitGray)
                                     }
-                                Spacer()
+                                    Text("\(Localization.translate("Load")): \(Int(loadPercentage * 100))%")
+                                        .font(.caption)
+                                        .foregroundColor(.ficsitOrange)
+                                }
+                                .offset(y: 10)
                             }
-                            .padding()
-                            .background(Color.ficsitDark)
-                            .cornerRadius(10)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(isOverloaded ? Color.red : Color.green, lineWidth: 1))
+                            .frame(height: 160)
+                            .padding(.top, 20)
+
+                            // ALERTS & RECOMMENDATIONS
+                            VStack(spacing: 15) {
+                                HStack {
+                                    Image(systemName: isOverloaded ? "exclamationmark.triangle.fill" : "battery.100.bolt")
+                                        .foregroundColor(isOverloaded ? .red : .green)
+
+                                    if isOverloaded {
+                                        VStack(alignment: .leading) {
+                                            Text(Localization.translate("GRID UNSTABLE"))
+                                                .fontWeight(.bold)
+                                                .foregroundColor(.red)
+                                            Text(viewModel.getBackupRecommendation(excessMW: effectiveProduction - consumption))
+                                                .font(.caption)
+                                                .foregroundColor(.white)
+                                        }
+                                    } else {
+                                        Text("\(Localization.translate("Reserve Capacity")): \(Int(effectiveProduction - consumption)) MW")
+                                            .font(.caption)
+                                            .foregroundColor(.green)
+                                    }
+                                    Spacer()
+                                }
+                                .padding()
+                                .background(Color.ficsitDark)
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(isOverloaded ? Color.red : Color.green, lineWidth: 1)
+                                )
+                            }
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
 
                         // OLD SIMULATION SECTION (Optional or Hidden)
                         if let result = viewModel.powerResult, effectiveProduction == 0 {
@@ -137,8 +196,17 @@ struct PowerPlannerView: View {
                         Spacer()
                     }
                 }
-            }.navigationBarHidden(true)
-            .toolbar { ToolbarItemGroup(placement: .keyboard) { Spacer(); Button("Fermer") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }.foregroundColor(.ficsitOrange) } }
+            }
+            .navigationBarHidden(true)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Fermer") {
+                        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    }
+                    .foregroundColor(.ficsitOrange)
+                }
+            }
         }
     }
 }

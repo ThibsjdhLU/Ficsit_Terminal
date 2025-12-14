@@ -46,32 +46,7 @@ struct ItemIcon: View {
     }
 }
 
-// --- LIGNE MACHINE LISTE ---
-struct MachineRow: View {
-    let step: ConsolidatedStep
-    var body: some View {
-        HStack(spacing: 12) {
-            ItemIcon(item: step.item, size: 45)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(step.item.localizedName).font(.headline).foregroundColor(.white)
-                HStack(spacing: 6) {
-                    Text(step.recipe?.localizedName ?? "Défaut").font(.caption).foregroundColor(.gray)
-                    if let recipe = step.recipe, recipe.isAlternate {
-                        Text("ALT").font(.system(size: 8, weight: .bold)).padding(.horizontal, 4).padding(.vertical, 2).background(Color.ficsitOrange.opacity(0.8)).foregroundColor(.white).cornerRadius(4)
-                    }
-                }
-            }
-            Spacer()
-            VStack(alignment: .trailing) {
-                HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    Text(verbatim: "\(String(format: "%.1f", step.machineCount))").font(.title3).fontWeight(.bold).foregroundColor(.ficsitOrange)
-                    Text("x").font(.caption).foregroundColor(.gray)
-                }
-                Text(verbatim: "\(String(format: "%.1f", step.totalRate))/m").font(.system(.caption, design: .monospaced)).foregroundColor(.gray)
-            }
-        }.padding(.vertical, 6).listRowBackground(Color.ficsitDark.opacity(0.8))
-    }
-}
+
 
 // --- SELECTEUR INTELLIGENT ---
 struct ItemSelectorView: View {

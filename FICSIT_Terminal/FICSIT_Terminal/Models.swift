@@ -155,6 +155,7 @@ struct ProductionItem: Identifiable, Hashable, Codable {
     let name: String
     let category: String
     var sinkValue: Int = 0
+    var tips: String? // New: Wiki/Tips Integration
 
     var localizedName: String {
         Localization.translate(name)
@@ -211,10 +212,11 @@ struct ConsolidatedStep: Identifiable {
     let id = UUID()
     let item: ProductionItem
     let totalRate: Double
-    let machineCount: Double
+    var machineCount: Double // Var to allow overclock calc
     let recipe: Recipe?
-    let powerUsage: Double
+    var powerUsage: Double // Var to allow overclock calc
     let buildingName: String
+    var clockSpeed: Double = 1.0 // New: Overclocking (1.0 = 100%)
 }
 
 struct PowerResult {

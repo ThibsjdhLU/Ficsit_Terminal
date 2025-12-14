@@ -1,12 +1,16 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var viewModel = CalculatorViewModel()
+    @StateObject var viewModel: CalculatorViewModel
+    @StateObject var hubViewModel: HubViewModel
     @StateObject var db = FICSITDatabase.shared
     @State private var selectedTab = 0
     
     // Initialisation du style de la TabBar pour qu'elle fasse "Tech"
-    init() {
+    init(worldService: WorldService) {
+        _viewModel = StateObject(wrappedValue: CalculatorViewModel(worldService: worldService))
+        _hubViewModel = StateObject(wrappedValue: HubViewModel(worldService: worldService))
+
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = UIColor(Color.ficsitDark)
@@ -20,7 +24,7 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             
             // TAB 0 : THE HUB (Dashboard)
-            HubDashboardView(calculatorViewModel: viewModel)
+            HubDashboardView(viewModel: hubViewModel, calculatorViewModel: viewModel)
                 .tabItem {
                     Label(Localization.translate("HUB"), systemImage: "house.fill")
                 }

@@ -6,7 +6,7 @@ struct HubDashboardView: View {
 
     @State private var animateStats = false
     
-    init(viewModel: HubViewModel = HubViewModel(), calculatorViewModel: CalculatorViewModel) {
+    init(viewModel: HubViewModel, calculatorViewModel: CalculatorViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.calculatorViewModel = calculatorViewModel
     }

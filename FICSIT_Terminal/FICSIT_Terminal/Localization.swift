@@ -2,6 +2,13 @@ import Foundation
 
 struct Localization {
     static let map: [String: String] = [
+        // COMMON ACTIONS
+        "Delete input": "Supprimer l'entrée",
+        "Import": "Import",
+        "Delete Resource": "Supprimer Ressource",
+        "Are you sure you want to remove this resource source?": "Voulez-vous vraiment supprimer cette source de ressource ?",
+        "Delete": "Supprimer",
+
         // ORES
         "Iron Ore": "Minerai de Fer",
         "Copper Ore": "Minerai de Cuivre",

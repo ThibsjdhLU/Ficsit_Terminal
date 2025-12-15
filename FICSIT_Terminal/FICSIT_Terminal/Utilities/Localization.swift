@@ -226,7 +226,24 @@ struct Localization {
 
         // BLUEPRINT
         "BLUEPRINT": "PLAN",
-        "Splitter/Merger": "Répartiteur/Groupeur"
+        "Splitter/Merger": "Répartiteur/Groupeur",
+
+        // TO-DO LIST
+        "TO-DO LIST": "LISTE DE TÂCHES",
+        "Add New Task": "Ajouter Nouvelle Tâche",
+        "Task Description": "Description de la Tâche",
+        "Category (Optional)": "Catégorie (Optionnel)",
+        "Priority": "Priorité",
+        "Normal": "Normal",
+        "High": "Élevée",
+        "Add": "Ajouter",
+        "General": "Général",
+        "HIGH PRIORITY": "HAUTE PRIORITÉ",
+        "No tasks pending.": "Aucune tâche en attente.",
+        "Add construction tasks to track your progress.": "Ajoutez des tâches de construction pour suivre votre progression.",
+        "Add new task": "Ajouter une nouvelle tâche",
+        "Mark as completed": "Marquer comme terminée",
+        "Mark as incomplete": "Marquer comme inachevée"
     ]
 
     static func translate(_ key: String) -> String {

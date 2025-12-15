@@ -6,6 +6,12 @@ struct HubDashboardView: View {
 
     @State private var animateStats = false
     
+    // Search State
+    @State private var searchText = ""
+    @State private var isSearching = false
+    @State private var searchResults: [ProductionItem] = []
+    @State private var selectedItemForDetail: ProductionItem?
+
     init(viewModel: HubViewModel, calculatorViewModel: CalculatorViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.calculatorViewModel = calculatorViewModel
@@ -29,18 +35,48 @@ struct HubDashboardView: View {
 
                             // HEADER GLOBAL
                             headerView
+                        }
+                        .padding(.bottom) // Spacing before pinned views if any, but we are moving search out
 
-                            // --- GLOBAL STATS ---
-                            globalStatsView
+                        // Pinned Section for Search
+                        LazyVStack(pinnedViews: [.sectionHeaders]) {
+                            Section(header: searchBarView.background(FicsitBackground())) {
+                                if isSearching {
+                                    searchResultsView
+                                        .transition(.opacity)
+                                } else {
+                                    // --- GLOBAL STATS ---
+                                    globalStatsView
+                                        .padding(.top)
 
-                            // --- FACTORY LIST ---
-                            factoryListView
+                                    // --- FACTORY LIST ---
+                                    factoryListView
+                                        .padding(.top)
 
-                            Spacer()
+                                    Spacer()
+                                }
+                            }
                         }
                     }
                     .transition(.move(edge: .leading))
                 }
+            }
+            .sheet(item: $selectedItemForDetail) { item in
+                 // Reusing RecipeDetailView logic or creating a simple Item Detail view
+                 // For now, let's find a recipe producing this item to show details, or just basic info
+                 if let recipe = FICSITDatabase.shared.getRecipesOptimized(producing: item.name).first {
+                     RecipeDetailView(recipe: recipe)
+                 } else {
+                     // Fallback view if no recipe produces it directly (e.g. raw resource)
+                     VStack {
+                         Text(item.localizedName)
+                             .font(.largeTitle)
+                             .padding()
+                         Text("Category: \(item.category)")
+                         Spacer()
+                     }
+                     .background(FicsitBackground())
+                 }
             }
             .onAppear {
                 // Sync Delegate
@@ -90,6 +126,86 @@ struct HubDashboardView: View {
         }
         .padding(.horizontal)
         .padding(.top, 20)
+    }
+
+    private var searchBarView: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.ficsitGray)
+
+            TextField(Localization.translate("Search database..."), text: $searchText)
+                .foregroundColor(.white)
+                .onChange(of: searchText) { newValue in
+                    if newValue.isEmpty {
+                        isSearching = false
+                        searchResults = []
+                    } else {
+                        isSearching = true
+                        performSearch(query: newValue)
+                    }
+                }
+
+            if !searchText.isEmpty {
+                Button(action: {
+                    searchText = ""
+                    isSearching = false
+                    searchResults = []
+                    UIApplication.shared.endEditing() // Extension usually needed, or use FocusState
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundColor(.ficsitGray)
+                }
+            }
+        }
+        .padding()
+        .background(Color.ficsitDark.opacity(0.8))
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.ficsitGray.opacity(0.5), lineWidth: 1)
+        )
+        .padding(.horizontal)
+    }
+
+    private var searchResultsView: some View {
+        VStack(alignment: .leading) {
+            Text(Localization.translate("SEARCH RESULTS"))
+                .font(.caption)
+                .foregroundColor(.ficsitOrange)
+                .padding(.horizontal)
+
+            if searchResults.isEmpty {
+                Text(Localization.translate("No results found."))
+                    .foregroundColor(.ficsitGray)
+                    .padding()
+            } else {
+                ForEach(searchResults) { item in
+                    HStack {
+                        ItemIcon(item: item, size: 30)
+                        Text(item.localizedName)
+                            .foregroundColor(.white)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.ficsitGray)
+                    }
+                    .padding()
+                    .background(Color.ficsitDark.opacity(0.5))
+                    .cornerRadius(8)
+                    .onTapGesture {
+                        selectedItemForDetail = item
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+    }
+
+    private func performSearch(query: String) {
+        let lowerQuery = query.lowercased()
+        searchResults = FICSITDatabase.shared.items.filter {
+            $0.localizedName.lowercased().contains(lowerQuery) ||
+            $0.name.lowercased().contains(lowerQuery)
+        }.sorted(by: { $0.name < $1.name })
     }
 
     private var globalStatsView: some View {

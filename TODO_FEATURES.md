@@ -103,7 +103,7 @@
 ### Navigation & Information Architecture
 - [x] **Tab-Based Organization**
 - [x] **Smart Contextual Navigation**
-  - [ ] Persistent search bar (quick access to items/recipes from anywhere)
+  - [x] Persistent search bar (quick access to items/recipes from anywhere)
   - [ ] Recent items list (quick revisit of recently planned items)
   - [ ] Breadcrumb navigation (know where you are in the hierarchy)
   - [ ] Undo/redo functionality

@@ -53,16 +53,29 @@ struct FactoryFlowGraphView: View {
     
     // MARK: - Layout du Graphique
     private var graphLayout: GraphEngine.GraphLayout {
-        // Mémoriser le layout pour éviter de recréer les noeuds à chaque rendu
-        // Cela garantit que les IDs des noeuds correspondent aux IDs des liens
-        let layout = graphEngine.generateLayout(
+        if let layout = cachedLayout {
+            return layout
+        }
+        return graphEngine.generateLayout(
             from: viewModel.consolidatedPlan,
             inputs: viewModel.userInputs,
             goals: viewModel.goals,
             sinkResult: viewModel.sinkResult,
             db: db
         )
-        return layout
+    }
+
+    private func updateLayout() {
+        // Exécuter la génération sur le thread principal car cela touche l'UI,
+        // mais idéalement cela devrait être déporté si c'est très lourd.
+        // Pour l'instant, on optimise surtout les re-renders (zoom/scroll).
+        cachedLayout = graphEngine.generateLayout(
+            from: viewModel.consolidatedPlan,
+            inputs: viewModel.userInputs,
+            goals: viewModel.goals,
+            sinkResult: viewModel.sinkResult,
+            db: db
+        )
     }
     
     // MARK: - Bottlenecks

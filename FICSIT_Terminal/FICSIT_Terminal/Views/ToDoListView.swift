@@ -43,6 +43,7 @@ struct ToDoListView: View {
                                 .background(Color.ficsitOrange)
                                 .clipShape(Circle())
                         }
+                        .accessibilityLabel(Localization.translate("Add new task"))
                     }
                     .padding()
                     .background(Color.ficsitDark.opacity(0.8))
@@ -86,6 +87,7 @@ struct ToDoListView: View {
             Image(systemName: "checklist")
                 .font(.system(size: 60))
                 .foregroundColor(.ficsitGray)
+                .accessibilityHidden(true)
             Text(Localization.translate("No tasks pending."))
                 .font(.headline)
                 .fontDesign(.monospaced)
@@ -185,6 +187,7 @@ struct ToDoItemRow: View {
                     .font(.title2)
             }
             .buttonStyle(PlainButtonStyle())
+            .accessibilityLabel(item.isCompleted ? Localization.translate("Mark as incomplete") : Localization.translate("Mark as completed"))
 
             VStack(alignment: .leading) {
                 Text(item.title)

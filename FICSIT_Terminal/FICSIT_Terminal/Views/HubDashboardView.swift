@@ -39,7 +39,7 @@ struct HubDashboardView: View {
                     .tag(1)
 
                 // TAB 2: CALCULATOR (Active Project)
-                if !calculatorViewModel.currentProjectId.isEmpty {
+                if viewModel.factories.contains(where: { $0.id == calculatorViewModel.currentProjectId }) {
                     NavigationView {
                         CalculatorView(viewModel: calculatorViewModel)
                     }
@@ -290,12 +290,22 @@ struct FactoryListCard: View {
     let isActive: Bool
     
     var body: some View {
-        // Reuse existing logic or create simple view
-        if let recipe = FICSITDatabase.shared.getRecipesOptimized(producing: item.name).first {
-            RecipeDetailView(recipe: recipe)
-        } else {
-            Text("Raw Resource: \(item.localizedName)")
-                .ficsitBackground()
+        HStack {
+            VStack(alignment: .leading) {
+                Text(factory.name)
+                    .font(.headline)
+                    .foregroundColor(isActive ? .ficsitOrange : .white)
+                Text("\(factory.goals.count) goals")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            Spacer()
+            if isActive {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(.green)
+            }
         }
+        .padding()
+        .ficsitCard(borderColor: isActive ? .ficsitOrange : .gray.opacity(0.5))
     }
 }

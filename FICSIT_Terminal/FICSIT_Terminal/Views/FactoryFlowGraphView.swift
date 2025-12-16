@@ -228,7 +228,7 @@ struct FactoryFlowGraphView: View {
                         // Connexions - AVANT les noeuds mais APRÈS les séparateurs
                         GraphEdgesView(
                             links: graphLayout.links,
-                            nodes: graphLayout.nodes,
+                            nodeMap: graphLayout.nodeMap,
                             zoomScale: zoomScale,
                             contentSize: graphLayout.contentSize
                         )
@@ -242,8 +242,8 @@ struct FactoryFlowGraphView: View {
                         // Labels de débit sur les connexions
                         ForEach(graphLayout.links) { link in
                             if zoomScale > 0.8,
-                               let fromNode = graphLayout.nodes.first(where: { $0.id == link.fromNodeID }),
-                               let toNode = graphLayout.nodes.first(where: { $0.id == link.toNodeID }) {
+                               let fromNode = graphLayout.nodeMap[link.fromNodeID],
+                               let toNode = graphLayout.nodeMap[link.toNodeID] {
                                 LinkRateLabel(
                                     link: link,
                                     fromNode: fromNode,
@@ -786,15 +786,15 @@ struct ColumnSeparatorsView: View {
 // MARK: - Vue des Connexions (Edges) Améliorée
 struct GraphEdgesView: View {
     let links: [GraphLink]
-    let nodes: [GraphNode]
+    let nodeMap: [UUID: GraphNode]
     let zoomScale: CGFloat
     let contentSize: CGSize
     
     var body: some View {
             Canvas { context, size in
                 for link in links {
-                    guard let fromNode = nodes.first(where: { $0.id == link.fromNodeID }),
-                          let toNode = nodes.first(where: { $0.id == link.toNodeID }) else {
+                    guard let fromNode = nodeMap[link.fromNodeID],
+                          let toNode = nodeMap[link.toNodeID] else {
                         continue
                     }
                     
@@ -1056,8 +1056,8 @@ struct MiniMapView: View {
                 ZStack {
                     // Connexions
                     ForEach(layout.links) { link in
-                        if let fromNode = layout.nodes.first(where: { $0.id == link.fromNodeID }),
-                           let toNode = layout.nodes.first(where: { $0.id == link.toNodeID }) {
+                        if let fromNode = layout.nodeMap[link.fromNodeID],
+                           let toNode = layout.nodeMap[link.toNodeID] {
                             Path { path in
                                 path.move(to: CGPoint(
                                     x: fromNode.position.x * scale,
@@ -1271,8 +1271,8 @@ struct LinkDetailSheet: View {
                                 .foregroundColor(.ficsitOrange)
                         }
                         
-                        if let fromNode = layout.nodes.first(where: { $0.id == link.fromNodeID }),
-                           let toNode = layout.nodes.first(where: { $0.id == link.toNodeID }) {
+                        if let fromNode = layout.nodeMap[link.fromNodeID],
+                           let toNode = layout.nodeMap[link.toNodeID] {
                             Divider()
                             
                             Text("De: \(fromNode.item.name)")

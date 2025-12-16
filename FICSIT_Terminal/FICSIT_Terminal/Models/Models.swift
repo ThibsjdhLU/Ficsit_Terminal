@@ -330,6 +330,24 @@ struct World: Codable, Sendable {
     var factories: [Factory]
 
     // Le monde contient toutes les usines
+
+    enum CodingKeys: String, CodingKey {
+        case factories
+    }
+
+    init(factories: [Factory]) {
+        self.factories = factories
+    }
+
+    nonisolated init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        factories = try container.decode([Factory].self, forKey: .factories)
+    }
+
+    nonisolated func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(factories, forKey: .factories)
+    }
 }
 
 // --- ALIAS FOR COMPATIBILITY ---

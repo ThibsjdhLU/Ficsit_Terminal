@@ -87,7 +87,7 @@ struct ProductionInputView: View {
                                     HStack {
                                         Slider(value: $inputRate, in: 1...600, step: 1)
                                             .accentColor(.ficsitOrange)
-                                            .onChange(of: inputRate) { _ in calculatePreview() }
+                                            .onChange(of: inputRate) { _, _ in calculatePreview() }
 
                                         TextField("60", value: $inputRate, format: .number)
                                             .keyboardType(.decimalPad)
@@ -97,7 +97,7 @@ struct ProductionInputView: View {
                                             .background(Color.black.opacity(0.3))
                                             .cornerRadius(4)
                                             .foregroundColor(.white)
-                                            .onChange(of: inputRate) { _ in calculatePreview() }
+                                            .onChange(of: inputRate) { _, _ in calculatePreview() }
 
                                         Text("/ min").font(.caption).foregroundColor(.gray)
                                     }
@@ -121,7 +121,7 @@ struct ProductionInputView: View {
                                         .foregroundColor(.white)
                                 }
                                 .toggleStyle(SwitchToggleStyle(tint: .ficsitOrange))
-                                .onChange(of: useAlternate) { _ in calculatePreview() }
+                                .onChange(of: useAlternate) { _, _ in calculatePreview() }
                             }
                             .padding()
                             .ficsitCard()
@@ -219,7 +219,7 @@ struct ProductionInputView: View {
                 }
             }
         }
-        .onChange(of: selectedItem) { _ in calculatePreview() }
+        .onChange(of: selectedItem) { _, _ in calculatePreview() }
     }
 
     // MARK: - LOGIC

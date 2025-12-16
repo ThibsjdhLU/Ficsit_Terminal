@@ -159,8 +159,6 @@ struct Localization {
         "CURRENT PROJECT": "PROJET ACTUEL",
         "ALL PROJECTS": "TOUS LES PROJETS",
         "Project Name": "Nom du Projet",
-        "Establish New Site": "Établir Nouveau Site",
-        "Create": "Créer",
         "PLANNING TOOLS": "OUTILS DE PLANIFICATION",
         "Extraction Calculator": "Calculateur d'Extraction",
         "Blueprint Library": "Bibliothèque de Plans",

@@ -89,8 +89,11 @@ class FICSITDatabase: ObservableObject {
             }
             
             // C. RECIPES
+            // OPTIMISATION (Bolt): Création d'un index des bâtiments pour lookup O(1)
+            let buildingMap = Dictionary(uniqueKeysWithValues: self.buildings.map { ($0.name, $0) })
+
             self.recipes = decoded.recipes.compactMap { r in
-                guard let machineObj = self.buildings.first(where: { $0.name == r.machineName }) else { return nil }
+                guard let machineObj = buildingMap[r.machineName] else { return nil }
                 return Recipe(name: r.name, machine: machineObj, ingredients: r.ingredients, products: r.products, isAlternate: r.isAlternate)
             }
             

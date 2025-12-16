@@ -20,11 +20,11 @@
 - [ ] Power distribution network planning helper
 
 ### Resource Extraction
-- [ ] Node type database (pure/normal/impure nodes with extraction rates)
-- [ ] Mining head efficiency calculator based on resource purity
-- [ ] Miner placement planning (normal miners vs. oil extractors vs. wells)
-- [ ] Extraction rate optimization for impure nodes
-- [ ] Resource sustainability analysis (can the map supply your factory?)
+- [ ] **Node Type Database** (pure/normal/impure nodes with extraction rates)
+- [ ] **Mining Head Efficiency Calculator** based on resource purity
+- [ ] **Miner Placement Planning** (normal miners vs. oil extractors vs. wells)
+- [ ] **Extraction Rate Optimization** for impure nodes
+- [ ] **Resource Sustainability Analysis** (can the map supply your factory?)
 
 ### Building Simulation
 - [x] Machine production rates with overclock/underclock sliders
@@ -101,63 +101,63 @@
 ## 2. USER EXPERIENCE (UX)
 
 ### Navigation & Information Architecture
-- [x] **Tab-Based Organization**
-- [x] **Smart Contextual Navigation**
-  - [x] Persistent search bar (quick access to items/recipes from anywhere)
-  - [ ] Recent items list (quick revisit of recently planned items)
-  - [ ] Breadcrumb navigation (know where you are in the hierarchy)
+- [ ] **Tab-Based Organization** (Calculator, Factory, To-Do, Database, Settings)
+- [ ] **Smart Contextual Navigation**
+  - [x] Persistent search bar
+  - [ ] Recent items list
+  - [ ] Breadcrumb navigation
   - [ ] Undo/redo functionality
   - [ ] Recent searches or favorites quick-access
 
 ### Onboarding & Tutorials
-- [ ] First-time user walkthrough (interactive tutorial)
+- [ ] First-time user walkthrough
 - [ ] Contextual help tooltips on first use
-- [ ] "How-to" guides for major features (1-2 minute reads)
+- [ ] "How-to" guides
 - [ ] Guided production chain planning template
 - [ ] Beginner vs. Advanced mode toggle
 
 ### Workflow Optimization
 - [ ] **Quick-Add Features**
-  - [ ] Swipe to add item to current production
-  - [ ] Long-press for options menu (edit, delete, duplicate)
-  - [ ] Preset quantities (common values like 10, 30, 60 items/min)
-  - [ ] Copy production chain from other players' blueprints
+  - [ ] Swipe to add item
+  - [ ] Long-press for options menu
+  - [ ] Preset quantities
+  - [ ] Copy production chain
 
 - [ ] **Smart Calculations**
-  - [x] Auto-calculate as you type (no "calculate" button needed) - *Partially implemented via debounce*
-  - [x] Show immediate feedback (machine count, power, space required)
-  - [x] Highlight inefficiencies or problems in red
-  - [ ] Suggest optimizations or alternate recipes
+  - [x] Auto-calculate as you type
+  - [x] Show immediate feedback
+  - [x] Highlight inefficiencies
+  - [ ] Suggest optimizations
 
 - [ ] **Batch Operations**
-  - [ ] Select multiple items and adjust together
+  - [ ] Select multiple items
   - [ ] Bulk add items to to-do list
-  - [ ] Multi-item comparison (which recipe is most efficient?)
-  - [ ] Export multiple blueprints at once
+  - [ ] Multi-item comparison
+  - [ ] Export multiple blueprints
 
 - [ ] **Smart Defaults**
   - [ ] Remember last-used production rates
-  - [ ] Auto-fill common intermediates (iron plates, copper ingots)
-  - [ ] Suggest next logical step in production chain
-  - [ ] Pre-fill quantities based on available resources
+  - [ ] Auto-fill common intermediates
+  - [ ] Suggest next logical step
+  - [ ] Pre-fill quantities
 
 ### Data Management
-- [x] Auto-save every change (transparent to user)
-- [ ] Cloud sync option (for multi-device continuity)
+- [x] Auto-save every change
+- [ ] Cloud sync option
 - [ ] Local backup option
-- [ ] Version history (rollback to previous states)
-- [ ] Export/import to JSON or CSV for backup
+- [ ] Version history
+- [ ] Export/import to JSON/CSV
 - [x] Offline Functionality
 
 ### Error Prevention & Recovery
-- [ ] Confirm before deleting (with undo option)
-- [x] Input validation (prevent invalid quantities)
+- [ ] Confirm before deleting
+- [x] Input validation
 - [x] Warning for impossible production chains
 - [ ] Auto-correction of common mistakes
 
 ### Accessibility & Inclusivity
 - [x] Dynamic type support
-- [x] High contrast mode for readability
+- [x] High contrast mode
 - [x] Large touch targets
 - [x] Clear visual hierarchy
 - [ ] Color-blind friendly palette
@@ -165,23 +165,22 @@
 - [ ] Texture + color for all indicators
 - [x] Sufficient contrast ratios
 - [ ] Motor & Gesture Support improvements
-- [ ] Voice input option for searches
+- [ ] Voice input option
 
 ### Performance & Responsiveness
-- [x] Sub-100ms response to user input
+- [x] Sub-100ms response
 - [x] Instant search results
-- [ ] Smooth animations (60 FPS)
-- [x] Progress indicators for long operations
-- [ ] Background loading of heavy features
+- [ ] Smooth animations
+- [x] Progress indicators
+- [ ] Background loading
 
 ## 3. USER INTERFACE (UI)
 
 ### Layout & Visual Hierarchy
 - [x] Clean, Minimal Aesthetic
-- [x] Single-column layout for mobile-first design
-- [x] Production Input Screen
-- [x] Project/Factory Dashboard
-- [x] To-Do List Screen
+- [ ] **Production Input Screen** (Specific Layout Requested)
+- [ ] **Project/Factory Dashboard** (Specific Layout Requested)
+- [ ] **To-Do List Screen** (Specific Layout Requested)
 
 ### Visual Design Elements
 - [x] Color System
@@ -194,5 +193,5 @@
 
 ### Animations & Micro-Interactions
 - [ ] Transitions
-- [x] Micro-Interactions (Haptic feedback)
+- [x] Micro-Interactions
 - [ ] Lottie Animations

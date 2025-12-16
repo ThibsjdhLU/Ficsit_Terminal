@@ -7,27 +7,31 @@ struct ToDoListView: View {
     @State private var newItemCategory = ""
     @State private var newItemPriority = 0
 
-    var body: some View {
-        NavigationView {
-            ZStack {
-                FicsitBackground()
+    // Filter State
+    @State private var filter: ToDoFilter = .all
+    @State private var searchText = ""
 
-                VStack(spacing: 0) {
-                    // HEADER
+    enum ToDoFilter: String, CaseIterable {
+        case all = "All"
+        case active = "In Progress"
+        case completed = "Complete"
+    }
+
+    var body: some View {
+        ZStack {
+            FicsitBackground()
+
+            VStack(spacing: 0) {
+                // HEADER & FILTER
+                VStack(spacing: 15) {
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(Localization.translate("TO-DO LIST"))
-                                .font(.largeTitle)
-                                .fontWeight(.heavy)
-                                .fontDesign(.monospaced)
+                            Text(Localization.translate("TASK LOG"))
+                                .font(.caption).fontDesign(.monospaced)
+                                .foregroundColor(.ficsitOrange)
+                            Text(Localization.translate("CONSTRUCTION TASKS"))
+                                .font(.title2).bold().fontDesign(.monospaced)
                                 .foregroundColor(.white)
-
-                            if !viewModel.currentProjectName.isEmpty {
-                                Text(viewModel.currentProjectName)
-                                    .font(.caption)
-                                    .fontDesign(.monospaced)
-                                    .foregroundColor(.ficsitOrange)
-                            }
                         }
                         Spacer()
                         Button(action: {
@@ -37,141 +41,150 @@ struct ToDoListView: View {
                             showingAddItem = true
                         }) {
                             Image(systemName: "plus")
-                                .font(.title2)
-                                .foregroundColor(.ficsitDark)
+                                .font(.headline)
+                                .foregroundColor(.black)
                                 .padding(10)
                                 .background(Color.ficsitOrange)
                                 .clipShape(Circle())
                         }
-                        .accessibilityLabel(Localization.translate("Add new task"))
+                        .accessibilityLabel("Add Task")
                     }
-                    .padding()
-                    .background(Color.ficsitDark.opacity(0.8))
 
-                    if viewModel.toDoList.isEmpty {
-                        emptyStateView
-                    } else {
-                        List {
+                    // SEARCH BAR
+                    HStack {
+                        Image(systemName: "magnifyingglass").foregroundColor(.gray)
+                        TextField("Search tasks...", text: $searchText)
+                            .foregroundColor(.white)
+                    }
+                    .padding(8)
+                    .background(Color.black.opacity(0.3))
+                    .cornerRadius(8)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.white.opacity(0.1), lineWidth: 1))
+
+                    // FILTER TABS
+                    HStack {
+                        ForEach(ToDoFilter.allCases, id: \.self) { f in
+                            Button(action: { filter = f }) {
+                                Text(Localization.translate(f.rawValue))
+                                    .font(.caption).bold()
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 12)
+                                    .background(filter == f ? Color.ficsitOrange : Color.clear)
+                                    .foregroundColor(filter == f ? .black : .gray)
+                                    .cornerRadius(15)
+                                    .overlay(RoundedRectangle(cornerRadius: 15).stroke(filter == f ? Color.clear : Color.gray, lineWidth: 1))
+                            }
+                        }
+                        Spacer()
+                    }
+                }
+                .padding()
+                .background(Color.ficsitDark)
+
+                // LIST
+                if filteredItems.isEmpty {
+                    VStack(spacing: 20) {
+                        Spacer()
+                        Image(systemName: "checklist")
+                            .font(.system(size: 60))
+                            .foregroundColor(.ficsitGray.opacity(0.3))
+                        Text(Localization.translate("No tasks found"))
+                            .font(.headline).foregroundColor(.gray)
+                        Spacer()
+                    }
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 15) {
                             ForEach(groupedItems.keys.sorted(), id: \.self) { category in
-                                Section(header: Text(category)
-                                    .fontDesign(.monospaced)
-                                    .foregroundColor(.ficsitOrange)
+                                Section(header:
+                                    HStack {
+                                        Text(category.uppercased())
+                                            .font(.caption).bold().fontDesign(.monospaced)
+                                            .foregroundColor(.ficsitOrange)
+                                            .padding(.vertical, 5)
+                                            .padding(.horizontal, 10)
+                                            .background(Color.ficsitOrange.opacity(0.1))
+                                            .cornerRadius(4)
+                                        Spacer()
+                                    }
+                                    .padding(.top, 10)
+                                    .padding(.horizontal)
                                 ) {
                                     ForEach(groupedItems[category] ?? []) { item in
                                         ToDoItemRow(item: item) {
                                             viewModel.toggleToDoItem(item)
+                                            HapticManager.shared.click()
                                         }
-                                    }
-                                    .onDelete { offsets in
-                                        deleteItems(at: offsets, in: category)
+                                        .contextMenu {
+                                            Button(role: .destructive) {
+                                                if let idx = viewModel.toDoList.firstIndex(where: {$0.id == item.id}) {
+                                                    viewModel.toDoList.remove(at: idx)
+                                                }
+                                            } label: {
+                                                Label("Delete", systemImage: "trash")
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
-                        .listStyle(.plain)
+                        .padding(.bottom)
                     }
                 }
             }
-            .navigationBarHidden(true)
-            .sheet(isPresented: $showingAddItem) {
-                addItemSheet
-            }
+        }
+        .sheet(isPresented: $showingAddItem) {
+            addItemSheet
         }
     }
 
     // MARK: - Subviews
 
-    private var emptyStateView: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            Image(systemName: "checklist")
-                .font(.system(size: 60))
-                .foregroundColor(.ficsitGray)
-                .accessibilityHidden(true)
-            Text(Localization.translate("No tasks pending."))
-                .font(.headline)
-                .fontDesign(.monospaced)
-                .foregroundColor(.ficsitGray)
-            Text(Localization.translate("Add construction tasks to track your progress."))
-                .font(.caption)
-                .foregroundColor(.gray)
-            Spacer()
-        }
-    }
-
     private var addItemSheet: some View {
-        ZStack {
-            Color.ficsitDark.ignoresSafeArea()
-
-            VStack(spacing: 20) {
-                Text(Localization.translate("Add New Task"))
-                    .font(.headline)
-                    .fontDesign(.monospaced)
-                    .foregroundColor(.white)
-                    .padding(.top)
-
-                TextField(Localization.translate("Task Description"), text: $newItemTitle)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
-                    .preferredColorScheme(.dark)
-
-                TextField(Localization.translate("Category (Optional)"), text: $newItemCategory)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
-
-                Picker("Priority", selection: $newItemPriority) {
-                    Text(Localization.translate("Normal")).tag(0)
-                    Text(Localization.translate("High")).tag(1)
+        NavigationView {
+            Form {
+                Section(header: Text("Task Details")) {
+                    TextField("Description", text: $newItemTitle)
+                    TextField("Category (e.g. Tier 1, Logistics)", text: $newItemCategory)
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-                .onAppear {
-                    UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(Color.ficsitOrange)
-                    UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.black], for: .selected)
-                    UISegmentedControl.appearance().setTitleTextAttributes([.foregroundColor: UIColor.white], for: .normal)
-                }
-
-                HStack(spacing: 20) {
-                    Button(Localization.translate("Cancel")) {
-                        showingAddItem = false
+                Section(header: Text("Priority")) {
+                    Picker("Priority", selection: $newItemPriority) {
+                        Text("Normal").tag(0)
+                        Text("High").tag(1)
                     }
-                    .foregroundColor(.red)
-
-                    Button(Localization.translate("Add")) {
-                        // Store nil if empty, so "General" is localized at display time
-                        let cat = newItemCategory.isEmpty ? nil : newItemCategory
-                        viewModel.addToDoItem(title: newItemTitle, category: cat, priority: newItemPriority)
-                        showingAddItem = false
-                    }
-                    .disabled(newItemTitle.isEmpty)
-                    .foregroundColor(newItemTitle.isEmpty ? .gray : .ficsitOrange)
+                    .pickerStyle(SegmentedPickerStyle())
                 }
-                .padding()
-
-                Spacer()
             }
+            .navigationTitle("New Task")
+            .navigationBarItems(
+                leading: Button("Cancel") { showingAddItem = false },
+                trailing: Button("Add") {
+                    let cat = newItemCategory.isEmpty ? nil : newItemCategory
+                    viewModel.addToDoItem(title: newItemTitle, category: cat, priority: newItemPriority)
+                    showingAddItem = false
+                }
+                .disabled(newItemTitle.isEmpty)
+            )
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Filtering Logic
+
+    private var filteredItems: [ToDoItem] {
+        viewModel.toDoList.filter { item in
+            let matchesSearch = searchText.isEmpty || item.title.localizedCaseInsensitiveContains(searchText) || (item.category?.localizedCaseInsensitiveContains(searchText) ?? false)
+            let matchesFilter: Bool
+            switch filter {
+            case .all: matchesFilter = true
+            case .active: matchesFilter = !item.isCompleted
+            case .completed: matchesFilter = item.isCompleted
+            }
+            return matchesSearch && matchesFilter
+        }
+    }
 
     private var groupedItems: [String: [ToDoItem]] {
-        Dictionary(grouping: viewModel.toDoList) { $0.category ?? Localization.translate("General") }
-    }
-
-    private func deleteItems(at offsets: IndexSet, in category: String) {
-        // Find items to delete
-        let itemsToDelete = offsets.map { (groupedItems[category] ?? [])[$0] }
-
-        // Find their indices in the main list
-        let indicesToDelete = itemsToDelete.compactMap { item in
-            viewModel.toDoList.firstIndex(where: { $0.id == item.id })
-        }
-
-        // Remove them (sorting descending to avoid index shift issues)
-        for index in indicesToDelete.sorted(by: >) {
-            viewModel.toDoList.remove(at: index)
-        }
+        Dictionary(grouping: filteredItems) { $0.category ?? Localization.translate("General") }
     }
 }
 
@@ -180,32 +193,35 @@ struct ToDoItemRow: View {
     let onToggle: () -> Void
 
     var body: some View {
-        HStack {
+        HStack(spacing: 15) {
             Button(action: onToggle) {
                 Image(systemName: item.isCompleted ? "checkmark.square.fill" : "square")
-                    .foregroundColor(item.isCompleted ? .green : .ficsitGray)
                     .font(.title2)
+                    .foregroundColor(item.isCompleted ? .green : .ficsitGray)
             }
             .buttonStyle(PlainButtonStyle())
-            .accessibilityLabel(item.isCompleted ? Localization.translate("Mark as incomplete") : Localization.translate("Mark as completed"))
 
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(item.title)
                     .strikethrough(item.isCompleted)
                     .foregroundColor(item.isCompleted ? .gray : .white)
                     .fontDesign(.monospaced)
 
-                if item.priority == 1 {
-                    Text(Localization.translate("HIGH PRIORITY"))
+                if item.priority == 1 && !item.isCompleted {
+                    Text("HIGH PRIORITY")
                         .font(.caption2)
                         .fontWeight(.bold)
                         .foregroundColor(.ficsitOrange)
+                        .padding(2)
+                        .background(Color.ficsitOrange.opacity(0.1))
+                        .cornerRadius(2)
                 }
             }
 
             Spacer()
         }
-        .padding(.vertical, 8)
-        .listRowBackground(Color.clear)
+        .padding()
+        .ficsitCard(borderColor: item.isCompleted ? .green.opacity(0.2) : .white.opacity(0.1))
+        .padding(.horizontal)
     }
 }

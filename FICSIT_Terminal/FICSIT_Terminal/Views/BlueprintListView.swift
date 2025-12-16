@@ -1,62 +1,67 @@
 import SwiftUI
+import Combine
 
 struct BlueprintListView: View {
     @StateObject private var service = BlueprintService.shared
     @State private var showingAddSheet = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            // Header
-            VStack(alignment: .leading, spacing: 4) {
-                Text("LIBRARY")
-                    .font(.system(.caption, design: .monospaced))
-                    .foregroundColor(.ficsitGray)
-                    .tracking(2)
+        ZStack {
+            // Apply ficsitBackground to the ZStack container, not the VStack
+            FicsitBackground()
 
-                Text("BLUEPRINTS")
-                    .font(.system(.title2, design: .monospaced))
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(Color.ficsitDark)
-
-            if service.blueprints.isEmpty {
-                Spacer()
-                VStack(spacing: 20) {
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .font(.system(size: 60))
+            VStack(spacing: 0) {
+                // Header
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("LIBRARY")
+                        .font(.system(.caption, design: .monospaced))
                         .foregroundColor(.ficsitGray)
-                    Text("No Blueprints Saved")
-                        .font(.headline)
-                        .foregroundColor(.gray)
-                    Text("Save your factory plans as blueprints to reuse them later.")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
+                        .tracking(2)
+
+                    Text("BLUEPRINTS")
+                        .font(.system(.title2, design: .monospaced))
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
                 }
-                Spacer()
-            } else {
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(service.blueprints) { blueprint in
-                            BlueprintCard(blueprint: blueprint)
-                                .contextMenu {
-                                    Button(role: .destructive) {
-                                        service.delete(blueprint)
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-                                }
-                        }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .background(Color.ficsitDark)
+
+                if service.blueprints.isEmpty {
+                    Spacer()
+                    VStack(spacing: 20) {
+                        Image(systemName: "doc.text.magnifyingglass")
+                            .font(.system(size: 60))
+                            .foregroundColor(.ficsitGray)
+                        Text("No Blueprints Saved")
+                            .font(.headline)
+                            .foregroundColor(.gray)
+                        Text("Save your factory plans as blueprints to reuse them later.")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
-                    .padding()
+                    Spacer()
+                } else {
+                    ScrollView {
+                        LazyVStack(spacing: 12) {
+                            ForEach(service.blueprints) { blueprint in
+                                BlueprintCard(blueprint: blueprint)
+                                    .contextMenu {
+                                        Button(role: .destructive) {
+                                            service.delete(blueprint)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
+                            }
+                        }
+                        .padding()
+                    }
                 }
             }
         }
-        .ficsitBackground()
     }
 }
 

@@ -181,8 +181,6 @@ struct FactoryDashboardTab: View {
                                 Button(action: {
                                     viewModel.selectFactory(factory)
                                     HapticManager.shared.click()
-                                    // Optional: Switch to Calculator automatically if user wants?
-                                    // For now just selection.
                                 }) {
                                     FactoryListCard(factory: factory, isActive: factory.id == calculatorViewModel.currentProjectId)
                                 }
@@ -205,8 +203,6 @@ struct FactoryDashboardTab: View {
 }
 
 struct ToolsView: View {
-    // We can use environment object if we want persistent state
-
     var body: some View {
         ZStack {
             FicsitBackground()
@@ -223,6 +219,7 @@ struct ToolsView: View {
                     NavigationLink(destination: Text("Coming Soon: Logistics")) {
                         Label("Logistics Planner", systemImage: "arrow.triangle.branch")
                     }
+                    .padding(.bottom, 20)
                 }
                 .listRowBackground(Color.ficsitDark.opacity(0.8))
             }
@@ -276,9 +273,22 @@ struct DatabaseView: View {
     }
 }
 
-// Helper to wrap existing logic if needed
 struct RecipeDetailViewWrapper: View {
     let item: ProductionItem
+    var body: some View {
+        if let recipe = FICSITDatabase.shared.getRecipesOptimized(producing: item.name).first {
+            RecipeDetailView(recipe: recipe)
+        } else {
+            Text("Raw Resource: \(item.localizedName)")
+                .ficsitBackground()
+        }
+    }
+}
+
+struct FactoryListCard: View {
+    let factory: Factory
+    let isActive: Bool
+    
     var body: some View {
         // Reuse existing logic or create simple view
         if let recipe = FICSITDatabase.shared.getRecipesOptimized(producing: item.name).first {

@@ -147,3 +147,13 @@ struct FicsitBackground: View {
         }
     }
 }
+
+// 7. EXTENSION FOR MODIFIER USAGE
+extension View {
+    func ficsitBackground() -> some View {
+        ZStack {
+            FicsitBackground()
+            self
+        }
+    }
+}

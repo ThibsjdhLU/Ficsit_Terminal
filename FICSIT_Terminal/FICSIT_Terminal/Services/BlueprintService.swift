@@ -1,4 +1,6 @@
 import Foundation
+import Combine
+import SwiftUI
 
 actor BlueprintStorage {
     private let filename = "ficsit_blueprints.json"

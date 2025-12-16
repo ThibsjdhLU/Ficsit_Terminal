@@ -155,6 +155,7 @@ struct HubDashboardView: View {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(.ficsitGray)
                 }
+                .accessibilityLabel(Localization.translate("Clear search"))
             }
         }
         .padding()
@@ -180,20 +181,24 @@ struct HubDashboardView: View {
                     .padding()
             } else {
                 ForEach(searchResults) { item in
-                    HStack {
-                        ItemIcon(item: item, size: 30)
-                        Text(item.localizedName)
-                            .foregroundColor(.white)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.ficsitGray)
-                    }
-                    .padding()
-                    .background(Color.ficsitDark.opacity(0.5))
-                    .cornerRadius(8)
-                    .onTapGesture {
+                    Button(action: {
                         selectedItemForDetail = item
+                    }) {
+                        HStack {
+                            ItemIcon(item: item, size: 30)
+                            Text(item.localizedName)
+                                .foregroundColor(.white)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.ficsitGray)
+                        }
+                        .padding()
+                        .background(Color.ficsitDark.opacity(0.5))
+                        .cornerRadius(8)
                     }
+                    .buttonStyle(PlainButtonStyle())
+                    .accessibilityLabel(item.localizedName)
+                    .accessibilityHint(Localization.translate("Double tap to show details"))
                 }
                 .padding(.horizontal)
             }

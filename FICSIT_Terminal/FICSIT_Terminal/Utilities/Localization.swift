@@ -134,6 +134,11 @@ struct Localization {
         "others...": "autres...",
 
         // HUB (NEW)
+        "Search database...": "Rechercher...",
+        "SEARCH RESULTS": "RÉSULTATS DE RECHERCHE",
+        "No results found.": "Aucun résultat trouvé.",
+        "Clear search": "Effacer la recherche",
+        "Double tap to show details": "Toucher deux fois pour voir les détails",
         "FICSIT FACTORY OS": "FICSIT FACTORY OS",
         "GLOBAL COMMAND": "COMMANDEMENT GLOBAL",
         "ACTIVE FACTORIES": "USINES ACTIVES",

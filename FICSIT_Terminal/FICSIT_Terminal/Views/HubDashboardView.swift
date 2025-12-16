@@ -2,286 +2,288 @@ import SwiftUI
 
 struct HubDashboardView: View {
     @StateObject var viewModel: HubViewModel
-    @ObservedObject var calculatorViewModel: CalculatorViewModel // For selection state sync (legacy/delegate)
+    @ObservedObject var calculatorViewModel: CalculatorViewModel
+    @StateObject var extractionViewModel = ExtractionViewModel()
 
-    @State private var animateStats = false
+    // Tab State
+    @State private var selectedTab: Int = 1
     
-    // Search State
+    // Search State (Global)
     @State private var searchText = ""
     @State private var isSearching = false
     @State private var searchResults: [ProductionItem] = []
-    @State private var selectedItemForDetail: ProductionItem?
 
     init(viewModel: HubViewModel, calculatorViewModel: CalculatorViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
         self.calculatorViewModel = calculatorViewModel
+
+        // Custom Tab Bar Appearance
+        let appearance = UITabBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.12, alpha: 1.0)
+        appearance.selectionIndicatorTintColor = UIColor(red: 250/255, green: 149/255, blue: 73/255, alpha: 1.0)
+
+        UITabBar.appearance().standardAppearance = appearance
+        UITabBar.appearance().scrollEdgeAppearance = appearance
     }
+
+    var body: some View {
+        ZStack {
+            TabView(selection: $selectedTab) {
+
+                // TAB 1: FACTORY DASHBOARD (Overview)
+                FactoryDashboardTab(viewModel: viewModel, calculatorViewModel: calculatorViewModel, selectedTab: $selectedTab)
+                    .tabItem {
+                        Label("Factory", systemImage: "building.2.fill")
+                    }
+                    .tag(1)
+
+                // TAB 2: CALCULATOR (Active Project)
+                if !calculatorViewModel.currentProjectId.isEmpty {
+                    NavigationView {
+                        CalculatorView(viewModel: calculatorViewModel)
+                    }
+                    .tabItem {
+                        Label("Calculator", systemImage: "function")
+                    }
+                    .tag(2)
+                } else {
+                    Text("Select a factory to open Calculator")
+                        .tabItem { Label("Calculator", systemImage: "function") }
+                        .tag(2)
+                }
+
+                // TAB 3: BLUEPRINTS & EXTRACTION (Tools)
+                NavigationView {
+                    ToolsView()
+                        .environmentObject(extractionViewModel)
+                }
+                .tabItem {
+                    Label("Tools", systemImage: "hammer.fill")
+                }
+                .tag(3)
+
+                // TAB 4: DATABASE
+                NavigationView {
+                    DatabaseView()
+                }
+                .tabItem {
+                    Label("Database", systemImage: "internaldrive.fill")
+                }
+                .tag(4)
+
+                // TAB 5: TO-DO
+                NavigationView {
+                    ToDoListView(viewModel: calculatorViewModel)
+                }
+                .tabItem {
+                    Label("To-Do", systemImage: "checkmark.square.fill")
+                }
+                .tag(5)
+            }
+            .accentColor(.ficsitOrange)
+        }
+        .onAppear {
+            viewModel.delegate = calculatorViewModel
+        }
+    }
+}
+
+// MARK: - SUB-VIEWS FOR TABS
+
+struct FactoryDashboardTab: View {
+    @ObservedObject var viewModel: HubViewModel
+    @ObservedObject var calculatorViewModel: CalculatorViewModel
+    @Binding var selectedTab: Int
 
     var body: some View {
         NavigationView {
             ZStack {
                 FicsitBackground()
                 
-                if !viewModel.currentFactoryId.isEmpty && viewModel.factories.contains(where: { $0.id.uuidString == viewModel.currentFactoryId }) {
-                    // SHOW FACTORY DASHBOARD
-                    FactoryDashboardView(viewModel: calculatorViewModel) {
-                        viewModel.clearSelection()
-                    }
-                    .transition(.move(edge: .trailing))
-                } else {
-                    // SHOW HUB LIST
-                    ScrollView {
-                        VStack(spacing: 25) {
-
-                            // HEADER GLOBAL
-                            headerView
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // HEADER
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("FICSIT OS")
+                                    .font(.caption).fontDesign(.monospaced)
+                                    .foregroundColor(.ficsitOrange)
+                                Text("DASHBOARD")
+                                    .font(.largeTitle).fontWeight(.heavy).fontDesign(.monospaced)
+                                    .foregroundColor(.white)
+                            }
+                            Spacer()
+                            Image(systemName: "globe.europe.africa.fill")
+                                .font(.largeTitle)
+                                .foregroundColor(.ficsitGray)
                         }
-                        .padding(.bottom) // Spacing before pinned views if any, but we are moving search out
+                        .padding()
 
-                        // Pinned Section for Search
-                        LazyVStack(pinnedViews: [.sectionHeaders]) {
-                            Section(header: searchBarView.background(FicsitBackground())) {
-                                if isSearching {
-                                    searchResultsView
-                                        .transition(.opacity)
-                                } else {
-                                    // --- GLOBAL STATS ---
-                                    globalStatsView
-                                        .padding(.top)
-
-                                    // --- FACTORY LIST ---
-                                    factoryListView
-                                        .padding(.top)
-
+                        // ACTIVE FACTORY CARD
+                        if let current = viewModel.factories.first(where: { $0.id == calculatorViewModel.currentProjectId }) {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    Text("CURRENT PROJECT")
+                                        .font(.caption).bold().foregroundColor(.ficsitOrange)
                                     Spacer()
+                                    Text("ONLINE")
+                                        .font(.caption).bold()
+                                        .padding(4)
+                                        .background(Color.green.opacity(0.2))
+                                        .foregroundColor(.green)
+                                        .cornerRadius(4)
                                 }
+
+                                Text(current.name)
+                                    .font(.title).bold().fontDesign(.monospaced)
+
+                                HStack {
+                                    Label("\(current.goals.count) Goals", systemImage: "target")
+                                    Spacer()
+                                    Label("\(current.inputs.count) Inputs", systemImage: "arrow.down.circle")
+                                }
+                                .font(.subheadline).foregroundColor(.gray)
+
+                                Divider().background(Color.gray)
+
+                                Button(action: {
+                                    selectedTab = 2 // Switch to Calculator
+                                    HapticManager.shared.click()
+                                }) {
+                                    Text("Open Calculator")
+                                        .frame(maxWidth: .infinity)
+                                        .padding(8)
+                                        .background(Color.ficsitOrange)
+                                        .foregroundColor(.black)
+                                        .cornerRadius(4)
+                                }
+                            }
+                            .padding()
+                            .ficsitCard(borderColor: .ficsitOrange)
+                            .padding(.horizontal)
+                        }
+
+                        // FACTORY LIST
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Text("ALL PROJECTS")
+                                    .font(.headline).fontDesign(.monospaced)
+                                Spacer()
+                                Button(action: { viewModel.showingCreateAlert = true }) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundColor(.ficsitOrange)
+                                }
+                            }
+                            .padding(.horizontal)
+
+                            ForEach(viewModel.factories) { factory in
+                                Button(action: {
+                                    viewModel.selectFactory(factory)
+                                    HapticManager.shared.click()
+                                }) {
+                                    FactoryListCard(factory: factory, isActive: factory.id == calculatorViewModel.currentProjectId)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                .padding(.horizontal)
                             }
                         }
                     }
-                    .transition(.move(edge: .leading))
+                    .padding(.bottom, 20)
                 }
             }
-            .sheet(item: $selectedItemForDetail) { item in
-                 // Reusing RecipeDetailView logic or creating a simple Item Detail view
-                 // For now, let's find a recipe producing this item to show details, or just basic info
-                 if let recipe = FICSITDatabase.shared.getRecipesOptimized(producing: item.name).first {
-                     RecipeDetailView(recipe: recipe)
-                 } else {
-                     // Fallback view if no recipe produces it directly (e.g. raw resource)
-                     VStack {
-                         Text(item.localizedName)
-                             .font(.largeTitle)
-                             .padding()
-                         Text("Category: \(item.category)")
-                         Spacer()
-                     }
-                     .background(FicsitBackground())
-                 }
-            }
-            .onAppear {
-                // Sync Delegate
-                viewModel.delegate = calculatorViewModel
-
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
-                    animateStats = true
-                }
+            .alert("New Project", isPresented: $viewModel.showingCreateAlert) {
+                TextField("Project Name", text: $viewModel.newFactoryName)
+                Button("Cancel", role: .cancel) { }
+                Button("Create") { viewModel.createNewFactory() }
             }
             .navigationBarHidden(true)
-            .alert(Localization.translate("New Factory"), isPresented: $viewModel.showingCreateAlert) {
-                TextField(Localization.translate("Name"), text: $viewModel.newFactoryName)
-                Button(Localization.translate("Cancel"), role: .cancel) { }
-                Button(Localization.translate("Create")) {
-                    viewModel.createNewFactory()
-                }
-            } message: {
-                Text(Localization.translate("Enter designation for the new production site."))
-            }
         }
-    }
-
-    // MARK: - Subviews
-
-    private var headerView: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 5) {
-                Text(Localization.translate("FICSIT FACTORY OS"))
-                    .font(.caption) // .monospaced is handled by DesignSystem if applicable or we add it
-                    .fontDesign(.monospaced)
-                    .foregroundColor(.ficsitOrange)
-                    .tracking(2)
-                    .accessibilityLabel("System Name")
-
-                Text(Localization.translate("GLOBAL COMMAND"))
-                    .font(.largeTitle)
-                    .fontWeight(.heavy)
-                    .fontDesign(.monospaced)
-                    .foregroundColor(.white)
-                    .accessibilityAddTraits(.isHeader)
-            }
-            Spacer()
-            Image(systemName: "globe.europe.africa.fill")
-                .font(.largeTitle)
-                .foregroundColor(.ficsitGray)
-                .accessibilityHidden(true)
-        }
-        .padding(.horizontal)
-        .padding(.top, 20)
-    }
-
-    private var searchBarView: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.ficsitGray)
-
-            TextField(Localization.translate("Search database..."), text: $searchText)
-                .foregroundColor(.white)
-                .onChange(of: searchText) { newValue in
-                    if newValue.isEmpty {
-                        isSearching = false
-                        searchResults = []
-                    } else {
-                        isSearching = true
-                        performSearch(query: newValue)
-                    }
-                }
-
-            if !searchText.isEmpty {
-                Button(action: {
-                    searchText = ""
-                    isSearching = false
-                    searchResults = []
-                    UIApplication.shared.endEditing() // Extension usually needed, or use FocusState
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.ficsitGray)
-                }
-            }
-        }
-        .padding()
-        .background(Color.ficsitDark.opacity(0.8))
-        .cornerRadius(10)
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.ficsitGray.opacity(0.5), lineWidth: 1)
-        )
-        .padding(.horizontal)
-    }
-
-    private var searchResultsView: some View {
-        VStack(alignment: .leading) {
-            Text(Localization.translate("SEARCH RESULTS"))
-                .font(.caption)
-                .foregroundColor(.ficsitOrange)
-                .padding(.horizontal)
-
-            if searchResults.isEmpty {
-                Text(Localization.translate("No results found."))
-                    .foregroundColor(.ficsitGray)
-                    .padding()
-            } else {
-                ForEach(searchResults) { item in
-                    HStack {
-                        ItemIcon(item: item, size: 30)
-                        Text(item.localizedName)
-                            .foregroundColor(.white)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.ficsitGray)
-                    }
-                    .padding()
-                    .background(Color.ficsitDark.opacity(0.5))
-                    .cornerRadius(8)
-                    .onTapGesture {
-                        selectedItemForDetail = item
-                    }
-                }
-                .padding(.horizontal)
-            }
-        }
-    }
-
-    private func performSearch(query: String) {
-        let lowerQuery = query.lowercased()
-        searchResults = FICSITDatabase.shared.items.filter {
-            $0.localizedName.lowercased().contains(lowerQuery) ||
-            $0.name.lowercased().contains(lowerQuery)
-        }.sorted(by: { $0.name < $1.name })
-    }
-
-    private var globalStatsView: some View {
-        VStack(spacing: 15) {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(Localization.translate("ACTIVE FACTORIES"))
-                        .font(.caption)
-                        .fontDesign(.monospaced)
-                        .foregroundColor(.ficsitGray)
-
-                    Text("\(viewModel.globalFactoryCount)")
-                        .font(.system(size: 40, weight: .black, design: .monospaced)) // Using system(size:) for specific impact but checking if it scales...
-                        .minimumScaleFactor(0.5) // Allow scaling down
-                        .foregroundColor(.white)
-                        .accessibilityLabel("\(viewModel.globalFactoryCount) active factories")
-                }
-                Spacer()
-                Image(systemName: "building.2.fill")
-                    .font(.largeTitle)
-                    .foregroundColor(.ficsitGray.opacity(0.5))
-            }
-            .padding()
-            .ficsitCard(borderColor: .ficsitGray.opacity(0.5))
-        }
-        .padding(.horizontal)
-    }
-
-    private var factoryListView: some View {
-        VStack(alignment: .leading) {
-            FicsitHeader(title: Localization.translate("Production Sites"), icon: "list.bullet.rectangle.portrait")
-
-            if case .empty = viewModel.state {
-                Text(Localization.translate("No active factories. Initialize new site."))
-                    .font(.body)
-                    .fontDesign(.monospaced)
-                    .foregroundColor(.ficsitGray)
-                    .padding()
-            } else {
-                ForEach(viewModel.factories) { factory in
-                    FactoryListCard(factory: factory, isActive: factory.id == calculatorViewModel.currentProjectId)
-                        .onTapGesture {
-                            viewModel.selectFactory(factory)
-                            HapticManager.shared.click()
-                        }
-                        .accessibilityElement(children: .combine)
-                        .accessibilityLabel("Factory \(factory.name), \(factory.goals.count) goals")
-                        .accessibilityHint("Double tap to activate")
-                }
-            }
-
-            // CREATE NEW BUTTON
-            Button(action: {
-                viewModel.newFactoryName = ""
-                viewModel.showingCreateAlert = true
-            }) {
-                HStack {
-                    Image(systemName: "plus.circle.fill")
-                    Text(Localization.translate("Establish New Site"))
-                }
-                .font(.headline)
-                .fontDesign(.monospaced)
-                .foregroundColor(.ficsitOrange)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.ficsitDark.opacity(0.5))
-                .cornerRadius(10)
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.ficsitOrange, style: StrokeStyle(lineWidth: 1, dash: [5])))
-            }
-            .accessibilityLabel("Create new factory")
-        }
-        .padding(.horizontal)
     }
 }
 
-// Subview for Factory Card
+struct ToolsView: View {
+    var body: some View {
+        ZStack {
+            FicsitBackground()
+            List {
+                Section(header: Text("PLANNING TOOLS").fontDesign(.monospaced)) {
+                    NavigationLink(destination: ResourceExtractionView()) {
+                        Label("Extraction Calculator", systemImage: "hammer.fill")
+                    }
+
+                    NavigationLink(destination: BlueprintListView()) {
+                        Label("Blueprint Library", systemImage: "doc.text.fill")
+                    }
+
+                    NavigationLink(destination: Text("Coming Soon: Logistics")) {
+                        Label("Logistics Planner", systemImage: "arrow.triangle.branch")
+                    }
+                }
+                .listRowBackground(Color.ficsitDark.opacity(0.8))
+            }
+            .scrollContentBackground(.hidden)
+        }
+        .navigationTitle("Tools")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct DatabaseView: View {
+    @State private var searchText = ""
+    @StateObject private var db = FICSITDatabase.shared
+
+    var filteredItems: [ProductionItem] {
+        if searchText.isEmpty { return db.items }
+        return db.items.filter { $0.localizedName.localizedCaseInsensitiveContains(searchText) }
+    }
+
+    var body: some View {
+        ZStack {
+            FicsitBackground()
+            VStack {
+                // Search
+                HStack {
+                    Image(systemName: "magnifyingglass").foregroundColor(.gray)
+                    TextField("Search Items & Recipes...", text: $searchText)
+                        .foregroundColor(.white)
+                }
+                .padding()
+                .background(Color.ficsitDark)
+                .cornerRadius(8)
+                .padding()
+
+                List {
+                    ForEach(filteredItems) { item in
+                        NavigationLink(destination: RecipeDetailViewWrapper(item: item)) {
+                            HStack {
+                                ItemIcon(item: item, size: 32)
+                                Text(item.localizedName)
+                            }
+                        }
+                    }
+                    .listRowBackground(Color.black.opacity(0.3))
+                }
+                .scrollContentBackground(.hidden)
+            }
+        }
+        .navigationTitle("Database")
+        .navigationBarHidden(true)
+    }
+}
+
+struct RecipeDetailViewWrapper: View {
+    let item: ProductionItem
+    var body: some View {
+        if let recipe = FICSITDatabase.shared.getRecipesOptimized(producing: item.name).first {
+            RecipeDetailView(recipe: recipe)
+        } else {
+            Text("Raw Resource: \(item.localizedName)")
+                .ficsitBackground()
+        }
+    }
+}
+
 struct FactoryListCard: View {
     let factory: Factory
     let isActive: Bool

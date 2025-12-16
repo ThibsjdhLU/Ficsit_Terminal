@@ -116,6 +116,11 @@ struct Localization {
         "Power": "Énergie",
         "Library": "M.A.M.",
         "Flow": "Flux",
+        "Calculator": "Calculateur",
+        "Tools": "Outils",
+        "Database": "Base de Données",
+        "To-Do": "Tâches",
+        "Settings": "Paramètres",
 
         // DASHBOARD
         "WELCOME, PIONEER": "BIENVENUE, PIONNIER",
@@ -144,6 +149,18 @@ struct Localization {
         "Create": "Créer",
         "Enter designation for the new production site.": "Entrez la désignation du nouveau site de production.",
         "ONLINE": "EN LIGNE",
+        "FICSIT OS": "SYSTÈME FICSIT",
+        "DASHBOARD": "TABLEAU DE BORD",
+        "CURRENT PROJECT": "PROJET ACTUEL",
+        "ALL PROJECTS": "TOUS LES PROJETS",
+        "Project Name": "Nom du Projet",
+        "Establish New Site": "Établir Nouveau Site",
+        "Create": "Créer",
+        "PLANNING TOOLS": "OUTILS DE PLANIFICATION",
+        "Extraction Calculator": "Calculateur d'Extraction",
+        "Blueprint Library": "Bibliothèque de Plans",
+        "Logistics Planner": "Planificateur Logistique",
+        "Search Items & Recipes...": "Chercher Items & Recettes...",
 
         // INPUT VIEW
         "RESOURCE SURVEY": "SURVEY RESSOURCES",
@@ -213,7 +230,6 @@ struct Localization {
         "SAVE PROJECT": "SAUVEGARDER PROJET",
         "NEW EMPTY PROJECT": "NOUVEAU PROJET VIDE",
         "Save Project": "Sauvegarder Projet",
-        "Project Name": "Nom du Projet",
         "Enter a name for your factory.": "Entrez un nom pour votre usine.",
 
         // BOTTLENECK SUGGESTIONS
@@ -227,6 +243,10 @@ struct Localization {
         // BLUEPRINT
         "BLUEPRINT": "PLAN",
         "Splitter/Merger": "Répartiteur/Groupeur",
+        "BLUEPRINTS": "PLANS",
+        "LIBRARY": "BIBLIOTHÈQUE",
+        "No Blueprints Saved": "Aucun Plan Sauvegardé",
+        "Save your factory plans as blueprints to reuse them later.": "Sauvegardez vos plans d'usine pour les réutiliser plus tard.",
 
         // TO-DO LIST
         "TO-DO LIST": "LISTE DE TÂCHES",
@@ -243,7 +263,59 @@ struct Localization {
         "Add construction tasks to track your progress.": "Ajoutez des tâches de construction pour suivre votre progression.",
         "Add new task": "Ajouter une nouvelle tâche",
         "Mark as completed": "Marquer comme terminée",
-        "Mark as incomplete": "Marquer comme inachevée"
+        "Mark as incomplete": "Marquer comme inachevée",
+        "TASK LOG": "JOURNAL DES TÂCHES",
+        "CONSTRUCTION TASKS": "TÂCHES DE CONSTRUCTION",
+        "Search tasks...": "Chercher tâches...",
+        "All": "Tout",
+        "In Progress": "En Cours",
+        "Complete": "Terminé",
+        "No tasks found": "Aucune tâche trouvée",
+        "Task Details": "Détails de la Tâche",
+        "New Task": "Nouvelle Tâche",
+
+        // EXTRACTION
+        "RESOURCE EXTRACTION": "EXTRACTION RESSOURCES",
+        "MINING CALCULATOR": "CALCULATEUR MINIER",
+        "Target Resource": "Ressource Cible",
+        "Change": "Changer",
+        "Configuration": "Configuration",
+        "Node Purity": "Pureté du Noeud",
+        "Miner Tier": "Niveau Mineur",
+        "Clock Speed": "Vitesse d'Horloge",
+        "Output Analysis": "Analyse de Sortie",
+        "Power Usage": "Usage Électrique",
+        "Global Sustainability": "Durabilité Globale",
+        "Map Availability for": "Disponibilité Carte pour",
+        "Impure": "Impur",
+        "Pure": "Pur",
+        "Max Global Output": "Sortie Globale Max",
+        "Resource Inputs": "Entrées Ressources",
+        "Production Lines": "Lignes de Production",
+        "Factory Overview": "Aperçu Usine",
+        "Tap to Plan Production": "Toucher pour Planifier",
+        "Total Power": "Puissance Totale",
+        "Buildings": "Bâtiments",
+        "PRODUCTION STATUS: ONLINE": "STATUT PRODUCTION: EN LIGNE",
+        "Add Product Goal": "Ajouter Objectif Produit",
+        "Add Resource Input": "Ajouter Entrée Ressource",
+
+        // PRODUCTION INPUT
+        "PRODUCTION PLANNER": "PLANIFICATEUR PRODUCTION",
+        "NEW PRODUCTION LINE": "NOUVELLE LIGNE",
+        "Target Product": "Produit Cible",
+        "Select Item to Produce...": "Sélectionner Item...",
+        "Production Parameters": "Paramètres Production",
+        "Desired Output Rate": "Taux de Sortie Désiré",
+        "Allow Alternate Recipes": "Autoriser Recettes Alternatives",
+        "Projected Requirements": "Besoins Estimés",
+        "Estimated Input Materials": "Matériaux d'Entrée Estimés",
+        "Smelters": "Fonderies",
+        "Add to Project": "Ajouter au Projet",
+        "Blueprint": "Plan",
+        "Blueprint Details": "Détails du Plan",
+        "Description": "Description",
+        "Save Blueprint": "Sauver Plan"
     ]
 
     static func translate(_ key: String) -> String {

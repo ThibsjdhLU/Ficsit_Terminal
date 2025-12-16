@@ -6,6 +6,8 @@ class GraphEngine {
         var nodes: [GraphNode]
         var links: [GraphLink]
         var contentSize: CGSize
+        // OPTIMISATION (Bolt): Map pour lookup O(1) des noeuds par ID
+        var nodeMap: [UUID: GraphNode]
     }
     
     // MODIFICATION ICI : Ajout de 'goals' et 'sinkResult' dans les paramètres
@@ -188,7 +190,10 @@ class GraphEngine {
             validNodeIDs.contains(link.fromNodeID) && validNodeIDs.contains(link.toNodeID)
         }
         
-        return GraphLayout(nodes: finalNodes, links: validLinks, contentSize: CGSize(width: maxWidth, height: maxHeight))
+        // OPTIMISATION (Bolt): Création de la map une seule fois après le positionnement
+        let nodeMap = Dictionary(uniqueKeysWithValues: finalNodes.map { ($0.id, $0) })
+
+        return GraphLayout(nodes: finalNodes, links: validLinks, contentSize: CGSize(width: maxWidth, height: maxHeight), nodeMap: nodeMap)
     }
     
     // Fonction Helper pour ID Stable

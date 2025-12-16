@@ -219,6 +219,7 @@ struct ToolsView: View {
                     NavigationLink(destination: Text("Coming Soon: Logistics")) {
                         Label("Logistics Planner", systemImage: "arrow.triangle.branch")
                     }
+                    .padding(.bottom, 20)
                 }
                 .listRowBackground(Color.ficsitDark.opacity(0.8))
             }
@@ -289,40 +290,12 @@ struct FactoryListCard: View {
     let isActive: Bool
     
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 5) {
-                HStack {
-                    Text(factory.name)
-                        .font(.headline)
-                        .fontDesign(.monospaced)
-                        .fontWeight(.bold)
-                        .foregroundColor(isActive ? .ficsitOrange : .white)
-                        .lineLimit(1)
-
-                    if isActive {
-                        Text(Localization.translate("ONLINE"))
-                            .font(.system(size: 10, weight: .bold, design: .monospaced))
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(Color.green.opacity(0.2))
-                            .foregroundColor(.green)
-                            .cornerRadius(4)
-                    }
-                }
-
-                Text("\(factory.goals.count) Goals • \(factory.inputs.count) Inputs")
-                    .font(.caption)
-                    .foregroundColor(.ficsitGray)
-            }
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .foregroundColor(isActive ? .ficsitOrange : .ficsitGray)
+        // Reuse existing logic or create simple view
+        if let recipe = FICSITDatabase.shared.getRecipesOptimized(producing: item.name).first {
+            RecipeDetailView(recipe: recipe)
+        } else {
+            Text("Raw Resource: \(item.localizedName)")
+                .ficsitBackground()
         }
-        .padding()
-        .background(isActive ? Color.ficsitOrange.opacity(0.1) : Color.black.opacity(0.3))
-        .clipShape(FicsitCardShape(cornerSize: 10))
-        .overlay(FicsitCardShape(cornerSize: 10).stroke(isActive ? Color.ficsitOrange : Color.white.opacity(0.1), lineWidth: 1))
     }
 }

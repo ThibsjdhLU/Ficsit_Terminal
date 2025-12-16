@@ -29,14 +29,13 @@ struct FactoryFlowGraphView: View {
                     } else {
                         graphContentView
                             .onChange(of: viewModel.consolidatedPlan.count) { _, _ in
-                                // Invalider le cache quand le plan change
-                                cachedLayout = nil
+                                updateLayout()
                             }
                             .onChange(of: viewModel.userInputs.count) { _, _ in
-                                cachedLayout = nil
+                                updateLayout()
                             }
                             .onChange(of: viewModel.goals.count) { _, _ in
-                                cachedLayout = nil
+                                updateLayout()
                             }
                     }
                 }
@@ -66,9 +65,6 @@ struct FactoryFlowGraphView: View {
     }
 
     private func updateLayout() {
-        // Exécuter la génération sur le thread principal car cela touche l'UI,
-        // mais idéalement cela devrait être déporté si c'est très lourd.
-        // Pour l'instant, on optimise surtout les re-renders (zoom/scroll).
         cachedLayout = graphEngine.generateLayout(
             from: viewModel.consolidatedPlan,
             inputs: viewModel.userInputs,
@@ -94,10 +90,10 @@ struct FactoryFlowGraphView: View {
         VStack(spacing: 8) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("BLUEPRINT USINE")
+                    Text(Localization.translate("BLUEPRINT USINE"))
                         .font(.system(.headline, design: .monospaced))
                         .foregroundColor(.ficsitOrange)
-                    Text("Diagramme de Flux")
+                    Text(Localization.translate("Diagramme de Flux"))
                         .font(.system(.caption2, design: .monospaced))
                         .foregroundColor(.ficsitGray)
                 }
@@ -129,7 +125,7 @@ struct FactoryFlowGraphView: View {
                         Image(systemName: "gearshape.fill")
                             .foregroundColor(.ficsitGray)
                             .font(.system(size: 10))
-                        Text("\(viewModel.consolidatedPlan.count) machines")
+                        Text("\(viewModel.consolidatedPlan.count) " + Localization.translate("Machines").lowercased())
                             .font(.system(size: 10, design: .monospaced))
                             .foregroundColor(.black.opacity(0.7))
                     }
@@ -197,11 +193,11 @@ struct FactoryFlowGraphView: View {
                 .font(.system(size: 60))
                 .foregroundColor(.gray.opacity(0.5))
             
-            Text("Aucun Plan de Production")
+            Text(Localization.translate("Aucun Plan de Production"))
                 .font(.system(.headline, design: .monospaced))
                 .foregroundColor(.gray)
             
-            Text("Calculez une production pour voir le graphe")
+            Text(Localization.translate("Calculez une production pour voir le graphe"))
                 .font(.system(.caption, design: .monospaced))
                 .foregroundColor(.gray.opacity(0.7))
                 .multilineTextAlignment(.center)
@@ -384,7 +380,7 @@ struct MachineNodeView: View {
         
         return VStack(spacing: spacing) {
             // Titre - différenciation selon le type
-            Text(node.label)
+            Text(Localization.translate(node.label))
                 .font(.system(isCompact ? .caption2 : .caption, design: .rounded))
                 .fontWeight(.semibold)
                 .foregroundColor(titleColor)
@@ -393,7 +389,7 @@ struct MachineNodeView: View {
                 .shadow(color: Color.white.opacity(0.3), radius: 1, x: 0, y: 0.5)
             
             // Item name
-            Text(node.item.localizedName)
+            Text(Localization.translate(node.item.name))
                 .font(.system(isCompact ? .caption2 : .caption, design: .rounded))
                 .fontWeight(.medium)
                 .foregroundColor(itemColor)
@@ -436,7 +432,7 @@ struct MachineNodeView: View {
                         endPoint: .bottom
                     )
                 )
-            Text("FINAL")
+            Text(Localization.translate("FINAL PRODUCT"))
                 .font(.system(size: 7, design: .rounded))
                 .fontWeight(.bold)
                 .foregroundColor(.green.opacity(0.9))
@@ -570,7 +566,7 @@ struct MachineNodeView: View {
                                 endPoint: .bottom
                             )
                         )
-                    Text("\(ing)")
+                    Text(Localization.translate(ing))
                         .font(.system(size: 7, design: .rounded))
                         .fontWeight(.medium)
                         .foregroundColor(.black.opacity(0.7))
@@ -590,7 +586,7 @@ struct MachineNodeView: View {
                                 endPoint: .bottom
                             )
                         )
-                    Text("\(prod)")
+                    Text(Localization.translate(prod))
                         .font(.system(size: 7, design: .rounded))
                         .fontWeight(.medium)
                         .foregroundColor(.black.opacity(0.7))
@@ -734,7 +730,7 @@ struct ColumnSeparatorsView: View {
                 
                 // Label de niveau avec style amélioré
                 if depth > 0 {
-                    Text("NIVEAU \(depth)")
+                    Text("\(Localization.translate("NIVEAU")) \(depth)")
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
@@ -754,7 +750,7 @@ struct ColumnSeparatorsView: View {
                             y: 30
                         )
                 } else {
-                    Text("ENTRÉES")
+                    Text(Localization.translate("ENTRÉES"))
                         .font(.system(size: 11, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
@@ -912,16 +908,16 @@ struct GraphEdgesView: View {
 struct LegendView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("LÉGENDE")
+            Text(Localization.translate("LÉGENDE"))
                 .font(.system(size: 10, weight: .bold, design: .monospaced))
                 .foregroundColor(.ficsitGray)
             
             HStack(spacing: 12) {
-                LegendItem(color: .ficsitGray, label: "Entrée")
-                LegendItem(color: Color(red: 0.8, green: 0.3, blue: 0.3), label: "Fonderie")
-                LegendItem(color: .ficsitOrange, label: "Constructeur")
-                LegendItem(color: Color(red: 0.3, green: 0.6, blue: 0.8), label: "Assembleuse")
-                LegendItem(color: .ficsitOrange, label: "Sortie")
+                LegendItem(color: .ficsitGray, label: Localization.translate("Entrée"))
+                LegendItem(color: Color(red: 0.8, green: 0.3, blue: 0.3), label: Localization.translate("Fonderie"))
+                LegendItem(color: .ficsitOrange, label: Localization.translate("Constructeur"))
+                LegendItem(color: Color(red: 0.3, green: 0.6, blue: 0.8), label: Localization.translate("Assembleuse"))
+                LegendItem(color: .ficsitOrange, label: Localization.translate("Sortie"))
             }
         }
         .padding(10)
@@ -1120,12 +1116,12 @@ struct MachineDetailSheet: View {
                     VStack(alignment: .leading, spacing: 20) {
                         // Header
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(node.item.name)
+                            Text(Localization.translate(node.item.name))
                                 .font(.system(.title, design: .monospaced))
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
                             
-                            Text(node.label)
+                            Text(Localization.translate(node.label))
                                 .font(.system(.caption, design: .monospaced))
                                 .foregroundColor(.gray)
                         }
@@ -1136,7 +1132,7 @@ struct MachineDetailSheet: View {
                             Button(action: { showingBlueprint = true }) {
                                 HStack {
                                     Image(systemName: "square.dashed")
-                                    Text("VOIR BLUEPRINT")
+                                    Text(Localization.translate("VOIR BLUEPRINT"))
                                 }
                                 .font(.system(.subheadline, design: .monospaced))
                                 .fontWeight(.bold)
@@ -1152,24 +1148,24 @@ struct MachineDetailSheet: View {
                         // Recette
                         if let recipe = getRecipe() {
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("RECETTE")
+                                Text(Localization.translate("RECETTE"))
                                     .font(.system(.caption, design: .monospaced))
                                     .foregroundColor(.ficsitOrange)
                                 
-                                Text(recipe.name)
+                                Text(Localization.translate(recipe.name))
                                     .font(.system(.body, design: .monospaced))
                                     .foregroundColor(.white)
                                 
                                 Divider()
                                 
                                 // Ingrédients
-                                Text("ENTRÉES")
+                                Text(Localization.translate("ENTRÉES"))
                                     .font(.system(.caption2, design: .monospaced))
                                     .foregroundColor(.blue)
                                 
                                 ForEach(Array(recipe.ingredients.keys), id: \.self) { ing in
                                     HStack {
-                                        Text(ing)
+                                        Text(Localization.translate(ing))
                                         Spacer()
                                         Text("\(String(format: "%.2f", recipe.ingredients[ing] ?? 0))/min")
                                             .foregroundColor(.ficsitOrange)
@@ -1180,13 +1176,13 @@ struct MachineDetailSheet: View {
                                 Divider()
                                 
                                 // Produits
-                                Text("SORTIES")
+                                Text(Localization.translate("SORTIES"))
                                     .font(.system(.caption2, design: .monospaced))
                                     .foregroundColor(.green)
                                 
                                 ForEach(Array(recipe.products.keys), id: \.self) { prod in
                                     HStack {
-                                        Text(prod)
+                                        Text(Localization.translate(prod))
                                         Spacer()
                                         Text("\(String(format: "%.2f", recipe.products[prod] ?? 0))/min")
                                             .foregroundColor(.ficsitOrange)
@@ -1198,7 +1194,7 @@ struct MachineDetailSheet: View {
                                 
                                 // Énergie
                                 HStack {
-                                    Text("CONSOMMATION")
+                                    Text(Localization.translate("CONSOMMATION"))
                                     Spacer()
                                     Text("\(Int(recipe.machine.powerConsumption)) MW")
                                         .foregroundColor(.yellow)
@@ -1213,11 +1209,11 @@ struct MachineDetailSheet: View {
                     .padding()
                 }
             }
-            .navigationTitle("Détails Machine")
+            .navigationTitle(Localization.translate("Détails Machine"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Fermer") {
+                    Button(Localization.translate("Fermer")) {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .foregroundColor(.ficsitOrange)
@@ -1252,7 +1248,7 @@ struct LinkDetailSheet: View {
                 Color.ficsitDark.ignoresSafeArea()
                 
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("DÉTAILS CONNEXION")
+                    Text(Localization.translate("DÉTAILS CONNEXION"))
                         .font(.system(.headline, design: .monospaced))
                         .foregroundColor(.ficsitOrange)
                     
@@ -1260,12 +1256,12 @@ struct LinkDetailSheet: View {
                         HStack {
                             Text("Item:")
                             Spacer()
-                            Text(link.itemName)
+                            Text(Localization.translate(link.itemName))
                                 .foregroundColor(.ficsitOrange)
                         }
                         
                         HStack {
-                            Text("Taux:")
+                            Text(Localization.translate("Taux:"))
                             Spacer()
                             Text("\(String(format: "%.2f", link.rate))/min")
                                 .foregroundColor(.ficsitOrange)
@@ -1275,10 +1271,10 @@ struct LinkDetailSheet: View {
                            let toNode = layout.nodeMap[link.toNodeID] {
                             Divider()
                             
-                            Text("De: \(fromNode.item.name)")
+                            Text("\(Localization.translate("De:")) \(Localization.translate(fromNode.item.name))")
                                 .font(.system(.caption, design: .monospaced))
                             
-                            Text("Vers: \(toNode.item.name)")
+                            Text("\(Localization.translate("Vers:")) \(Localization.translate(toNode.item.name))")
                                 .font(.system(.caption, design: .monospaced))
                         }
                     }
@@ -1291,11 +1287,11 @@ struct LinkDetailSheet: View {
                 }
                 .padding()
             }
-            .navigationTitle("Détails Lien")
+            .navigationTitle(Localization.translate("Détails Lien"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Fermer") {
+                    Button(Localization.translate("Fermer")) {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .foregroundColor(.ficsitOrange)
@@ -1304,4 +1300,3 @@ struct LinkDetailSheet: View {
         }
     }
 }
-

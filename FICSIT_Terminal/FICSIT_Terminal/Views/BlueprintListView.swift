@@ -13,12 +13,12 @@ struct BlueprintListView: View {
             VStack(spacing: 0) {
                 // Header
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("LIBRARY")
+                    Text(Localization.translate("LIBRARY"))
                         .font(.system(.caption, design: .monospaced))
                         .foregroundColor(.ficsitGray)
                         .tracking(2)
 
-                    Text("BLUEPRINTS")
+                    Text(Localization.translate("BLUEPRINTS"))
                         .font(.system(.title2, design: .monospaced))
                         .fontWeight(.bold)
                         .foregroundColor(.white)
@@ -33,10 +33,10 @@ struct BlueprintListView: View {
                         Image(systemName: "doc.text.magnifyingglass")
                             .font(.system(size: 60))
                             .foregroundColor(.ficsitGray)
-                        Text("No Blueprints Saved")
+                        Text(Localization.translate("No Blueprints Saved"))
                             .font(.headline)
                             .foregroundColor(.gray)
-                        Text("Save your factory plans as blueprints to reuse them later.")
+                        Text(Localization.translate("Save your factory plans as blueprints to reuse them later."))
                             .font(.caption)
                             .foregroundColor(.gray)
                             .multilineTextAlignment(.center)
@@ -52,7 +52,7 @@ struct BlueprintListView: View {
                                         Button(role: .destructive) {
                                             service.delete(blueprint)
                                         } label: {
-                                            Label("Delete", systemImage: "trash")
+                                            Label(Localization.translate("Delete"), systemImage: "trash")
                                         }
                                     }
                             }
@@ -92,7 +92,7 @@ struct BlueprintCard: View {
                     .lineLimit(2)
 
                 HStack {
-                    Label("\(blueprint.goals.count) outputs", systemImage: "arrow.up.forward.square")
+                    Label("\(blueprint.goals.count) " + Localization.translate("Output").lowercased() + (blueprint.goals.count > 1 ? "s" : ""), systemImage: "arrow.up.forward.square")
                     Spacer()
                     Text(blueprint.createdDate, style: .date)
                 }

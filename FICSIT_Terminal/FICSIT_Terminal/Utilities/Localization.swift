@@ -96,6 +96,7 @@ struct Localization {
         "Coal Generator": "Générateur à Charbon",
         "Fuel Generator": "Générateur à Carburant",
         "Nuclear Power Plant": "Centrale Nucléaire",
+        "Biomass Burner": "Brûleur de Biomasse",
 
         // RECIPES (Alternates often have "Alternate: " prefix or specific names)
         "Cast Screw": "Vis Moulée",
@@ -225,6 +226,8 @@ struct Localization {
         "Power Failure Imminent! Add": "Panne imminente! Ajoutez",
         "Reserve Capacity": "Capacité de réserve",
         "Enter fuel amount to simulate.": "Entrez une quantité de carburant pour simuler.",
+        "GENERATOR CAPACITY": "CAPACITÉ GÉNÉRATEURS",
+        "GRID UNSTABLE": "RÉSEAU INSTABLE",
 
         // PROJECT MANAGER
         "PROJECT MANAGER": "Gestion de Projets",
@@ -318,7 +321,48 @@ struct Localization {
         "Blueprint": "Plan",
         "Blueprint Details": "Détails du Plan",
         "Description": "Description",
-        "Save Blueprint": "Sauver Plan"
+        "Save Blueprint": "Sauver Plan",
+
+        // RECIPE COMPARISON
+        "RECIPE ANALYSIS": "ANALYSE RECETTE",
+        "No recipes found.": "Aucune recette trouvée.",
+        "Select Item to Analyze": "Choisir Item à Analyser",
+        "Ingredients": "Ingrédients",
+        "Stats": "Stats",
+
+        // FACTORY DASHBOARD
+        "PRODUCTION SITE": "SITE DE PRODUCTION",
+        "MAX OUTPUT": "SORTIE MAX",
+        "ACTIVE PRODUCTION": "PRODUCTION ACTIVE",
+        "No production goals set.": "Aucun objectif défini.",
+        "BUILDING REQUIREMENTS": "BÂTIMENTS REQUIS",
+        "Items": "Items",
+        "Target": "Cible",
+        "OVERCLOCKING": "OVERCLOCKING",
+        "Adjusts machine count and power usage simulation.": "Ajuste le nombre de machines et la simulation électrique.",
+
+        // GRAPH
+        "BLUEPRINT USINE": "PLAN D'USINE",
+        "Diagramme de Flux": "Diagramme de Flux",
+        "Aucun Plan de Production": "Aucun Plan de Production",
+        "Calculez une production pour voir le graphe": "Calculez une production pour voir le graphe",
+        "LÉGENDE": "LÉGENDE",
+        "Entrée": "Entrée",
+        "Fonderie": "Fonderie",
+        "Sortie": "Sortie",
+        "NIVEAU": "NIVEAU",
+        "ENTRÉES": "ENTRÉES",
+        "VOIR BLUEPRINT": "VOIR BLUEPRINT",
+        "RECETTE": "RECETTE",
+        "SORTIES": "SORTIES",
+        "CONSOMMATION": "CONSOMMATION",
+        "Détails Machine": "Détails Machine",
+        "Fermer": "Fermer",
+        "DÉTAILS CONNEXION": "DÉTAILS CONNEXION",
+        "Taux:": "Taux:",
+        "De:": "De:",
+        "Vers:": "Vers:",
+        "Détails Lien": "Détails Lien"
     ]
 
     static func translate(_ key: String) -> String {

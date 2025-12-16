@@ -93,21 +93,22 @@ struct InputView: View {
     private var beltSection: some View {
         VStack {
             FicsitHeader(title: Localization.translate("Belt Level"), icon: "speedometer")
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    ForEach(BeltLevel.allCases) { belt in
-                        Button(action: { withAnimation { viewModel.selectedBeltLevel = belt }; HapticManager.shared.click() }) {
-                            VStack {
-                                Text("Mk\(String(belt.rawValue.suffix(1)))").fontWeight(.bold)
-                                Text("\(Int(belt.speed))").font(.caption)
-                            }
-                                .padding(.vertical, 8).padding(.horizontal, 16)
-                                .background(viewModel.selectedBeltLevel == belt ? Color.ficsitOrange : Color.ficsitGray.opacity(0.2))
-                                .foregroundColor(viewModel.selectedBeltLevel == belt ? .black : .white).cornerRadius(8)
+
+            // UX Improvement: Grille simple au lieu de scroll horizontal caché
+            HStack(spacing: 10) {
+                ForEach(BeltLevel.allCases) { belt in
+                    Button(action: { withAnimation { viewModel.selectedBeltLevel = belt }; HapticManager.shared.click() }) {
+                        VStack {
+                            Text("Mk\(String(belt.rawValue.suffix(1)))").fontWeight(.bold)
+                            Text("\(Int(belt.speed))").font(.caption)
                         }
+                        .frame(maxWidth: .infinity) // Distribuer l'espace
+                        .padding(.vertical, 8)
+                        .background(viewModel.selectedBeltLevel == belt ? Color.ficsitOrange : Color.ficsitGray.opacity(0.2))
+                        .foregroundColor(viewModel.selectedBeltLevel == belt ? .black : .white).cornerRadius(8)
                     }
-                }.padding(.horizontal)
-            }
+                }
+            }.padding(.horizontal)
         }.padding(.bottom)
     }
 }

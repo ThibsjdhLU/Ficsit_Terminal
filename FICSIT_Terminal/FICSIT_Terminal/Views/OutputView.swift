@@ -84,10 +84,12 @@ struct OutputView: View {
     
     private var actionButtons: some View {
         HStack {
-            Button(Localization.translate("CALCULATE")) {
+            Button(action: {
                 UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                 viewModel.maximizeProduction()
                 HapticManager.shared.thud()
+            }) {
+                Text(Localization.translate("CALCULATE"))
             }
             .buttonStyle(FicsitButtonStyle())
             .disabled(viewModel.isCalculating)

@@ -47,13 +47,13 @@ struct ToDoListView: View {
                                 .background(Color.ficsitOrange)
                                 .clipShape(Circle())
                         }
-                        .accessibilityLabel("Add Task")
+                        .accessibilityLabel(Localization.translate("Add New Task"))
                     }
 
                     // SEARCH BAR
                     HStack {
                         Image(systemName: "magnifyingglass").foregroundColor(.gray)
-                        TextField("Search tasks...", text: $searchText)
+                        TextField(Localization.translate("Search tasks..."), text: $searchText)
                             .foregroundColor(.white)
                     }
                     .padding(8)
@@ -121,7 +121,7 @@ struct ToDoListView: View {
                                                     viewModel.toDoList.remove(at: idx)
                                                 }
                                             } label: {
-                                                Label("Delete", systemImage: "trash")
+                                                Label(Localization.translate("Delete"), systemImage: "trash")
                                             }
                                         }
                                     }
@@ -143,28 +143,35 @@ struct ToDoListView: View {
     private var addItemSheet: some View {
         NavigationView {
             Form {
-                Section(header: Text("Task Details")) {
-                    TextField("Description", text: $newItemTitle)
-                    TextField("Category (e.g. Tier 1, Logistics)", text: $newItemCategory)
+                Section(header: Text(Localization.translate("Task Details"))) {
+                    TextField(Localization.translate("Task Description"), text: $newItemTitle)
+                    TextField(Localization.translate("Category (Optional)"), text: $newItemCategory)
                 }
-                Section(header: Text("Priority")) {
-                    Picker("Priority", selection: $newItemPriority) {
-                        Text("Normal").tag(0)
-                        Text("High").tag(1)
+                Section(header: Text(Localization.translate("Priority"))) {
+                    Picker(Localization.translate("Priority"), selection: $newItemPriority) {
+                        Text(Localization.translate("Normal")).tag(0)
+                        Text(Localization.translate("High")).tag(1)
                     }
                     .pickerStyle(SegmentedPickerStyle())
                 }
             }
-            .navigationTitle("New Task")
+            .navigationTitle(Localization.translate("New Task"))
             .navigationBarItems(
-                leading: Button("Cancel") { showingAddItem = false },
-                trailing: Button("Add") {
+                leading: Button(Localization.translate("Cancel")) { showingAddItem = false },
+                trailing: Button(Localization.translate("Add")) {
                     let cat = newItemCategory.isEmpty ? nil : newItemCategory
                     viewModel.addToDoItem(title: newItemTitle, category: cat, priority: newItemPriority)
                     showingAddItem = false
                 }
                 .disabled(newItemTitle.isEmpty)
             )
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("OK") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
+                        .foregroundColor(.ficsitOrange)
+                }
+            }
         }
     }
 
@@ -200,6 +207,7 @@ struct ToDoItemRow: View {
                     .foregroundColor(item.isCompleted ? .green : .ficsitGray)
             }
             .buttonStyle(PlainButtonStyle())
+            .accessibilityLabel(item.isCompleted ? Localization.translate("Mark as incomplete") : Localization.translate("Mark as completed"))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.title)
@@ -208,7 +216,7 @@ struct ToDoItemRow: View {
                     .fontDesign(.monospaced)
 
                 if item.priority == 1 && !item.isCompleted {
-                    Text("HIGH PRIORITY")
+                    Text(Localization.translate("HIGH PRIORITY"))
                         .font(.caption2)
                         .fontWeight(.bold)
                         .foregroundColor(.ficsitOrange)

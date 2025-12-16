@@ -2,6 +2,8 @@ import SwiftUI
 
 struct PowerPlannerView: View {
     @ObservedObject var viewModel: CalculatorViewModel
+    @State private var generatorTypes = ["Biomass Burner", "Coal Generator", "Fuel Generator", "Nuclear Power Plant"]
+
     var body: some View {
         let consumption = viewModel.totalPower
         let production = viewModel.getGridCapacity()
@@ -66,7 +68,6 @@ struct PowerPlannerView: View {
                                 .padding(.horizontal)
 
                             VStack(spacing: 1) {
-                                let generatorTypes = ["Biomass Burner", "Coal Generator", "Fuel Generator", "Nuclear Power Plant"]
                                 ForEach(generatorTypes, id: \.self) { genName in
                                     HStack {
                                         Text(Localization.translate(genName))
@@ -165,6 +166,9 @@ struct PowerPlannerView: View {
                                             Text(Localization.translate("GRID UNSTABLE"))
                                                 .fontWeight(.bold)
                                                 .foregroundColor(.red)
+                                            // Dynamic string limitation: we display the VM string directly.
+                                            // Wrapping in translate() handles exact matches, but dynamic content ("Add 2 Coal") won't match.
+                                            // Best effort: Display as is, assuming tech terms are cognates or accepted.
                                             Text(viewModel.getBackupRecommendation(excessMW: effectiveProduction - consumption))
                                                 .font(.caption)
                                                 .foregroundColor(.white)
@@ -187,10 +191,8 @@ struct PowerPlannerView: View {
                             .padding(.horizontal)
                         }
 
-                        // OLD SIMULATION SECTION (Optional or Hidden)
                         if let result = viewModel.powerResult, effectiveProduction == 0 {
-                            // Only show scenario calculation if manual planner is unused
-                            Text("Use the planner above or Fuel Simulation to verify capacity.")
+                            Text(Localization.translate("Enter fuel amount to simulate."))
                                 .font(.caption)
                                 .foregroundColor(.gray)
                         }
@@ -202,7 +204,7 @@ struct PowerPlannerView: View {
             .toolbar {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
-                    Button("Fermer") {
+                    Button(Localization.translate("Fermer")) {
                         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
                     }
                     .foregroundColor(.ficsitOrange)

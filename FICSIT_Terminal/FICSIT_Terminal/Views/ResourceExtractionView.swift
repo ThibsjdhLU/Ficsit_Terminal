@@ -2,19 +2,18 @@ import SwiftUI
 
 struct ResourceExtractionView: View {
     // Switch to EnvironmentObject to receive the shared instance from HubDashboardView
-    // Fallback to StateObject if not provided (e.g. preview) - but EnvironmentObject is safer for shared state
     @EnvironmentObject var viewModel: ExtractionViewModel
 
     var body: some View {
         VStack(spacing: 0) {
             // Header
             VStack(alignment: .leading, spacing: 4) {
-                Text("RESOURCE EXTRACTION")
+                Text(Localization.translate("RESOURCE EXTRACTION"))
                     .font(.system(.caption, design: .monospaced))
                     .foregroundColor(.ficsitGray)
                     .tracking(2)
 
-                Text("MINING CALCULATOR")
+                Text(Localization.translate("MINING CALCULATOR"))
                     .font(.system(.title2, design: .monospaced))
                     .fontWeight(.bold)
                     .foregroundColor(.white)
@@ -29,7 +28,7 @@ struct ResourceExtractionView: View {
 
                     // 1. SELECT RESOURCE
                     VStack(alignment: .leading, spacing: 10) {
-                        FicsitHeader(title: "Target Resource", icon: "cube.fill")
+                        FicsitHeader(title: Localization.translate("Target Resource"), icon: "cube.fill")
 
                         if let selected = viewModel.selectedResource {
                             HStack {
@@ -38,7 +37,7 @@ struct ResourceExtractionView: View {
                                 Text(selected.localizedName)
                                     .font(.headline)
                                 Spacer()
-                                Button("Change") {
+                                Button(Localization.translate("Change")) {
                                     viewModel.selectedResource = nil
                                 }
                                 .font(.caption)
@@ -75,17 +74,17 @@ struct ResourceExtractionView: View {
 
                         // 2. CONFIGURATION
                         VStack(alignment: .leading, spacing: 15) {
-                            FicsitHeader(title: "Configuration", icon: "gearshape.fill")
+                            FicsitHeader(title: Localization.translate("Configuration"), icon: "gearshape.fill")
 
                             // Purity
                             HStack {
-                                Text("Node Purity")
+                                Text(Localization.translate("Node Purity"))
                                     .font(.caption)
                                     .foregroundColor(.gray)
                                 Spacer()
                                 Picker("Purity", selection: $viewModel.selectedPurity) {
                                     ForEach(NodePurity.allCases) { purity in
-                                        Text(purity.rawValue.capitalized).tag(purity)
+                                        Text(Localization.translate(purity.rawValue.capitalized)).tag(purity)
                                     }
                                 }
                                 .pickerStyle(SegmentedPickerStyle())
@@ -94,7 +93,7 @@ struct ResourceExtractionView: View {
 
                             // Miner
                             HStack {
-                                Text("Miner Tier")
+                                Text(Localization.translate("Miner Tier"))
                                     .font(.caption)
                                     .foregroundColor(.gray)
                                 Spacer()
@@ -110,7 +109,7 @@ struct ResourceExtractionView: View {
                             // Overclock
                             VStack(alignment: .leading) {
                                 HStack {
-                                    Text("Clock Speed")
+                                    Text(Localization.translate("Clock Speed"))
                                         .font(.caption)
                                         .foregroundColor(.gray)
                                     Spacer()
@@ -127,11 +126,11 @@ struct ResourceExtractionView: View {
 
                         // 3. RESULTS
                         VStack(alignment: .leading, spacing: 15) {
-                            FicsitHeader(title: "Output Analysis", icon: "chart.bar.fill")
+                            FicsitHeader(title: Localization.translate("Output Analysis"), icon: "chart.bar.fill")
 
                             HStack(spacing: 20) {
                                 VStack(alignment: .leading) {
-                                    Text("Extraction Rate")
+                                    Text(Localization.translate("Extraction Rate"))
                                         .font(.caption)
                                         .foregroundColor(.gray)
                                     HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -147,7 +146,7 @@ struct ResourceExtractionView: View {
                                 Spacer()
 
                                 VStack(alignment: .trailing) {
-                                    Text("Power Usage")
+                                    Text(Localization.translate("Power Usage"))
                                         .font(.caption)
                                         .foregroundColor(.gray)
                                     HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -167,22 +166,22 @@ struct ResourceExtractionView: View {
                         // 4. WORLD STATS (SUSTAINABILITY)
                         if let stats = viewModel.mapStats {
                             VStack(alignment: .leading, spacing: 10) {
-                                FicsitHeader(title: "Global Sustainability", icon: "globe")
+                                FicsitHeader(title: Localization.translate("Global Sustainability"), icon: "globe")
 
-                                Text("Map Availability for \(stats.resourceName)")
+                                Text("\(Localization.translate("Map Availability for")) \(Localization.translate(stats.resourceName))")
                                     .font(.caption)
                                     .foregroundColor(.gray)
 
                                 HStack(spacing: 10) {
-                                    StatBox(label: "Impure", value: "\(stats.impure)")
-                                    StatBox(label: "Normal", value: "\(stats.normal)")
-                                    StatBox(label: "Pure", value: "\(stats.pure)")
+                                    StatBox(label: Localization.translate("Impure"), value: "\(stats.impure)")
+                                    StatBox(label: Localization.translate("Normal"), value: "\(stats.normal)")
+                                    StatBox(label: Localization.translate("Pure"), value: "\(stats.pure)")
                                 }
 
                                 Divider().background(Color.white.opacity(0.1))
 
                                 HStack {
-                                    Text("Max Global Output")
+                                    Text(Localization.translate("Max Global Output"))
                                         .font(.subheadline)
                                     Spacer()
                                     Text(String(format: "%.0f / min", stats.calculateMaxPotential()))

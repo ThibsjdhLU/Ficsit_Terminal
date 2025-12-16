@@ -17,17 +17,17 @@ struct CalculatorView: View {
                         Text(viewModel.currentProjectName)
                             .font(.headline).fontDesign(.monospaced)
                             .foregroundColor(.white)
-                        Text("PRODUCTION STATUS: ONLINE")
+                        Text(Localization.translate("PRODUCTION STATUS: ONLINE"))
                             .font(.caption).bold().foregroundColor(.green)
                     }
                     Spacer()
                     // Add Menu
                     Menu {
                         Button(action: { showingAddProduction = true }) {
-                            Label("Add Product Goal", systemImage: "plus.square")
+                            Label(Localization.translate("Add Product Goal"), systemImage: "plus.square")
                         }
                         Button(action: { showingAddInput = true }) {
-                            Label("Add Resource Input", systemImage: "arrow.down.circle")
+                            Label(Localization.translate("Add Resource Input"), systemImage: "arrow.down.circle")
                         }
                     } label: {
                         Image(systemName: "plus")
@@ -40,18 +40,15 @@ struct CalculatorView: View {
                 .padding()
                 .background(Color.ficsitDark)
 
-                // Tab-like selection within Calculator (Inputs vs Outputs vs Graph)
-                // For now, let's just show a unified view as per request for "Clean, Minimal"
-
                 ScrollView {
                     VStack(spacing: 20) {
 
                         // INPUTS SECTION
                         VStack(alignment: .leading, spacing: 10) {
-                            FicsitHeader(title: "Resource Inputs", icon: "arrow.down.circle.fill")
+                            FicsitHeader(title: Localization.translate("Resource Inputs"), icon: "arrow.down.circle.fill")
 
                             if viewModel.userInputs.isEmpty {
-                                Text("No inputs defined.")
+                                Text(Localization.translate("No inputs defined."))
                                     .font(.caption).italic().foregroundColor(.gray)
                                     .padding(.horizontal)
                             } else {
@@ -66,14 +63,14 @@ struct CalculatorView: View {
 
                         // GOALS SECTION
                         VStack(alignment: .leading, spacing: 10) {
-                            FicsitHeader(title: "Production Lines", icon: "gearshape.2.fill")
+                            FicsitHeader(title: Localization.translate("Production Lines"), icon: "gearshape.2.fill")
 
                             if viewModel.goals.isEmpty {
                                 Button(action: { showingAddProduction = true }) {
                                     VStack(spacing: 10) {
                                         Image(systemName: "plus.square.dashed")
                                             .font(.largeTitle)
-                                        Text("Tap to Plan Production")
+                                        Text(Localization.translate("Tap to Plan Production"))
                                             .font(.headline)
                                     }
                                     .foregroundColor(.ficsitGray)
@@ -97,16 +94,16 @@ struct CalculatorView: View {
                         // RESULTS / GRAPH PREVIEW
                         if !viewModel.consolidatedPlan.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
-                                FicsitHeader(title: "Factory Overview", icon: "chart.bar.doc.horizontal.fill")
+                                FicsitHeader(title: Localization.translate("Factory Overview"), icon: "chart.bar.doc.horizontal.fill")
 
                                 HStack {
                                     VStack(alignment: .leading) {
-                                        Text("Total Power").font(.caption).foregroundColor(.gray)
+                                        Text(Localization.translate("Total Power")).font(.caption).foregroundColor(.gray)
                                         Text("\(Int(viewModel.totalPower)) MW").font(.headline).bold().foregroundColor(.yellow)
                                     }
                                     Spacer()
                                     VStack(alignment: .trailing) {
-                                        Text("Buildings").font(.caption).foregroundColor(.gray)
+                                        Text(Localization.translate("Buildings")).font(.caption).foregroundColor(.gray)
                                         Text("\(viewModel.consolidatedPlan.count)").font(.headline).bold().foregroundColor(.white)
                                     }
                                 }

@@ -8,11 +8,24 @@ struct ShoppingListView: View {
             ZStack {
                 Color.ficsitDark.ignoresSafeArea()
                 if viewModel.shoppingList.isEmpty {
-                    VStack { Image(systemName: "cart.badge.minus").font(.system(size: 50)).foregroundColor(.ficsitGray); Text(Localization.translate("No materials required")).font(.headline).foregroundColor(.ficsitGray).padding(); Text(Localization.translate("Calculate a plan first.")).font(.caption).foregroundColor(.ficsitGray) }
+                    VStack {
+                        Image(systemName: "cart.badge.minus").font(.system(size: 50)).foregroundColor(.ficsitGray)
+                        Text(Localization.translate("No materials required")).font(.headline).foregroundColor(.ficsitGray).padding()
+                        Text(Localization.translate("Calculate a plan first.")).font(.caption).foregroundColor(.ficsitGray)
+                    }
                 } else {
                     VStack {
-                        HStack { Image(systemName: "hammer.fill").foregroundColor(.ficsitOrange); Text(Localization.translate("CONSTRUCTION MATERIALS")).font(.headline).foregroundColor(.ficsitOrange); Spacer() }.padding().background(Color.white.opacity(0.05))
-                        List { ForEach(viewModel.shoppingList) { entry in ShoppingRow(item: entry.item, count: entry.count) } }.listStyle(InsetGroupedListStyle())
+                        HStack {
+                            Image(systemName: "hammer.fill").foregroundColor(.ficsitOrange)
+                            Text(Localization.translate("CONSTRUCTION MATERIALS")).font(.headline).foregroundColor(.ficsitOrange)
+                            Spacer()
+                        }.padding().background(Color.white.opacity(0.05))
+
+                        List {
+                            ForEach(viewModel.shoppingList) { entry in
+                                ShoppingRow(item: entry.item, count: entry.count)
+                            }
+                        }.listStyle(InsetGroupedListStyle())
                     }
                 }
             }

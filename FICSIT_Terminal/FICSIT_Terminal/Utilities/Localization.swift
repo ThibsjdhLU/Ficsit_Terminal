@@ -325,6 +325,8 @@ struct Localization {
 
         // RECIPE COMPARISON
         "RECIPE ANALYSIS": "ANALYSE RECETTE",
+        "Recipe Details": "Détails de la Recette",
+        "Compare Recipes": "Comparer les Recettes",
         "No recipes found.": "Aucune recette trouvée.",
         "Select Item to Analyze": "Choisir Item à Analyser",
         "Ingredients": "Ingrédients",

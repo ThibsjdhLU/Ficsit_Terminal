@@ -54,6 +54,11 @@ class ExtractionViewModel: ObservableObject {
     func select(_ item: ProductionItem) {
         self.selectedResource = item
         self.mapStats = WorldResourceDatabase.get(resource: item.name)
+
+        // Auto-select the first valid miner for the new resource
+        if let firstValid = validMiners.first {
+            self.selectedMiner = firstValid
+        }
     }
 
     private func calculate() {
@@ -78,8 +83,26 @@ class ExtractionViewModel: ObservableObject {
         case .mk1: basePower = 5
         case .mk2: basePower = 12
         case .mk3: basePower = 30
+        case .oilExtractor: basePower = 40
+        case .waterExtractor: basePower = 20
+        case .resourceWellExtractor: basePower = 150 // Pressurizer + Extractor
         }
 
         self.powerConsumption = basePower * pow(clockSpeed, 1.6)
+    }
+
+    var validMiners: [MinerLevel] {
+        guard let resource = selectedResource else { return MinerLevel.allCases }
+
+        switch resource.name {
+        case "Oil", "Crude Oil":
+            return [.oilExtractor]
+        case "Water":
+            return [.waterExtractor]
+        case "Nitrogen Gas":
+            return [.resourceWellExtractor]
+        default:
+            return [.mk1, .mk2, .mk3]
+        }
     }
 }

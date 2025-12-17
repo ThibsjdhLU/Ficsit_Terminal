@@ -72,6 +72,7 @@ struct RecipeLibraryView: View {
                                                 .padding(.leading, 8)
                                         }
                                         .buttonStyle(PlainButtonStyle())
+                                        .accessibilityLabel(Localization.translate("Recipe Details"))
                                     }
                                     .padding(.vertical, 4)
                                 }
@@ -117,6 +118,7 @@ struct RecipeLibraryView: View {
                             .clipShape(Circle())
                             .shadow(radius: 5)
                     }
+                    .accessibilityLabel(Localization.translate("Compare Recipes"))
                     .padding()
                 }
             }

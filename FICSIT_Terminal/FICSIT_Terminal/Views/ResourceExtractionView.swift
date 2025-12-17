@@ -98,8 +98,8 @@ struct ResourceExtractionView: View {
                                     .foregroundColor(.gray)
                                 Spacer()
                                 Picker("Miner", selection: $viewModel.selectedMiner) {
-                                    ForEach(MinerLevel.allCases) { miner in
-                                        Text(miner.rawValue.uppercased()).tag(miner)
+                                    ForEach(viewModel.validMiners) { miner in
+                                        Text(Localization.translate(miner.localizedName)).tag(miner)
                                     }
                                 }
                                 .pickerStyle(SegmentedPickerStyle())
@@ -172,21 +172,37 @@ struct ResourceExtractionView: View {
                                     .font(.caption)
                                     .foregroundColor(.gray)
 
-                                HStack(spacing: 10) {
-                                    StatBox(label: Localization.translate("Impure"), value: "\(stats.impure)")
-                                    StatBox(label: Localization.translate("Normal"), value: "\(stats.normal)")
-                                    StatBox(label: Localization.translate("Pure"), value: "\(stats.pure)")
-                                }
+                                if stats.resourceName == "Water" {
+                                     // Infinite Resource Handling
+                                     HStack {
+                                         Spacer()
+                                         VStack(spacing: 8) {
+                                             Image(systemName: "infinity")
+                                                 .font(.system(size: 32))
+                                                 .foregroundColor(.blue)
+                                             Text(Localization.translate("Infinite Resource"))
+                                                 .font(.headline)
+                                         }
+                                         Spacer()
+                                     }
+                                     .padding()
+                                } else {
+                                    HStack(spacing: 10) {
+                                        StatBox(label: Localization.translate("Impure"), value: "\(stats.impure)")
+                                        StatBox(label: Localization.translate("Normal"), value: "\(stats.normal)")
+                                        StatBox(label: Localization.translate("Pure"), value: "\(stats.pure)")
+                                    }
 
-                                Divider().background(Color.white.opacity(0.1))
+                                    Divider().background(Color.white.opacity(0.1))
 
-                                HStack {
-                                    Text(Localization.translate("Max Global Output"))
-                                        .font(.subheadline)
-                                    Spacer()
-                                    Text(String(format: "%.0f / min", stats.calculateMaxPotential()))
-                                        .font(.system(.body, design: .monospaced))
-                                        .foregroundColor(.ficsitOrange)
+                                    HStack {
+                                        Text(Localization.translate("Max Global Output"))
+                                            .font(.subheadline)
+                                        Spacer()
+                                        Text(String(format: "%.0f / min", stats.calculateMaxPotential()))
+                                            .font(.system(.body, design: .monospaced))
+                                            .foregroundColor(.ficsitOrange)
+                                    }
                                 }
                             }
                             .padding()

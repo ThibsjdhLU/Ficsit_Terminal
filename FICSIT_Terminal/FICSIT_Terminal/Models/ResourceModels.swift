@@ -42,9 +42,12 @@ struct WorldResourceDatabase {
         MapResourceNodeCount(resourceName: "Uranium", impure: 1, normal: 2, pure: 1, wells: 0),
         MapResourceNodeCount(resourceName: "Oil", impure: 10, normal: 12, pure: 8, wells: 0), // Oil is nodes
         MapResourceNodeCount(resourceName: "Nitrogen Gas", impure: 2, normal: 7, pure: 36, wells: 10), // Gas is wells, simplified
+        MapResourceNodeCount(resourceName: "Water", impure: 0, normal: 0, pure: 0, wells: 0), // Water is infinite
     ]
 
     static func get(resource: String) -> MapResourceNodeCount? {
-        return resources.first { $0.resourceName == resource }
+        // Alias Handling
+        let searchName = resource == "Crude Oil" ? "Oil" : resource
+        return resources.first { $0.resourceName == searchName }
     }
 }

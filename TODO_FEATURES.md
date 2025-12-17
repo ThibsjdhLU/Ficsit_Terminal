@@ -20,11 +20,11 @@
 - [ ] Power distribution network planning helper
 
 ### Resource Extraction
-- [ ] **Node Type Database** (pure/normal/impure nodes with extraction rates)
-- [ ] **Mining Head Efficiency Calculator** based on resource purity
+- [x] **Node Type Database** (pure/normal/impure nodes with extraction rates)
+- [x] **Mining Head Efficiency Calculator** based on resource purity
 - [ ] **Miner Placement Planning** (normal miners vs. oil extractors vs. wells)
-- [ ] **Extraction Rate Optimization** for impure nodes
-- [ ] **Resource Sustainability Analysis** (can the map supply your factory?)
+- [x] **Extraction Rate Optimization** for impure nodes
+- [x] **Resource Sustainability Analysis** (can the map supply your factory?)
 
 ### Building Simulation
 - [x] Machine production rates with overclock/underclock sliders

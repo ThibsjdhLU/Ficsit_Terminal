@@ -19,9 +19,30 @@ enum NodePurity: String, CaseIterable, Codable, Identifiable, Sendable {
 
 enum MinerLevel: String, CaseIterable, Codable, Identifiable, Sendable {
     case mk1, mk2, mk3
+    case oilExtractor, waterExtractor, resourceWellExtractor
+
     var id: String { self.rawValue }
+
+    var localizedName: String {
+        switch self {
+        case .mk1: return "Miner Mk.1"
+        case .mk2: return "Miner Mk.2"
+        case .mk3: return "Miner Mk.3"
+        case .oilExtractor: return "Oil Extractor"
+        case .waterExtractor: return "Water Extractor"
+        case .resourceWellExtractor: return "Resource Well Extractor"
+        }
+    }
+
     var baseExtractionRate: Double {
-        switch self { case .mk1: return 60; case .mk2: return 120; case .mk3: return 240 }
+        switch self {
+        case .mk1: return 60
+        case .mk2: return 120
+        case .mk3: return 240
+        case .oilExtractor: return 120
+        case .waterExtractor: return 120
+        case .resourceWellExtractor: return 60
+        }
     }
 }
 

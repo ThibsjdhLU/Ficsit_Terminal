@@ -156,12 +156,21 @@ class GraphEngine {
         let maxDepth = (nodes.map { Int($0.position.x) }.max() ?? 0)
         var finalNodes = nodes
         
-        
         let columnWidth: CGFloat = GraphConfig.columnWidth
         let rowHeight: CGFloat = GraphConfig.rowHeight
         
+        // OPTIMIZATION (Bolt): Pre-calculate depth groups
+        // Replaces the previous filter O(Depth * Nodes) which was O(N^2) in the worst case
+        var depthGroups: [Int: [Int]] = [:]
+        for (idx, node) in finalNodes.enumerated() {
+            let d = Int(node.position.x)
+            depthGroups[d, default: []].append(idx)
+        }
+
         for d in 0...maxDepth {
-            let colIndices = finalNodes.indices.filter { Int(finalNodes[$0].position.x) == d }
+            let colIndices = depthGroups[d] ?? []
+            if colIndices.isEmpty { continue }
+
             let sortedIndices = colIndices.sorted {
                 let n1 = finalNodes[$0]; let n2 = finalNodes[$1]
                 if n1.type == n2.type { return n1.item.name < n2.item.name }

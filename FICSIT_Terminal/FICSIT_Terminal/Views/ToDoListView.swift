@@ -7,6 +7,9 @@ struct ToDoListView: View {
     @State private var newItemCategory = ""
     @State private var newItemPriority = 0
 
+    @State private var itemToDelete: ToDoItem?
+    @State private var showDeleteAlert = false
+
     // Filter State
     @State private var filter: ToDoFilter = .all
     @State private var searchText = ""
@@ -117,9 +120,8 @@ struct ToDoListView: View {
                                         }
                                         .contextMenu {
                                             Button(role: .destructive) {
-                                                if let idx = viewModel.toDoList.firstIndex(where: {$0.id == item.id}) {
-                                                    viewModel.toDoList.remove(at: idx)
-                                                }
+                                                itemToDelete = item
+                                                showDeleteAlert = true
                                             } label: {
                                                 Label(Localization.translate("Delete"), systemImage: "trash")
                                             }
@@ -135,6 +137,21 @@ struct ToDoListView: View {
         }
         .sheet(isPresented: $showingAddItem) {
             addItemSheet
+        }
+        .alert(isPresented: $showDeleteAlert) {
+            Alert(
+                title: Text(Localization.translate("Delete Task?")),
+                message: Text(Localization.translate("Are you sure you want to delete this task? This action cannot be undone.")),
+                primaryButton: .destructive(Text(Localization.translate("Delete"))) {
+                    if let item = itemToDelete, let idx = viewModel.toDoList.firstIndex(where: {$0.id == item.id}) {
+                        viewModel.toDoList.remove(at: idx)
+                    }
+                    itemToDelete = nil
+                },
+                secondaryButton: .cancel {
+                    itemToDelete = nil
+                }
+            )
         }
     }
 

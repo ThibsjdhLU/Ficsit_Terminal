@@ -12,17 +12,29 @@ class ProductionEngine {
     private var costCache: [String: [String: Double]] = [:]
     private var cacheTimestamp: [String: Date] = [:]
     private let cacheTimeout: TimeInterval = ProductionConfig.cacheTimeout
+    // OPTIMISATION (Bolt): Signature des recettes pour éviter de recalculer la clé de cache à chaque fois
+    private var cachedRecipeSignature: String?
     
-    // Clé de cache basée sur l'item et les recettes actives
-    private func cacheKey(for itemName: String, userRecipes: [String: [Recipe]]) -> String {
-        let recipeKeys = userRecipes.keys.sorted().joined(separator: ",")
-        return "\(itemName)|\(recipeKeys)"
+    // Clé de cache simplifiée (la validité est assurée par invalidateCache/signature)
+    private func cacheKey(for itemName: String) -> String {
+        return itemName
+    }
+
+    // Génère une signature unique pour l'ensemble des recettes actives
+    private func generateRecipeSignature(_ recipes: [String: [Recipe]]) -> String {
+        // Trie et joint tous les IDs de recettes pour détecter tout changement
+        return recipes.values
+            .flatMap { $0 }
+            .map { $0.id.uuidString }
+            .sorted()
+            .joined(separator: ",")
     }
     
     // Invalider le cache quand les recettes changent
     func invalidateCache() {
         costCache.removeAll()
         cacheTimestamp.removeAll()
+        cachedRecipeSignature = nil
     }
     
     // --- 1. MOTEUR DE COÛTS UNITAIRES (Multi-Recettes Support) avec MEMOIZATION ---
@@ -41,7 +53,8 @@ class ProductionEngine {
         defer { visited.remove(itemName) }
         
         // Vérifier le cache
-        let key = cacheKey(for: itemName, userRecipes: userRecipes)
+        // OPTIMISATION (Bolt): Clé simplifiée sans concaténation lourde
+        let key = cacheKey(for: itemName)
         if let cached = costCache[key],
            let timestamp = cacheTimestamp[key],
            Date().timeIntervalSince(timestamp) < cacheTimeout {
@@ -110,6 +123,15 @@ class ProductionEngine {
     // --- 2. SOLVEUR EN CASCADE AVEC FALLBACK RECIPE ---
     func calculateAbsoluteAllocation(goals: [ProductionGoal], availableInputs: [ResourceInput], beltLimit: Double, activeRecipes: [String: [Recipe]]) throws -> OptimizationResult {
         
+        // OPTIMISATION (Bolt): Vérification de la signature des recettes
+        // Si les recettes ont changé, on invalide le cache.
+        // Cela nous permet d'utiliser une clé de cache simple (itemName) dans la boucle récursive.
+        let currentSignature = generateRecipeSignature(activeRecipes)
+        if currentSignature != cachedRecipeSignature {
+            invalidateCache()
+            cachedRecipeSignature = currentSignature
+        }
+
         // A. Stock Initial
         var inventory: [String: Double] = [:]
         for input in availableInputs {

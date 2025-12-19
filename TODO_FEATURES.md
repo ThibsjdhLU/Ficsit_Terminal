@@ -43,7 +43,7 @@
 
 ### Planning & Tracking
 - [ ] **Production Blueprint System**
-  - [ ] Save custom production setups as templates
+  - [x] Save custom production setups as templates (Basic implementation)
   - [ ] Multi-version blueprint saving (plan iterations)
   - [ ] Blueprint duplication and modification
   - [ ] Blueprint sharing with community
@@ -64,7 +64,7 @@
   - [x] Check-off system with progress visualization
   - [ ] Time estimates for building each item (based on machine count)
 
-- [x] **Resource Tracking**
+- [ ] **Resource Tracking**
   - [ ] Current inventory tracking (manual input or cloud sync from save file)
   - [ ] Surplus/deficit calculator based on plan vs. inventory
   - [x] Shopping list generation from production plan
@@ -178,9 +178,9 @@
 
 ### Layout & Visual Hierarchy
 - [x] Clean, Minimal Aesthetic
-- [ ] **Production Input Screen** (Specific Layout Requested)
-- [ ] **Project/Factory Dashboard** (Specific Layout Requested)
-- [ ] **To-Do List Screen** (Specific Layout Requested)
+- [ ] **Production Input Screen** (Specific Layout Requested - PENDING)
+- [ ] **Project/Factory Dashboard** (Specific Layout Requested - PENDING)
+- [ ] **To-Do List Screen** (Specific Layout Requested - PENDING)
 
 ### Visual Design Elements
 - [x] Color System

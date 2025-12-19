@@ -7,39 +7,40 @@ struct OutputView: View {
     @State private var ratioStr: String = "1"
     @State private var showShoppingList = false
     @State private var showSearchSheet = false
+    @State private var showProductionInputSheet = false // New
     @State private var editingGoal: ProductionGoal?
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                FicsitBackground()
+        ZStack {
+            FicsitBackground()
+
+            VStack(spacing: 0) {
+                // 1. ZONE FIXE
+                VStack(spacing: 15) {
+                    headerView
+                    inputSection
+                    goalsList
+                    actionButtons
+                }
+                .padding()
+                .background(Color(red: 0.1, green: 0.1, blue: 0.12))
+                .overlay(Rectangle().frame(height: 1).foregroundColor(.white.opacity(0.1)), alignment: .bottom)
                 
-                VStack(spacing: 0) {
-                    // 1. ZONE FIXE
-                    VStack(spacing: 15) {
-                        headerView
-                        inputSection
-                        goalsList
-                        actionButtons
-                    }
-                    .padding()
-                    .background(Color(red: 0.1, green: 0.1, blue: 0.12))
-                    .overlay(Rectangle().frame(height: 1).foregroundColor(.white.opacity(0.1)), alignment: .bottom)
-                    
-                    // 2. ZONE SCROLLABLE
-                    ScrollView {
-                        resultsSection.padding(.vertical)
-                    }
+                // 2. ZONE SCROLLABLE
+                ScrollView {
+                    resultsSection.padding(.vertical)
                 }
             }
-            .navigationBarHidden(true)
-            .sheet(item: $editingGoal) { goal in EditGoalSheet(goal: goal, viewModel: viewModel) }
-            .sheet(isPresented: $showShoppingList) { ShoppingListView(viewModel: viewModel) }
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("OK") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }.foregroundColor(.ficsitOrange)
-                }
+        }
+        .sheet(item: $editingGoal) { goal in EditGoalSheet(goal: goal, viewModel: viewModel) }
+        .sheet(isPresented: $showShoppingList) { ShoppingListView(viewModel: viewModel) }
+        .sheet(isPresented: $showProductionInputSheet) {
+            ProductionInputView(viewModel: viewModel, db: db) // The new "Production Input Screen"
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("OK") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }.foregroundColor(.ficsitOrange)
             }
         }
     }
@@ -52,17 +53,19 @@ struct OutputView: View {
     
     private var inputSection: some View {
         HStack {
-            Button(action: { showSearchSheet = true }) {
+            // Simplified "Add Goal" button that opens the detailed Production Input View
+            Button(action: { showProductionInputSheet = true }) {
                 HStack {
-                    if let item = selectedItem { Text(item.localizedName).foregroundColor(.white).lineLimit(1) } else { Text(Localization.translate("Select Part...")).foregroundColor(.ficsitGray) }
-                    Spacer(); Image(systemName: "magnifyingglass").foregroundColor(.ficsitGray)
-                }.padding(10).background(Color.ficsitOrange.opacity(0.2)).cornerRadius(5).overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ficsitOrange, lineWidth: 1))
-            }.sheet(isPresented: $showSearchSheet) { ItemSelectorView(title: Localization.translate("Select Part..."), items: db.items.filter { $0.category == "Part" }, selection: $selectedItem) }
-            
-            TextField("1.0", text: $ratioStr).keyboardType(.decimalPad).padding(10).frame(width: 70).background(Color.black.opacity(0.5)).overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.ficsitOrange, lineWidth: 1)).foregroundColor(.white)
-            
-            Button(action: { if let item = selectedItem, let ratio = Double(ratioStr) { viewModel.addGoal(item: item, ratio: ratio); HapticManager.shared.success() } }) {
-                Image(systemName: "plus").padding().background(Color.ficsitOrange).foregroundColor(.black).cornerRadius(5)
+                    Image(systemName: "plus.square.fill")
+                    Text(Localization.translate("Add Product Goal"))
+                }
+                .font(.headline)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.ficsitOrange.opacity(0.2))
+                .foregroundColor(.ficsitOrange)
+                .cornerRadius(10)
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.ficsitOrange, style: StrokeStyle(lineWidth: 1, dash: [5])))
             }
         }
     }

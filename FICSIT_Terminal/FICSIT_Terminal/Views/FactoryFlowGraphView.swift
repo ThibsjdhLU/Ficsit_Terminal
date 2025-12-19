@@ -15,38 +15,35 @@ struct FactoryFlowGraphView: View {
     private let bottleneckDetector = BottleneckDetector()
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                FicsitBackground()
+        ZStack {
+            FicsitBackground()
+
+            VStack(spacing: 0) {
+                // Header avec énergie totale et contrôles
+                headerView
                 
-                VStack(spacing: 0) {
-                    // Header avec énergie totale et contrôles
-                    headerView
-                    
-                    // Zone de graphique avec zoom et scroll
-                    if viewModel.consolidatedPlan.isEmpty {
-                        emptyStateView
-                    } else {
-                        graphContentView
-                            .onChange(of: viewModel.consolidatedPlan.count) { _, _ in
-                                updateLayout()
-                            }
-                            .onChange(of: viewModel.userInputs.count) { _, _ in
-                                updateLayout()
-                            }
-                            .onChange(of: viewModel.goals.count) { _, _ in
-                                updateLayout()
-                            }
-                    }
+                // Zone de graphique avec zoom et scroll
+                if viewModel.consolidatedPlan.isEmpty {
+                    emptyStateView
+                } else {
+                    graphContentView
+                        .onChange(of: viewModel.consolidatedPlan.count) { _, _ in
+                            updateLayout()
+                        }
+                        .onChange(of: viewModel.userInputs.count) { _, _ in
+                            updateLayout()
+                        }
+                        .onChange(of: viewModel.goals.count) { _, _ in
+                            updateLayout()
+                        }
                 }
             }
-            .navigationBarHidden(true)
-            .sheet(item: $selectedNode) { node in
-                MachineDetailSheet(node: node, viewModel: viewModel, db: db)
-            }
-            .sheet(item: $selectedLink) { link in
-                LinkDetailSheet(link: link, layout: graphLayout)
-            }
+        }
+        .sheet(item: $selectedNode) { node in
+            MachineDetailSheet(node: node, viewModel: viewModel, db: db)
+        }
+        .sheet(item: $selectedLink) { link in
+            LinkDetailSheet(link: link, layout: graphLayout)
         }
     }
     

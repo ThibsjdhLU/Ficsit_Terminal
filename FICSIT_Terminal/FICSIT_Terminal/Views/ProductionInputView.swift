@@ -32,10 +32,10 @@ struct ProductionInputView: View {
                 // Header
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("PRODUCTION PLANNER")
+                        Text(Localization.translate("PRODUCTION PLANNER"))
                             .font(.caption).fontDesign(.monospaced)
                             .foregroundColor(.ficsitOrange)
-                        Text("NEW PRODUCTION LINE")
+                        Text(Localization.translate("NEW PRODUCTION LINE"))
                             .font(.title2).bold().fontDesign(.monospaced)
                             .foregroundColor(.white)
                     }
@@ -49,7 +49,7 @@ struct ProductionInputView: View {
 
                         // 1. SELECT ITEM CARD
                         VStack(alignment: .leading, spacing: 10) {
-                            FicsitHeader(title: "Target Product", icon: "cube.fill")
+                            FicsitHeader(title: Localization.translate("Target Product"), icon: "cube.fill")
 
                             Button(action: { showSearchSheet = true }) {
                                 HStack(spacing: 15) {
@@ -64,7 +64,7 @@ struct ProductionInputView: View {
                                     } else {
                                         Image(systemName: "magnifyingglass")
                                             .font(.title).foregroundColor(.gray)
-                                        Text("Select Item to Produce...")
+                                        Text(Localization.translate("Select Item to Produce..."))
                                             .font(.headline).foregroundColor(.gray)
                                     }
                                     Spacer()
@@ -79,10 +79,10 @@ struct ProductionInputView: View {
 
                             // 2. INPUT SECTION
                             VStack(alignment: .leading, spacing: 15) {
-                                FicsitHeader(title: "Production Parameters", icon: "slider.horizontal.3")
+                                FicsitHeader(title: Localization.translate("Production Parameters"), icon: "slider.horizontal.3")
 
                                 VStack(alignment: .leading) {
-                                    Text("Desired Output Rate")
+                                    Text(Localization.translate("Desired Output Rate"))
                                         .font(.caption).foregroundColor(.gray)
                                     HStack {
                                         Slider(value: $inputRate, in: 1...600, step: 1)
@@ -116,7 +116,7 @@ struct ProductionInputView: View {
                                 }
 
                                 Toggle(isOn: $useAlternate) {
-                                    Text("Allow Alternate Recipes")
+                                    Text(Localization.translate("Allow Alternate Recipes"))
                                         .font(.subheadline)
                                         .foregroundColor(.white)
                                 }
@@ -129,16 +129,16 @@ struct ProductionInputView: View {
                             // 3. PREVIEW RESULTS
                             if let preview = previewResults {
                                 VStack(alignment: .leading, spacing: 15) {
-                                    FicsitHeader(title: "Projected Requirements", icon: "doc.text.magnifyingglass")
+                                    FicsitHeader(title: Localization.translate("Projected Requirements"), icon: "doc.text.magnifyingglass")
 
                                     // Materials
                                     VStack(alignment: .leading, spacing: 8) {
-                                        Text("Estimated Input Materials")
+                                        Text(Localization.translate("Estimated Input Materials"))
                                             .font(.caption).bold().foregroundColor(.white)
 
                                         ForEach(preview.materials.keys.sorted(), id: \.self) { mat in
                                             HStack {
-                                                Text("• \(mat):")
+                                                Text("• \(Localization.translate(mat)):")
                                                     .font(.caption).foregroundColor(.ficsitGray)
                                                 Spacer()
                                                 Text("\(String(format: "%.1f", preview.materials[mat]!))/min")
@@ -151,9 +151,9 @@ struct ProductionInputView: View {
 
                                     HStack(spacing: 20) {
                                         VStack(alignment: .leading) {
-                                            Text("Primary Machines").font(.caption).foregroundColor(.gray)
+                                            Text(Localization.translate("Primary Machines")).font(.caption).foregroundColor(.gray)
                                             if let firstMachine = preview.machines.keys.first {
-                                                Text("~ \(Int(preview.machines[firstMachine]!))x \(firstMachine)")
+                                                Text("~ \(Int(preview.machines[firstMachine]!))x \(Localization.translate(firstMachine))")
                                                     .font(.subheadline).bold()
                                             } else {
                                                 Text("N/A").font(.subheadline)
@@ -180,7 +180,7 @@ struct ProductionInputView: View {
                                     HapticManager.shared.success()
                                     // Close sheet logic should be handled by parent or Environment
                                 }) {
-                                    Label("Add to Project", systemImage: "plus.square.fill")
+                                    Label(Localization.translate("Add to Project"), systemImage: "plus.square.fill")
                                 }
                                 .buttonStyle(FicsitButtonStyle())
 
@@ -189,7 +189,7 @@ struct ProductionInputView: View {
                                     blueprintDesc = "Producing \(Int(inputRate))/min"
                                     showSaveBlueprint = true
                                 }) {
-                                    Label("Blueprint", systemImage: "doc.text.fill")
+                                    Label(Localization.translate("Blueprint"), systemImage: "doc.text.fill")
                                 }
                                 .buttonStyle(FicsitButtonStyle(primary: false))
                             }
@@ -200,22 +200,22 @@ struct ProductionInputView: View {
                 }
             }
             .sheet(isPresented: $showSearchSheet) {
-                ItemSelectorView(title: "Select Product", items: db.items.filter { $0.category != "Raw" }, selection: $selectedItem)
+                ItemSelectorView(title: Localization.translate("Select Product"), items: db.items.filter { $0.category != "Raw" }, selection: $selectedItem)
             }
             .sheet(isPresented: $showSaveBlueprint) {
                 NavigationView {
                     Form {
-                        Section(header: Text("Blueprint Details")) {
-                            TextField("Name", text: $blueprintName)
-                            TextField("Description", text: $blueprintDesc)
+                        Section(header: Text(Localization.translate("Blueprint Details"))) {
+                            TextField(Localization.translate("Name"), text: $blueprintName)
+                            TextField(Localization.translate("Description"), text: $blueprintDesc)
                         }
-                        Button("Save Blueprint") {
+                        Button(Localization.translate("Save Blueprint")) {
                             saveBlueprint()
                             showSaveBlueprint = false
                         }
                     }
-                    .navigationTitle("Save Blueprint")
-                    .navigationBarItems(trailing: Button("Cancel") { showSaveBlueprint = false })
+                    .navigationTitle(Localization.translate("Save Blueprint"))
+                    .navigationBarItems(trailing: Button(Localization.translate("Cancel")) { showSaveBlueprint = false })
                 }
             }
         }

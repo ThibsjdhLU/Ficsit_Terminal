@@ -10,40 +10,37 @@ struct InputView: View {
     @State private var editingInput: ResourceInput?
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                FicsitBackground()
+        ZStack {
+            FicsitBackground()
+
+            VStack(spacing: 0) {
+                headerView
                 
-                VStack(spacing: 0) {
-                    headerView
-                    
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            addNodeButton
-                            listSection
-                            beltSection
-                        }
-                        .padding(.vertical)
+                ScrollView {
+                    VStack(spacing: 20) {
+                        addNodeButton
+                        listSection
+                        beltSection
                     }
+                    .padding(.vertical)
                 }
             }
-            .navigationBarHidden(true)
-            .sheet(isPresented: $showProjectManager) {
-                // Legacy, peut-être remplacé par un redirect au Hub
-                Text("Use Hub to switch factories")
-            }
-            .sheet(isPresented: $showAddSheet) {
-                ResourceEditorSheet(viewModel: viewModel, db: db, mode: .add)
-            }
-            .sheet(item: $editingInput) { input in
-                ResourceEditorSheet(viewModel: viewModel, db: db, mode: .edit(input))
-            }
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("OK") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
-                        .foregroundColor(.ficsitOrange)
-                }
+        }
+        .sheet(isPresented: $showProjectManager) {
+            // Legacy, peut-être remplacé par un redirect au Hub
+            Text("Use Hub to switch factories")
+        }
+        .sheet(isPresented: $showAddSheet) {
+            ResourceEditorSheet(viewModel: viewModel, db: db, mode: .add)
+        }
+        .sheet(item: $editingInput) { input in
+            ResourceEditorSheet(viewModel: viewModel, db: db, mode: .edit(input))
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("OK") { UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil) }
+                    .foregroundColor(.ficsitOrange)
             }
         }
     }

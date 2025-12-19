@@ -58,22 +58,51 @@ struct MachineRow: View {
 
             // Expanded Section: Overclocking
             if isExpanded {
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 10) {
                     Divider().background(Color.gray.opacity(0.3))
 
-                    Text(Localization.translate("OVERCLOCKING"))
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.ficsitOrange)
+                    HStack {
+                        Text(Localization.translate("OVERCLOCKING"))
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.ficsitOrange)
+                        Spacer()
+                        // Feedback immédiat (Accessibility & Clarity)
+                        HStack(spacing: 15) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "building.2.fill").font(.caption2)
+                                Text(String(format: "%.1f", adjustedMachineCount))
+                            }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("\(String(format: "%.1f", adjustedMachineCount)) machines")
+
+                            HStack(spacing: 4) {
+                                Image(systemName: "bolt.fill").font(.caption2)
+                                Text("\(Int(adjustedPower)) MW")
+                            }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel("\(Int(adjustedPower)) megawatts")
+                        }
+                        .font(.caption2.monospaced())
+                        .foregroundColor(.white.opacity(0.8))
+                    }
 
                     HStack {
-                        Slider(value: $sliderValue, in: 1...250, step: 1)
-                            .accentColor(.ficsitOrange)
+                        Slider(value: $sliderValue, in: 1...250, step: 1) {
+                            Text(Localization.translate("Clock Speed"))
+                        } minimumValueLabel: {
+                            Image(systemName: "turtle.fill").font(.caption).foregroundColor(.ficsitGray)
+                        } maximumValueLabel: {
+                            Image(systemName: "hare.fill").font(.caption).foregroundColor(.ficsitOrange)
+                        }
+                        .accentColor(.ficsitOrange)
+                        .accessibilityValue("\(Int(sliderValue)) %")
 
                         Text("\(Int(sliderValue))%")
                             .font(.system(.body, design: .monospaced))
-                            .frame(width: 50)
-                            .foregroundColor(.white)
+                            .fontWeight(.bold)
+                            .frame(width: 60)
+                            .foregroundColor(.ficsitOrange)
                     }
 
                     Text(Localization.translate("Adjusts machine count and power usage simulation."))
@@ -96,17 +125,6 @@ struct MachineRow: View {
 
     var adjustedPower: Double {
         let clock = sliderValue / 100.0
-        // Power formula: Base * (Clock/100)^1.6
-        // Wait, Satisfactory power formula is roughly: Consumption * (Clock)^1.321928 (approx) or 1.6 in older versions.
-        // Let's use simple exponent for simulation: P = P_base * (clk)^1.6
-        // step.powerUsage is the total power for ALL machines at 100%.
-        // New Total Power = (New Machine Count) * (Power per Machine @ Clock)
-        // Power per Machine @ Clock = BasePower * (clock)^1.6
-        // New Machine Count = OldCount / clock
-        // Total = (OldCount / clock) * BasePower * (clock)^1.6
-        //       = OldCount * BasePower * clock^0.6
-        //       = OldTotalPower * clock^0.6
-
-        return step.powerUsage * pow(clock, 0.6) // Corrected for fixed output
+        return step.powerUsage * pow(clock, 0.6)
     }
 }
